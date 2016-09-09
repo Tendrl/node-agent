@@ -1,0 +1,6 @@
+[run]
+branch = True
+source = node_agent
+
+[report]
+ignore_errors = True
