@@ -28,3 +28,13 @@ Code Coverage
 .. image:: https://coveralls.io/repos/github/Tendrl/node_agent/badge.svg?branch=master
     :target: https://coveralls.io/github/Tendrl/node_agent?branch=master
 
+Developer/Install documentation
+-----------------------
+
+We also have sphinx documentation in ``docs/source``.
+
+*To build it, run:*
+
+::
+
+    $ python setup.py build_sphinx
