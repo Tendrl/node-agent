@@ -16,5 +16,5 @@ class Command(object):
             )
             result, err = runner.run()
         except AnsibleExecutableGenerationFailed as e:
-            err = e.message
+            return {}, e.message
         return result, err

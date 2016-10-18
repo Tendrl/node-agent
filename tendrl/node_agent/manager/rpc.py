@@ -8,6 +8,8 @@ import etcd
 import gevent.event
 
 from tendrl.node_agent.config import TendrlConfig
+from tendrl.node_agent.flows.flow_execution_exception import \
+    FlowExecutionFailedError
 
 
 config = TendrlConfig()
@@ -23,37 +25,51 @@ class EtcdRPC(object):
         self.client = etcd.Client(**etcd_kwargs)
         self.bridge_id = str(uuid.uuid4())
 
+    def _process_job(self, raw_job, job_key):
+        # Pick up the "new" job that is not locked by any other bridge
+        if raw_job['status'] == "new" and raw_job["sds_type"] == "generic":
+                raw_job['status'] = "processing"
+                # Generate a request ID for tracking this job
+                # further by tendrl-api
+                req_id = str(uuid.uuid4())
+                raw_job['request_id'] = "%s/flow_%s" % (
+                    self.bridge_id, req_id)
+                self.client.write(job_key, json.dumps(raw_job))
+                LOG.info("Processing API-JOB %s" % raw_job[
+                    'request_id'])
+                try:
+                    result, err = self.invoke_flow(
+                        raw_job['flow'], raw_job
+                    )
+                except FlowExecutionFailedError as e:
+                    LOG.error(e)
+                    raise
+
+                raw_job['status'] = "finished"
+                raw_job["response"] = {
+                    "result": result,
+                    "error": err
+                }
+                return raw_job, True
+        else:
+            return raw_job, False
+
     def _acceptor(self):
         while True:
             jobs = self.client.read("/api_job_queue")
+            gevent.sleep(2)
             for job in jobs.children:
+                executed = False
                 raw_job = json.loads(job.value.decode('utf-8'))
-                # Pick up the "new" job that is not locked by any other bridge
-                if raw_job['status'] == "new":
-                    try:
-                        raw_job['status'] = "processing"
-                        # Generate a request ID for tracking this job
-                        # further by tendrl-api
-                        req_id = str(uuid.uuid4())
-                        raw_job['request_id'] = "%s/flow_%s" % (
-                            self.bridge_id, req_id)
-                        self.client.write(job.key, json.dumps(raw_job))
-                        gevent.sleep(2)
-                        LOG.info("Processing API-JOB %s" % raw_job[
-                            'request_id'])
-                        result, err = self.invoke_flow(
-                            raw_job['flow'], raw_job
-                        )
-                        raw_job['status'] = "finished"
-                        raw_job["response"] = {
-                            "result": result,
-                            "error": err
-                        }
-                        self.client.write(job.key, json.dumps(raw_job))
-                        gevent.sleep(2)
-                        break
-                    except Exception as ex:
-                        LOG.error(ex)
+                try:
+                    raw_job, executed = self._process_job(raw_job, job.key)
+                except FlowExecutionFailedError as e:
+                    LOG.error("Failed to execute job: %s. Error: %s" % (
+                        str(job), str(e)))
+
+                if executed:
+                    self.client.write(job.key, json.dumps(raw_job))
+                    break
 
     def run(self):
         self._acceptor()
@@ -61,10 +77,12 @@ class EtcdRPC(object):
     def stop(self):
         pass
 
-    def invoke_flow(self, flow_name, api_job):
-        # TODO(darshan) parse sds_operations_gluster.yaml and correlate here
-        flow_module = 'tendrl.node_agent.flows.%s' %\
-                      self.convert_flow_name(flow_name)
+    def invoke_flow(self, flow_name, api_job,
+                    flow_module_path="tendrl.node_agent.flows"):
+        # TODO(darshan) parse operations.yaml and correlate here
+        flow_module = flow_module_path + '.%s' % self.convert_flow_name(
+            flow_name
+        )
         mod = __import__(flow_module, fromlist=[
             flow_name])
         return getattr(mod, flow_name)(api_job).start()

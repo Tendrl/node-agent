@@ -9,12 +9,14 @@ try:
 except ImportError:
     import simplejson as json
 
+TENDRL_EXE_FILE_PREFIX = "/tmp/.tendrl_runner"
+
 
 class AnsibleExecutableGenerationFailed(Exception):
-    def __init___(self, module_path, arguments, err):
-        self.message = "Executabe could not be generated for " + \
-                       "module %s , with arguments %s. Error:" + \
-                       " %s".format(module_path, arguments, err)
+    def __init__(self, module_path=None, arguments=None, err=None):
+        self.message = "Executabe could not be generated for module" \
+                       " %s , with arguments %s. Error: %s" % (
+                           str(module_path), str(arguments), str(err))
 
 
 class AnsibleRunner(object):
@@ -22,7 +24,7 @@ class AnsibleRunner(object):
 
     """
     def __init__(self, module_path, **kwargs):
-        self.executable_module_path = "/tmp/.tendrl_runner" + str(
+        self.executable_module_path = TENDRL_EXE_FILE_PREFIX + str(
             uuid.uuid4())
         self.module_path = modules.__path__[0] + "/" + module_path
         if not os.path.isfile(self.module_path):
