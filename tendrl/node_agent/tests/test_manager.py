@@ -1,4 +1,9 @@
 import gevent.event
+from mock import MagicMock
+import tendrl.node_agent.config
+
+tendrl.node_agent.config.TendrlConfig = MagicMock()
+
 from tendrl.node_agent.manager.manager import Manager
 from tendrl.node_agent.manager.rpc import EtcdThread
 
