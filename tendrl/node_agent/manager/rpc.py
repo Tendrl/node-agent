@@ -44,8 +44,13 @@ class EtcdRPC(object):
                 except FlowExecutionFailedError as e:
                     LOG.error(e)
                     raise
+                if err != "":
+                    raw_job['status'] = "failed"
+                    LOG.error("API-JOB %s Failed. Error: %s" % (raw_job[
+                        'request_id'], err))
+                else:
+                    raw_job['status'] = "finished"
 
-                raw_job['status'] = "finished"
                 raw_job["response"] = {
                     "result": result,
                     "error": err

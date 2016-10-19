@@ -68,7 +68,10 @@ class AnsibleRunner(object):
             stderr=subprocess.PIPE
         )
         out, err = cmd.communicate()
-        result = json.loads(out)
+        try:
+            result = json.loads(out)
+        except ValueError:
+            result = out
 
         self.__destroy_executable_module()
 
