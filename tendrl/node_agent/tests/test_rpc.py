@@ -115,6 +115,7 @@ class Test_EtcdRpc(object):
             "cluster_id": "49fa2adde8a6e98591f0f5cb4bc5f44d",
             "errors": {}, "attributes": {"_raw_params": "ls"},
             "message": "Executing command",
+            "type": "node",
             "object_type": "generic",
             "flow": "ExecuteCommand"
         }
@@ -138,11 +139,20 @@ class Test_EtcdRpc(object):
             "cluster_id": "49fa2adde8a6e98591f0f5cb4bc5f44d",
             "errors": {}, "attributes": {"_raw_params": "ls"},
             "message": "Executing command",
+            "type": "node",
             "object_type": "generic",
             "flow": "ExecuteCommand"
         }
 
         server = EtcdRPC()
+
+        def mock_etcd_write(key, value):
+            pass
+        monkeypatch.setattr(server.client, 'write', mock_etcd_write)
+
+        def mock_invoke_flow(flow, job):
+            return {"key1": "value1", "key2": "value2"}, ""
+        monkeypatch.setattr(server, 'invoke_flow', mock_invoke_flow)
 
         raw_job, executed = server._process_job(
             input_raw_job2,
@@ -155,11 +165,20 @@ class Test_EtcdRpc(object):
             "cluster_id": "49fa2adde8a6e98591f0f5cb4bc5f44d",
             "errors": {}, "attributes": {"_raw_params": "ls"},
             "message": "Executing command",
+            "type": "sds",
             "object_type": "generic",
             "flow": "ExecuteCommand"
         }
 
         server = EtcdRPC()
+
+        def mock_etcd_write(key, value):
+            pass
+        monkeypatch.setattr(server.client, 'write', mock_etcd_write)
+
+        def mock_invoke_flow(flow, job):
+            return {"key1": "value1", "key2": "value2"}, ""
+        monkeypatch.setattr(server, 'invoke_flow', mock_invoke_flow)
 
         raw_job, executed = server._process_job(
             input_raw_job3,
@@ -193,6 +212,7 @@ class Test_EtcdRpc(object):
             "status": "new", "sds_type": "generic",
             "cluster_id": "49fa2adde8a6e98591f0f5cb4bc5f44d",
             "errors": {}, "attributes": {"_raw_params": "ls"},
+            "type": "node",
             "message": "Executing command",
             "object_type": "generic",
             "flow": "ExecuteCommand"

@@ -24,10 +24,6 @@ class Manager(object):
         LOG.info("%s stopping" % self.__class__.__name__)
         self._user_request_thread.stop()
 
-    def _recover(self):
-        LOG.debug("Recovered server")
-        pass
-
     def start(self):
         LOG.info("%s starting" % self.__class__.__name__)
         self._user_request_thread.start()

@@ -27,7 +27,7 @@ class EtcdRPC(object):
 
     def _process_job(self, raw_job, job_key):
         # Pick up the "new" job that is not locked by any other bridge
-        if raw_job['status'] == "new" and raw_job["sds_type"] == "generic":
+        if raw_job['status'] == "new" and raw_job["type"] == "node":
                 raw_job['status'] = "processing"
                 # Generate a request ID for tracking this job
                 # further by tendrl-api

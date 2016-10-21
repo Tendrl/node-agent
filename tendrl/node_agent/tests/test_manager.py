@@ -25,11 +25,6 @@ class TestManager(object):
         manager.stop()
         assert True
 
-    def test_manager_recover(self):
-        manager = Manager()
-        manager._recover()
-        assert True
-
     def test_manager_start(self, monkeypatch):
         manager = Manager()
 
