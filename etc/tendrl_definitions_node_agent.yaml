@@ -1,0 +1,92 @@
+---
+tendrl_schema_version: 0.1
+
+valid_objects:
+- tendrl_context
+- cpu
+- network
+- disk
+- memory
+- lvm
+- iptable
+- user
+- group
+- node
+- process
+- proc
+
+object_details:
+  cpu:
+    enabled: True
+    value: "/nodes/$node.id/cpu"
+    attrs:
+      user:
+        type: String
+        help: "Amount of time the CPU was busy executing code in user space"
+      system:
+        type: String
+      wait:
+        type: String
+      nice:
+        type: String
+      swap:
+        type: String
+      interrupt:
+        type: String
+      softirq:
+        type: String
+      steal:
+        type: String
+      idle:
+        type: String
+      active:
+        type: String
+    atoms:
+        set:
+          run: "tendrl.node_agent.atoms.cpu.set"
+          type: "update"
+          pre_run : ["tendrl.node_agent.atoms.<atom_name>.<boolean_function>1"...]
+          post_run: ["tendrl.node_agent.atoms.<atom_name>.<boolean_function>1"...]
+          name: Meaningful name for this atom, should be something that is distinguishable and understandable for notification, debugging, storing and any other similar purposes
+          outputs:
+          - "A map of type {object.attr1 : {required: True}, object.attr2:{required: False}}}} that this will be providing (or could provide) to others, used to correlate and associate the thing/s this atom produces, if it produces anything at all."
+          inputs:
+          - An immutable {object1.attr1 : {value: "cluster1"}, object.attr2:{value: "123?"}}}} dictionary which specifies any initial inputs that should be automatically injected into the atoms scope before the atom execution commences (this allows for providing atom local values that do not need to be provided by other atoms/dependents).
+          version: An immutable version that associates version information with this atom. It can be useful in resuming older versions of atoms. Standard major, minor versioning concepts should apply
+
+  network:
+    enabled: True
+    value: "/nodes/$node.id/networks/$network.id"
+    attrs:
+      brickdetails:
+        type: String
+        help: Details of the brick
+
+
+flows:
+  CreateCephCluster:
+    tendrl_context: "A map of Tendrl flow level context items like cluster id,tendrl id etc"
+    uuid: "todo"
+    description: "Create Ceph Cluster with given context/params"
+    atoms: ["lots_of_atoms_like_install_rpms_bookeeping_etc"]
+    pre_run : ["tendrl.node_agent.atoms.<atom_name>.<boolean_function>1"...]
+              #boolean returning pre/post conditions function list
+    post_run: ["tendrl.node_agent.atoms.<atom_name>.<boolean_function>1"...]
+    run: "tendrl.node_agent.flows.create_ceph_cluster"
+    type: Create
+    outputs:
+    - "A map of type {object.attr1 : {required: True}, object
+   .attr2:{required: False}}}} that this will be providing (or could
+   provide) to others, used to correlate and associate the thing/s this flow
+    produces, if it produces anything at all."
+    inputs:
+    - An immutable {object1.attr1 : {value: "cluster1"}, object
+   .attr2:{value: "123?"}}}} dictionary which specifies any initial inputs
+    that should be automatically injected into the flow scope before the
+    flow execution commences (this allows for providing flow local values
+    that do not need to be provided by other flow/dependents).
+    enabled: True
+    version: An immutable version that associates version information with this flow. It can be useful in resuming older versions of flow. Standard major, minor versioning concepts should apply
+
+
+
