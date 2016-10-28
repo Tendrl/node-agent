@@ -20,26 +20,23 @@ object_details:
     enabled: True
     value: "/nodes/$node.id/cpu"
     attrs:
-      user:
+      model:
         type: String
-        help: "Amount of time the CPU was busy executing code in user space"
-      system:
+      vendor_id:
         type: String
-      wait:
+      model_name:
         type: String
-      nice:
+      architecture:
         type: String
-      swap:
+      cores_per_socket:
         type: String
-      interrupt:
+      cpu_op_mode:
         type: String
-      softirq:
+      cpu_family:
         type: String
-      steal:
+      cpu_mhz:
         type: String
-      idle:
-        type: String
-      active:
+      cpu_count:
         type: String
     atoms:
         set:
@@ -62,6 +59,29 @@ object_details:
         type: String
         help: Details of the brick
 
+  memory:
+    enabled: True
+    value: "/nodes/$node.id/memory"
+    attrs:
+      total_size:
+        type: String
+      total_swap:
+        type: String
+      active:
+        type: String
+
+  node:
+    enabled: True
+    value: "/nodes/$node.id/node"
+    attrs:
+      os:
+        type: String
+      os_varsion:
+        type: String
+      kernel_version:
+        type: String
+      selinux_mode:
+        type: String
 
 flows:
   CreateCephCluster:
