@@ -36,9 +36,6 @@ rm -rf %{name}.egg-info
 %build
 %{__python} setup.py build
 
-# generate html docs
-sphinx-build doc/source html
-
 # remove the sphinx-build leftovers
 rm -rf html/.{doctrees,buildinfo}
 
@@ -59,7 +56,7 @@ install -Dm 0644 tendrl-noded.service $RPM_BUILD_ROOT%{_unitdir}/tendrl-noded.se
 py.test -v tendrl/node_agent/tests
 
 %files -f INSTALLED_FILES
-%doc html README.rst
+%doc README.rst
 %license LICENSE
 %{_unitdir}/tendrl-noded.service
 
