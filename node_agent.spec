@@ -4,7 +4,7 @@ Release: 1%{?dist}
 BuildArch: noarch
 Summary: Module for Node Agent
 Source0: %{name}-%{version}.tar.gz
-License: LGPLv2
+License: LGPLv2+
 URL: https://github.com/Tendrl/node_agent
 
 BuildRequires: systemd
@@ -12,12 +12,12 @@ BuildRequires: python2-devel
 BuildRequires: python-sphinx
 BuildRequires: pytest
 
-Requires: python-etcd >= 0.4.3
-Requires: python-gevent >= 1.0.2
-Requires: python-greenlet >= 0.3.2
-Requires: python-taskflow >= 2.6
-Requires: collectd >= 5.5.1
-Requires: python-jinja2 >= 2.7.2
+Requires: python-etcd
+Requires: python-gevent
+Requires: python-greenlet
+Requires: python-taskflow
+Requires: collectd
+Requires: python-jinja2
 Requires: tendrl-bridge-common
 Requires: systemd
 
