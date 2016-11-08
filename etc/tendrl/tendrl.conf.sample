@@ -15,3 +15,4 @@ log_level = DEBUG
 # Path to log file
 log_path = /var/log/tendrl/node_agent.log
 log_level = DEBUG
+tendrl_exe_file_prefix = /tmp/.tendrl_runner

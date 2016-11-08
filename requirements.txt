@@ -2,6 +2,7 @@
 # of appearance. Changing the order has an impact on the overall integration
 # process, which may cause wedges in the gate later.
 
+ansible
 python-etcd
 gevent>=1.0
 greenlet>=0.3.2

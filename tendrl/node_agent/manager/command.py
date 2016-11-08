@@ -10,7 +10,7 @@ ANSIBLE_MODULE_PATH = "core/commands/command.py"
 class Command(object):
     def __init__(self, attributes):
         self.attributes = attributes
-        
+
     def start(self):
         try:
             runner = AnsibleRunner(

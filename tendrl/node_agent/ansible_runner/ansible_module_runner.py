@@ -2,14 +2,15 @@ import ansible.executor.module_common as module_common
 from ansible import modules
 import os
 import subprocess
+from tendrl.node_agent.config import TendrlConfig
 import uuid
+
+config = TendrlConfig()
 
 try:
     import json
 except ImportError:
     import simplejson as json
-
-TENDRL_EXE_FILE_PREFIX = "/tmp/.tendrl_runner"
 
 
 class AnsibleExecutableGenerationFailed(Exception):
@@ -24,8 +25,10 @@ class AnsibleRunner(object):
 
     """
     def __init__(self, module_path, **kwargs):
-        self.executable_module_path = TENDRL_EXE_FILE_PREFIX + str(
-            uuid.uuid4())
+        self.executable_module_path = config.get(
+            "tendrl_node_agent",
+            "tendrl_exe_file_prefix"
+        ) + str(uuid.uuid4())
         self.module_path = modules.__path__[0] + "/" + module_path
         if not os.path.isfile(self.module_path):
             raise ValueError

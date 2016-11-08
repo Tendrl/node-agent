@@ -6,17 +6,17 @@ import gevent.greenlet
 import json
 import pull_hardware_inventory
 from rpc import EtcdThread
-import subprocess
 from tendrl.node_agent import log
 
 from tendrl.node_agent.persistence.persister import Persister
 from tendrl.node_agent.persistence.servers import Cpu
 from tendrl.node_agent.persistence.servers import Memory
-from tendrl.node_agent.persistence.servers import Node
+from tendrl.node_agent.persistence.servers import Os
 import time
 
 
 LOG = logging.getLogger(__name__)
+HARDWARE_INVENTORY_FILE = "/usr/share/tendrl/tendrl-node-inventory.json"
 
 
 class TopLevelEvents(gevent.greenlet.Greenlet):
@@ -36,18 +36,31 @@ class TopLevelEvents(gevent.greenlet.Greenlet):
         while not self._complete.is_set():
             try:
                 gevent.sleep(3)
-                pull_hardware_inventory.write_node_inventory(
-                    "/tmp/tendrl-node-inventory.json"
-                )
-                with open("/tmp/tendrl-node-inventory.json") as f:
-                    raw_data = json.loads(f.read())
+                node_inventory = pull_hardware_inventory.get_node_inventory()
 
-                subprocess.call(['rm', '-rf',
-                                 '/tmp/tendrl-node-inventory.json'])
+                try:
+                    with open(HARDWARE_INVENTORY_FILE) as f:
+                        raw_data = json.loads(f.read())
+                except IOError:
+                    raw_data = {}
+                    LOG.info("No earlier hardware inventory data found")
+                else:
+                    # if the node inventory has not changed, just end this
+                    # iteration
+                    if raw_data == node_inventory:
+                        continue
 
-                LOG.info("calling on_pull")
+                # updating the latest node inventory to the file.
+                with open(HARDWARE_INVENTORY_FILE, 'w') as fp:
+                    json.dump(node_inventory, fp)
 
-                self._manager.on_pull(raw_data)
+                LOG.info("change detected in node hardware inventory,"
+                         " trying to update the latest changes")
+
+                LOG.info("raw_data: %s\n\n hardware inventory: %s" % (
+                    raw_data, node_inventory))
+
+                self._manager.on_pull(node_inventory)
             except Exception as ex:
                 LOG.error(ex)
 
@@ -66,11 +79,11 @@ class Manager(object):
         self._discovery_thread = TopLevelEvents(self)
         self.persister = Persister()
 
-
     def stop(self):
         LOG.info("%s stopping" % self.__class__.__name__)
         self._user_request_thread.stop()
         self._discovery_thread.stop()
+        self.persister.stop()
 
     def start(self):
         LOG.info("%s starting" % self.__class__.__name__)
@@ -89,14 +102,14 @@ class Manager(object):
         if "os" in raw_data:
             LOG.info("on_pull, Updating OS data")
             node = raw_data['os']
-            self.persister.update_node(
-                Node(
+            self.persister.update_os(
+                Os(
                     updated=str(time.time()),
-                    os = node["Name"],
-                    os_version = node["OSVersion"],
-                    kernel_version = node["KernelVersion"],
-                    selinux_mode = node["SELinuxMode"],
-                    node_uuid = raw_data["node_uuid"],
+                    os=node["Name"],
+                    os_version=node["OSVersion"],
+                    kernel_version=node["KernelVersion"],
+                    selinux_mode=node["SELinuxMode"],
+                    node_uuid=raw_data["node_uuid"],
                 )
             )
         if "memory" in raw_data:
@@ -105,11 +118,9 @@ class Manager(object):
             self.persister.update_memory(
                 Memory(
                     updated=str(time.time()),
-                    total_size = memory["TotalSize"],
-                    total_swap = memory["SwapTotal"],
-                    memory_type = memory["Type"],
-                    active = memory["Active"],
-                    node_uuid = raw_data["node_uuid"],
+                    total_size=memory["TotalSize"],
+                    total_swap=memory["SwapTotal"],
+                    node_uuid=raw_data["node_uuid"],
                 )
             )
 
@@ -119,16 +130,15 @@ class Manager(object):
             self.persister.update_cpu(
                 Cpu(
                     updated=str(time.time()),
-                    model = cpu["Model"],
-                    vendor_id = cpu["VendorId"],
-                    model_name = cpu["ModelName"],
-                    architecture = cpu["Architecture"],
-                    cores_per_socket = cpu["CoresPerSocket"],
-                    cpu_op_mode = cpu["CpuOpMode"],
-                    cpu_family = cpu["CPUFamily"],
-                    cpu_mhz = cpu["CPUMHz"],
-                    cpu_count = cpu["CPUs"],
-                    node_uuid = raw_data["node_uuid"],
+                    model=cpu["Model"],
+                    vendor_id=cpu["VendorId"],
+                    model_name=cpu["ModelName"],
+                    architecture=cpu["Architecture"],
+                    cores_per_socket=cpu["CoresPerSocket"],
+                    cpu_op_mode=cpu["CpuOpMode"],
+                    cpu_family=cpu["CPUFamily"],
+                    cpu_count=cpu["CPUs"],
+                    node_uuid=raw_data["node_uuid"],
                 )
             )
 

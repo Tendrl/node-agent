@@ -1,9 +1,8 @@
 from command import Command
-import json
 import platform
 
 
-def GetNodeCpu():
+def getNodeCpu():
     '''returns structure
 
     {"nodename": [{"Architecture":   "architecture",
@@ -17,8 +16,6 @@ def GetNodeCpu():
                    "ModelName":      "modelname",
 
                    "CPUFamily":      "cpufamily",
-
-                   "CPUMHz":         "cpumhz",
 
                    "Model":          "Model",
 
@@ -38,7 +35,6 @@ def GetNodeCpu():
             'VendorId': info_list[9].split(':')[1].strip(),
             'ModelName': info_list[12].split(':')[1].strip(),
             'CPUFamily': info_list[10].split(':')[1].strip(),
-            'CPUMHz': info_list[14].split(':')[1].strip(),
             'Model': info_list[11].split(':')[1].strip(),
             'CoresPerSocket': info_list[6].split(':')[1].strip()
         }
@@ -47,20 +43,18 @@ def GetNodeCpu():
                 'Architecture': '', 'CpuOpMode': '',
                 'CPUs': '', 'VendorId': '',
                 'ModelName': '', 'CPUFamily': '',
-                'CPUMHz': '', 'Model': '', 'CoresPerSocket': ''
+                'Model': '', 'CoresPerSocket': ''
             }
 
     return cpuinfo
 
 
-def GetNodeMemory():
+def getNodeMemory():
     '''returns structure
 
     {"nodename": [{"TotalSize": "totalsize",
 
                    "SwapTotal": "swaptotal",
-
-                   "Active":    "active",
 
                    "Type":      "type"}, ...], ...}
 
@@ -75,22 +69,18 @@ def GetNodeMemory():
         info_list = out.split('\n')
         memoinfo = {
             'TotalSize': info_list[0].split(':')[1].strip(),
-            'SwapTotal': info_list[14].split(':')[1].strip(),
-            'Active': info_list[6].split(':')[1].strip(),
-            'Type': ''
+            'SwapTotal': info_list[14].split(':')[1].strip()
         }
     else:
         memoinfo = {
             'TotalSize': '',
-            'SwapTotal': '',
-            'Active': '',
-            'Type': ''
+            'SwapTotal': ''
         }
 
     return memoinfo
 
 
-def GetNodeOs():
+def getNodeOs():
     cmd = Command({"_raw_params": "getenforce"})
     out, err = cmd.start()
     se_out = out['stdout']
@@ -106,7 +96,7 @@ def GetNodeOs():
     return osinfo
 
 
-def write_node_inventory(file_path):
+def get_node_inventory():
     node_inventory = {}
 
     cmd = Command({"_raw_params": "cat /etc/machine-id"})
@@ -115,11 +105,8 @@ def write_node_inventory(file_path):
 
     node_inventory["node_uuid"] = out
 
-    node_inventory["os"] = GetNodeOs()
-    node_inventory["cpu"] = GetNodeCpu()
-    node_inventory["memory"] = GetNodeMemory()
+    node_inventory["os"] = getNodeOs()
+    node_inventory["cpu"] = getNodeCpu()
+    node_inventory["memory"] = getNodeMemory()
 
-    with open(file_path, 'w') as fp:
-        json.dump(node_inventory, fp)
-
-    return
+    return node_inventory

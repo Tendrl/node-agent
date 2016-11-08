@@ -4,7 +4,7 @@ import pytest
 from tendrl.node_agent.config import CONFIG_PATH_VAR
 from tendrl.node_agent.config import ConfigNotFound
 from tendrl.node_agent.config import TendrlConfig
-
+from tendrl.node_agent.config import TendrlConfig
 
 class Test_TendrlConfig(object):
     def test_valid_path_from_environment(self, monkeypatch):

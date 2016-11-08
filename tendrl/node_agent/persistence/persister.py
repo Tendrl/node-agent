@@ -7,7 +7,6 @@ from tendrl.bridge_common.etcdobj.etcdobj import Server as etcd_server
 
 
 from tendrl.node_agent.config import TendrlConfig
-from tendrl.node_agent.persistence.sync_objects import SyncObject
 
 
 config = TendrlConfig()
@@ -42,52 +41,14 @@ class Persister(gevent.greenlet.Greenlet):
 
         self._store = self.get_store()
 
-    def __getattribute__(self, item):
-        """Wrap functions with LOGging
-
-        """
-        if item.startswith('_'):
-            return object.__getattribute__(self, item)
-        else:
-            try:
-                return object.__getattribute__(self, item)
-            except AttributeError:
-                try:
-                    attr = object.__getattribute__(self, "_%s" % item)
-                    if callable(attr):
-                        def defer(*args, **kwargs):
-                            dc = deferred_call(attr, args, kwargs)
-                            try:
-                                dc.call_it()
-                            except Exception as ex:
-                                LOG.exception(
-                                    "Persister exception persisting "
-                                    "data: %s" % (dc.fn,)
-                                )
-                                LOG.exception(ex)
-                        return defer
-                    else:
-                        return object.__getattribute__(self, item)
-                except AttributeError:
-                    return object.__getattribute__(self, item)
-
-    def update_sync_object(self, updated, data):
-        try:
-            self._store.save(SyncObject(updated=updated, data=data))
-        except Exception as e:
-            LOG.info("ERROR while saving: %s" % str(e))
-
     def update_cpu(self, cpu):
         self._store.save(cpu)
 
     def update_memory(self, memory):
         self._store.save(memory)
 
-    def update_node(self, node):
-        try:
-            self._store.save(node)
-        except Exception as e:
-            LOG.info("ERROR while saving: %s" % str(e))
+    def update_os(self, os):
+        self._store.save(os)
 
     def _run(self):
         LOG.info("Persister listening")

@@ -22,6 +22,19 @@ class TestManager(object):
         monkeypatch.setattr(manager._user_request_thread,
                             'stop',
                             mock_user_request_thread_stop)
+
+        def mock_discovery_thread_stop():
+            return
+        monkeypatch.setattr(manager._discovery_thread,
+                            'stop',
+                            mock_discovery_thread_stop)
+
+        def mock_persister_stop():
+            return
+        monkeypatch.setattr(manager.persister,
+                            'stop',
+                            mock_persister_stop)
+
         manager.stop()
         assert True
 
@@ -33,6 +46,19 @@ class TestManager(object):
         monkeypatch.setattr(manager._user_request_thread,
                             'start',
                             mock_user_request_thread_start)
+
+        def mock_discovery_thread_start():
+            return
+        monkeypatch.setattr(manager._discovery_thread,
+                            'start',
+                            mock_discovery_thread_start)
+
+        def mock_persister_start():
+            return
+        monkeypatch.setattr(manager.persister,
+                            'start',
+                            mock_persister_start)
+
         manager.start()
         assert True
 
@@ -44,5 +70,18 @@ class TestManager(object):
         monkeypatch.setattr(manager._user_request_thread,
                             'join',
                             mock_user_request_thread_join)
+
+        def mock_discovery_thread_join():
+            return
+        monkeypatch.setattr(manager._discovery_thread,
+                            'join',
+                            mock_discovery_thread_join)
+
+        def mock_persister_join():
+            return
+        monkeypatch.setattr(manager.persister,
+                            'join',
+                            mock_persister_join)
+
         manager.join()
         assert True

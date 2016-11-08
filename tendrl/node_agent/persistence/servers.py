@@ -16,7 +16,6 @@ class Cpu(EtcdObj):
     cores_per_socket = fields.StrField("cores_per_socket")
     cpu_op_mode = fields.StrField("cpu_op_mode")
     cpu_family = fields.StrField("cpu_family")
-    cpu_mhz = fields.StrField("cpu_mghz")
     cpu_count = fields.StrField("cpu_count")
 
     def render(self):
@@ -33,17 +32,17 @@ class Memory(EtcdObj):
     node_uuid = fields.StrField("node_uuid")
     total_size = fields.StrField("total_size")
     total_swap = fields.StrField("total_swap")
-    active = fields.StrField("active")
 
     def render(self):
         self.__name__ = self.__name__ % self.node_uuid
         return super(Memory, self).render()
 
-class Node(EtcdObj):
-    """A table of the cpu, lazily updated
+
+class Os(EtcdObj):
+    """A table of the Os, lazily updated
 
     """
-    __name__ = 'nodes/%s/node'
+    __name__ = 'nodes/%s/os'
 
     node_uuid = fields.StrField("node_uuid")
     os = fields.StrField("os")
@@ -53,4 +52,4 @@ class Node(EtcdObj):
 
     def render(self):
         self.__name__ = self.__name__ % self.node_uuid
-        return super(Node, self).render()
+        return super(Os, self).render()
