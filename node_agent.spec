@@ -25,7 +25,7 @@ Requires: systemd
 Python module for Tendrl node bridge to manage storage node in the sds cluster
 
 %prep
-%setup -n %{name}-%{version}
+%setup %{name}-%{version}
 # Remove the requirements file to avoid adding into
 # distutils requiers_dist config
 rm -rf {test-,}requirements.txt
