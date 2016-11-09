@@ -1,10 +1,10 @@
 import ConfigParser
 import os
 import pytest
+from tendrl.node_agent import config
 from tendrl.node_agent.config import CONFIG_PATH_VAR
 from tendrl.node_agent.config import ConfigNotFound
-from tendrl.node_agent.config import TendrlConfig
-from tendrl.node_agent.config import TendrlConfig
+
 
 class Test_TendrlConfig(object):
     def test_valid_path_from_environment(self, monkeypatch):
@@ -21,7 +21,7 @@ class Test_TendrlConfig(object):
         monkeypatch.setattr(ConfigParser.SafeConfigParser,
                             'read', mock_config_parser_read)
 
-        conf = TendrlConfig()
+        conf = config.TendrlConfig()
 
         assert conf.path == "/etc/tendrl/tendrl-environ.conf"
 
@@ -35,7 +35,7 @@ class Test_TendrlConfig(object):
         monkeypatch.setattr(ConfigParser.SafeConfigParser,
                             'read', mock_config_parser_read)
 
-        conf = TendrlConfig()
+        conf = config.TendrlConfig()
 
         assert conf.path == "/etc/tendrl/tendrl.conf"
 
@@ -46,5 +46,5 @@ class Test_TendrlConfig(object):
 
         pytest.raises(
             ConfigNotFound,
-            TendrlConfig
+            config.TendrlConfig
         )

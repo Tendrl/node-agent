@@ -50,6 +50,9 @@ class Persister(gevent.greenlet.Greenlet):
     def update_os(self, os):
         self._store.save(os)
 
+    def update_node_metadata(self, metadata):
+        self._store.save(metadata)
+
     def _run(self):
         LOG.info("Persister listening")
 

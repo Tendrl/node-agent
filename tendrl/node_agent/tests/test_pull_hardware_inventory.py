@@ -211,12 +211,18 @@ class Test_pull_hardware_inventory(object):
         monkeypatch.setattr(platform, 'release',
                             mock_release)
 
+        def mock_node():
+            return "asdf.example.com"
+        monkeypatch.setattr(platform, 'node',
+                            mock_node)
+
         os = hi.getNodeOs()
         os_expected = {
             "KernelVersion": "4.6.4-301.fc24.x86_64",
             "SELinuxMode": "Enforcing",
             "OSVersion": "24",
-            "Name": "Fedora"
+            "Name": "Fedora",
+            "FQDN": "asdf.example.com"
         }
 
         assert os == os_expected
@@ -224,35 +230,61 @@ class Test_pull_hardware_inventory(object):
     def test_get_node_inventory(self, monkeypatch):
 
         def mock_cmd_start(obj):
-            out = {
-                u'changed': True, u'end': u'2016-11-07 17:40:56.549754',
-                u'stdout': u'5bb3458a09004b2d9bdadf0705889958',
-                u'cmd': [
-                    u'cat', u'/etc/machine-id'],
-                u'start': u'2016-11-07 17:40:56.547528',
-                u'delta': u'0:00:00.002226', u'stderr': u'',
-                u'rc': 0,
-                u'invocation': {
-                    u'module_args': {
-                        u'creates': None,
-                        u'executable': None,
-                        u'chdir': None,
-                        u'_raw_params': u'cat /etc/machine-id',
-                        u'removes': None,
-                        u'warn': True,
-                        u'_uses_shell': False
-                    }
-                },
-                u'warnings': []
-            }
+            if obj.attributes["_raw_params"] == "cat /etc/machine-id":
+                out = {
+                    u'changed': True, u'end': u'2016-11-07 17:40:56.549754',
+                    u'stdout': u'5bb3458a09004b2d9bdadf0705889958',
+                    u'cmd': [
+                        u'cat', u'/etc/machine-id'],
+                    u'start': u'2016-11-07 17:40:56.547528',
+                    u'delta': u'0:00:00.002226', u'stderr': u'',
+                    u'rc': 0,
+                    u'invocation': {
+                        u'module_args': {
+                            u'creates': None,
+                            u'executable': None,
+                            u'chdir': None,
+                            u'_raw_params': u'cat /etc/machine-id',
+                            u'removes': None,
+                            u'warn': True,
+                            u'_uses_shell': False
+                        }
+                    },
+                    u'warnings': []
+                }
+            else:
+                out = {
+                    u'changed': True, u'end': u'2016-11-07 17:40:56.549754',
+                    u'stdout': u'e3bf35c1-31e6-421a-bd68-f22ce2274d96',
+                    u'cmd': [
+                        u'cat', u'/etc/machine-id'],
+                    u'start': u'2016-11-07 17:40:56.547528',
+                    u'delta': u'0:00:00.002226', u'stderr': u'',
+                    u'rc': 0,
+                    u'invocation': {
+                        u'module_args': {
+                            u'creates': None,
+                            u'executable': None,
+                            u'chdir': None,
+                            u'_raw_params': u'cat /etc/machine-id',
+                            u'removes': None,
+                            u'warn': True,
+                            u'_uses_shell': False
+                        }
+                    },
+                    u'warnings': []
+                }
+
             return out, ""
+
         monkeypatch.setattr(Command, 'start', mock_cmd_start)
 
         def mock_getNodeOs():
             return {
                 "KernelVersion": "4.6.4-301.fc24.x86_64",
                 "SELinuxMode": "Enforcing",
-                "OSVersion": "24", "Name": "Fedora"
+                "OSVersion": "24", "Name": "Fedora",
+                "FQDN": "asdf.example.com"
             }
         monkeypatch.setattr(hi, 'getNodeOs',
                             mock_getNodeOs)
@@ -277,11 +309,12 @@ class Test_pull_hardware_inventory(object):
 
         node_inventory = hi.get_node_inventory()
         node_inventory_expected = {
-            "node_uuid": "5bb3458a09004b2d9bdadf0705889958",
+            "node_machine_uuid": "5bb3458a09004b2d9bdadf0705889958",
+            "node_uuid": 'e3bf35c1-31e6-421a-bd68-f22ce2274d96',
             "os": {
                 "KernelVersion": "4.6.4-301.fc24.x86_64",
                 "SELinuxMode": "Enforcing", "OSVersion": "24",
-                "Name": "Fedora"
+                "Name": "Fedora", "FQDN": "asdf.example.com"
             },
             "cpu": {
                 "Model": "78",

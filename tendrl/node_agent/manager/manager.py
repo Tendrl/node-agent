@@ -11,12 +11,14 @@ from tendrl.node_agent import log
 from tendrl.node_agent.persistence.persister import Persister
 from tendrl.node_agent.persistence.servers import Cpu
 from tendrl.node_agent.persistence.servers import Memory
+from tendrl.node_agent.persistence.servers import NodeMetadata
 from tendrl.node_agent.persistence.servers import Os
 import time
-
+import uuid
 
 LOG = logging.getLogger(__name__)
-HARDWARE_INVENTORY_FILE = "/usr/share/tendrl/tendrl-node-inventory.json"
+HARDWARE_INVENTORY_FILE = "/etc/tendrl/tendrl-node-inventory.json"
+TENDRL_NODE_ID_FILE = "/etc/tendrl/node_agent_key"
 
 
 class TopLevelEvents(gevent.greenlet.Greenlet):
@@ -37,7 +39,9 @@ class TopLevelEvents(gevent.greenlet.Greenlet):
             try:
                 gevent.sleep(3)
                 node_inventory = pull_hardware_inventory.get_node_inventory()
-
+                # try to check if the hardware inventory has changed from the
+                # previous check.
+                LOG.info("Hardware inventory pulled successfully")
                 try:
                     with open(HARDWARE_INVENTORY_FILE) as f:
                         raw_data = json.loads(f.read())
@@ -48,6 +52,8 @@ class TopLevelEvents(gevent.greenlet.Greenlet):
                     # if the node inventory has not changed, just end this
                     # iteration
                     if raw_data == node_inventory:
+                        LOG.debug("Hardware inventory not changed,"
+                                  " since the previous run")
                         continue
 
                 # updating the latest node inventory to the file.
@@ -57,7 +63,7 @@ class TopLevelEvents(gevent.greenlet.Greenlet):
                 LOG.info("change detected in node hardware inventory,"
                          " trying to update the latest changes")
 
-                LOG.info("raw_data: %s\n\n hardware inventory: %s" % (
+                LOG.debug("raw_data: %s\n\n hardware inventory: %s" % (
                     raw_data, node_inventory))
 
                 self._manager.on_pull(node_inventory)
@@ -98,7 +104,15 @@ class Manager(object):
         self.persister.join()
 
     def on_pull(self, raw_data):
-        LOG.info("on_pull")
+        LOG.info("on_pull, Updating node metadata data")
+        self.persister.update_node_metadata(
+            NodeMetadata(
+                updated=str(time.time()),
+                node_machine_uuid=raw_data["node_machine_uuid"],
+                node_uuid=raw_data["node_uuid"],
+                fqdn=raw_data["os"]["FQDN"],
+            )
+        )
         if "os" in raw_data:
             LOG.info("on_pull, Updating OS data")
             node = raw_data['os']
@@ -143,8 +157,39 @@ class Manager(object):
             )
 
 
+def configure_tendrl_uuid():
+    # check if valid uuid is already present in tendrl_node_id_file.
+    # if not present generate one and update the file
+    try:
+        with open(TENDRL_NODE_ID_FILE) as f:
+            node_id = f.read()
+            uuid.UUID(node_id, version=4)
+            LOG.info("tendrl node uuid already exists")
+            return
+    except ValueError:
+        with open(TENDRL_NODE_ID_FILE, 'w') as f:
+            f.write(str(uuid.uuid4()))
+        LOG.info("tendrl node uuid is being generated")
+        return
+    except IOError:
+        with open(TENDRL_NODE_ID_FILE, 'w') as f:
+            f.write(str(uuid.uuid4()))
+        LOG.info("tendrl node uuid is being generated")
+        return
+
+
 def main():
     log.setup_logging()
+    # Configure a uuid on the node, so that this can be used by Tendrl for
+    # uniquely identifying the node
+    try:
+        configure_tendrl_uuid()
+        LOG.info("Verified that node uuid exists at"
+                 " /etc/tendrl/node_agent_key")
+    except Exception:
+        LOG.error("Cound not verify/generate valid tendrl node agent id")
+        return
+
     m = Manager()
     m.start()
 

@@ -3,9 +3,8 @@ import gevent.event
 from mock import MagicMock
 import pytest
 from sample_manager import SampleManager
-import tendrl.node_agent.config
-
-tendrl.node_agent.config.TendrlConfig = MagicMock()
+import sys
+sys.modules['tendrl.node_agent.config'] = MagicMock()
 
 from tendrl.node_agent.flows.flow_execution_exception import \
     FlowExecutionFailedError
@@ -13,6 +12,7 @@ from tendrl.node_agent.manager.rpc import config
 from tendrl.node_agent.manager.rpc import EtcdRPC
 from tendrl.node_agent.manager.rpc import EtcdThread
 import uuid
+del sys.modules['tendrl.node_agent.config']
 
 
 class MockFlow(object):

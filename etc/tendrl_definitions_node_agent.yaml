@@ -51,12 +51,8 @@ object_details:
           version: An immutable version that associates version information with this atom. It can be useful in resuming older versions of atoms. Standard major, minor versioning concepts should apply
 
   network:
-    enabled: True
+    enabled: False
     value: "/nodes/$node.id/networks/$network.id"
-    attrs:
-      brickdetails:
-        type: String
-        help: Details of the brick
 
   memory:
     enabled: True
