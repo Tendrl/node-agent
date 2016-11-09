@@ -22,7 +22,15 @@ Development version from the source
     $ mkvirtualenv node_agent
     $ pip install .
 
-2. Then install node agent itself::
+2. Create bridge_common logging config file::
+
+    $ cp etc/samples/logging.yaml.timedrotation.sample /etc/tendrl/common_logging.yaml
+
+Note that there are other sample config files for logging shipped with the product
+and could be utilized for logging differently. For example there are config files
+bundeled for syslog and journald logging as well. These could be used similarly as above.
+
+3. Then install node agent itself::
 
     $ git clone https://github.com/Tendrl/node_agent.git
     $ cd node_agent
@@ -36,17 +44,22 @@ enviroment which we have created during installation of *bridge common*.
 .. _virtualenvwrapper: https://virtualenvwrapper.readthedocs.io/en/latest/
 .. _`python virtual enviroment`: https://virtualenv.pypa.io/en/stable/
 
-3. Add suitable configuration in config file by appending following lines to
+4. Create config file::
+
+    $ cp etc/tendrl/logging.yaml.timedrotation.sample /etc/tendrl/node_agent_logging.yaml
+
+4. Add suitable configuration in config file by appending following lines to
    tendrl configfile(/etc/tendrl/tendrl.conf)::
    
    [tendrl_node_agent]
    # Path to log file and log leval
-   log_path = /var/log/tendrl/tendrl_node_agent.log
+   log_cfg_path = /etc/tendrl/node_agent_logging.yaml
    log_level = DEBUG
    
 4. Create log dir::
 
-     $ mkdir /var/log/tendrl
+     $ mkdir /var/log/tendrl/common
+     $ mkdir /var/log/tendrl/common/node_agent
      
 5. Run::
      
