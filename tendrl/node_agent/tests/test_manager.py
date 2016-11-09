@@ -89,7 +89,7 @@ class TestManager(object):
 
     def test_configure_tendrl_uuid_validate(self, monkeypatch):
         monkeypatch.setattr(
-            manager, "TENDRL_NODE_ID_FILE",
+            manager, "NODE_AGENT_KEY",
             "tendrl/node_agent/tests/test_configure_uuid.sample"
         )
 

@@ -1,6 +1,7 @@
 from command import Command
 import platform
-TENDRL_NODE_ID_FILE = "/etc/tendrl/node_agent_key"
+
+node_agent_key = ""
 
 
 def getNodeCpu():
@@ -100,6 +101,11 @@ def getNodeOs():
     return osinfo
 
 
+def update_node_agent_key(file_name):
+    global node_agent_key
+    node_agent_key = file_name
+
+
 def get_node_inventory():
     node_inventory = {}
 
@@ -108,8 +114,7 @@ def get_node_inventory():
     out = out['stdout']
 
     node_inventory["node_machine_uuid"] = out
-
-    cmd = Command({"_raw_params": "cat %s" % TENDRL_NODE_ID_FILE})
+    cmd = Command({"_raw_params": "cat %s" % node_agent_key})
     out, err = cmd.start()
     out = out['stdout']
 

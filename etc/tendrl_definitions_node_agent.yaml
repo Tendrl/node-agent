@@ -12,6 +12,7 @@ valid_objects:
 - user
 - group
 - node
+- fqdn
 - os
 - process
 - proc
@@ -61,6 +62,13 @@ object_details:
       total_size:
         type: String
       total_swap:
+        type: String
+
+  fqdn:
+    enabled: True
+    value: "/nodes/$node.id/fqdn"
+    attrs:
+      fqdn:
         type: String
 
   os:

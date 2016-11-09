@@ -4,21 +4,24 @@ import signal
 import gevent.event
 import gevent.greenlet
 import json
+import os
 import pull_hardware_inventory
 from rpc import EtcdThread
 from tendrl.node_agent import log
 
+from tendrl.node_agent.persistence.cpu import Cpu
+from tendrl.node_agent.persistence.fqdn import Fqdn
+from tendrl.node_agent.persistence.memory import Memory
+from tendrl.node_agent.persistence.node_metadata import NodeMetadata
+from tendrl.node_agent.persistence.os import Os
 from tendrl.node_agent.persistence.persister import Persister
-from tendrl.node_agent.persistence.servers import Cpu
-from tendrl.node_agent.persistence.servers import Memory
-from tendrl.node_agent.persistence.servers import NodeMetadata
-from tendrl.node_agent.persistence.servers import Os
 import time
 import uuid
 
 LOG = logging.getLogger(__name__)
 HARDWARE_INVENTORY_FILE = "/etc/tendrl/tendrl-node-inventory.json"
-TENDRL_NODE_ID_FILE = "/etc/tendrl/node_agent_key"
+NODE_AGENT_KEY = "/etc/tendrl/node_agent_key_" + str(time.time())
+TENDRL_CONF_PATH = "/etc/tendrl/"
 
 
 class TopLevelEvents(gevent.greenlet.Greenlet):
@@ -113,6 +116,13 @@ class Manager(object):
                 fqdn=raw_data["os"]["FQDN"],
             )
         )
+        LOG.info("on_pull, Updating node fqdn data")
+        self.persister.update_fqdn(
+            Fqdn(
+                node_uuid=raw_data["node_uuid"],
+                fqdn=raw_data["os"]["FQDN"],
+            )
+        )
         if "os" in raw_data:
             LOG.info("on_pull, Updating OS data")
             node = raw_data['os']
@@ -158,24 +168,32 @@ class Manager(object):
 
 
 def configure_tendrl_uuid():
-    # check if valid uuid is already present in tendrl_node_id_file.
+    # check if valid uuid is already present in node_agent_key
     # if not present generate one and update the file
+    file_list = []
+    for f in os.listdir(TENDRL_CONF_PATH):
+        if f.startswith("node_agent_key_"):
+            file_list.append(f)
+    if len(file_list) == 0:
+        with open(NODE_AGENT_KEY, 'w') as f:
+            f.write(str(uuid.uuid4()))
+        LOG.info("tendrl node uuid is being generated")
+        return NODE_AGENT_KEY
+    elif len(file_list) > 1:
+        raise ValueError("detected more than one node agent key")
+
     try:
-        with open(TENDRL_NODE_ID_FILE) as f:
+        with open(TENDRL_CONF_PATH + file_list[0]) as f:
             node_id = f.read()
             uuid.UUID(node_id, version=4)
             LOG.info("tendrl node uuid already exists")
-            return
+            return TENDRL_CONF_PATH + file_list[0]
     except ValueError:
-        with open(TENDRL_NODE_ID_FILE, 'w') as f:
+        os.rmdir(file_list[0])
+        with open(NODE_AGENT_KEY, 'w') as f:
             f.write(str(uuid.uuid4()))
         LOG.info("tendrl node uuid is being generated")
-        return
-    except IOError:
-        with open(TENDRL_NODE_ID_FILE, 'w') as f:
-            f.write(str(uuid.uuid4()))
-        LOG.info("tendrl node uuid is being generated")
-        return
+        return None
 
 
 def main():
@@ -183,9 +201,13 @@ def main():
     # Configure a uuid on the node, so that this can be used by Tendrl for
     # uniquely identifying the node
     try:
-        configure_tendrl_uuid()
+        node_agent_key = configure_tendrl_uuid()
         LOG.info("Verified that node uuid exists at"
                  " /etc/tendrl/node_agent_key")
+        pull_hardware_inventory.update_node_agent_key(node_agent_key)
+    except ValueError as e:
+        LOG.error("tendrl node key generation failed: Error: %s" % str(e))
+        return
     except Exception:
         LOG.error("Cound not verify/generate valid tendrl node agent id")
         return
