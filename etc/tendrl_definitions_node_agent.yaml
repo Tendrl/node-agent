@@ -12,7 +12,6 @@ valid_objects:
 - user
 - group
 - node
-- fqdn
 - os
 - process
 - proc
