@@ -7,7 +7,10 @@ import json
 import os
 import pull_hardware_inventory
 from rpc import EtcdThread
-from tendrl.node_agent import log
+from tendrl.bridge_common.log import setup_logging
+
+from tendrl.node_agent.config import TendrlConfig
+config = TendrlConfig()
 
 from tendrl.node_agent.persistence.cpu import Cpu
 from tendrl.node_agent.persistence.memory import Memory
@@ -197,7 +200,10 @@ def configure_tendrl_uuid():
 
 
 def main():
-    log.setup_logging()
+    setup_logging(
+        config.get('node_agent', 'log_cfg_path'),
+        config.get('node_agent', 'log_level')
+    )
     # Configure a uuid on the node, so that this can be used by Tendrl for
     # uniquely identifying the node
     try:

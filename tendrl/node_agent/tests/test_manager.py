@@ -2,6 +2,7 @@ import gevent.event
 from mock import MagicMock
 import sys
 sys.modules['tendrl.node_agent.config'] = MagicMock()
+sys.modules['tendrl.bridge_common.log'] = MagicMock()
 
 from tendrl.node_agent.manager.manager import Manager
 from tendrl.node_agent.manager.rpc import EtcdThread
