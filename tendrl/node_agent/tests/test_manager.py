@@ -3,7 +3,6 @@ from mock import MagicMock
 import sys
 sys.modules['tendrl.node_agent.config'] = MagicMock()
 
-from tendrl.node_agent.manager import manager
 from tendrl.node_agent.manager.manager import Manager
 from tendrl.node_agent.manager.rpc import EtcdThread
 del sys.modules['tendrl.node_agent.config']
@@ -85,14 +84,4 @@ class TestManager(object):
                             mock_persister_join)
 
         manager.join()
-        assert True
-
-    def test_configure_tendrl_uuid_validate(self, monkeypatch):
-        monkeypatch.setattr(
-            manager, "NODE_AGENT_KEY",
-            "tendrl/node_agent/tests/test_configure_uuid.sample"
-        )
-
-        manager.configure_tendrl_uuid()
-
         assert True

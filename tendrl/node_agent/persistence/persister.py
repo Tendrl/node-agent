@@ -50,7 +50,7 @@ class Persister(gevent.greenlet.Greenlet):
     def update_os(self, os):
         self._store.save(os)
 
-    def update_fqdn(self, fqdn):
+    def update_node(self, fqdn):
         self._store.save(fqdn)
 
     def update_node_metadata(self, metadata):

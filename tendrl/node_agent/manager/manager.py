@@ -10,8 +10,8 @@ from rpc import EtcdThread
 from tendrl.node_agent import log
 
 from tendrl.node_agent.persistence.cpu import Cpu
-from tendrl.node_agent.persistence.fqdn import Fqdn
 from tendrl.node_agent.persistence.memory import Memory
+from tendrl.node_agent.persistence.node import Node
 from tendrl.node_agent.persistence.node_metadata import NodeMetadata
 from tendrl.node_agent.persistence.os import Os
 from tendrl.node_agent.persistence.persister import Persister
@@ -116,9 +116,9 @@ class Manager(object):
                 fqdn=raw_data["os"]["FQDN"],
             )
         )
-        LOG.info("on_pull, Updating node fqdn data")
-        self.persister.update_fqdn(
-            Fqdn(
+        LOG.info("on_pull, Updating node data")
+        self.persister.update_node(
+            Node(
                 node_uuid=raw_data["node_uuid"],
                 fqdn=raw_data["os"]["FQDN"],
             )
