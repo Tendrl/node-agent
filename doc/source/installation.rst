@@ -46,15 +46,16 @@ enviroment which we have created during installation of *bridge common*.
 
 4. Create config file::
 
-    $ cp etc/tendrl/logging.yaml.timedrotation.sample /etc/tendrl/node_agent_logging.yaml
+    $ cp etc/logging.yaml.timedrotation.sample /etc/tendrl/node_agent_logging.yaml
 
 4. Add suitable configuration in config file by appending following lines to
    tendrl configfile(/etc/tendrl/tendrl.conf)::
    
-   [tendrl_node_agent]
+   [node_agent]
    # Path to log file and log leval
    log_cfg_path = /etc/tendrl/node_agent_logging.yaml
    log_level = DEBUG
+   tendrl_exe_file_prefix = /tmp/.tendrl_runner
    
 4. Create log dir::
 
