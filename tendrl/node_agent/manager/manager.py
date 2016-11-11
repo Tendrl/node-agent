@@ -23,8 +23,6 @@ from tendrl.node_agent.persistence.persister import Persister
 from tendrl.node_agent.persistence.tendrl_context import TendrlContext
 from tendrl.node_agent.persistence.tendrl_definitions import TendrlDefinitions
 
-
-
 import time
 
 LOG = logging.getLogger(__name__)

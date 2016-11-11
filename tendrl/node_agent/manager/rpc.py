@@ -1,6 +1,5 @@
 import json
 import logging
-import re
 import traceback
 import uuid
 
@@ -8,13 +7,15 @@ import etcd
 import gevent.event
 import yaml
 
+from tendrl.bridge_common.definitions.validator import \
+    DefinitionsSchemaValidator
+from tendrl.bridge_common.definitions.validator import \
+    JobValidator
 from tendrl.node_agent.config import TendrlConfig
 from tendrl.node_agent.flows.flow_execution_exception import \
     FlowExecutionFailedError
 from tendrl.node_agent.manager.command import Command
 from tendrl.node_agent.manager import utils
-from tendrl.bridge_common.definitions.validator import \
-    DefinitionsSchemaValidator, JobValidator
 
 config = TendrlConfig()
 LOG = logging.getLogger(__name__)
@@ -48,7 +49,7 @@ class EtcdRPC(object):
                     definitions = self.validate_flow(raw_job)
                     if definitions:
                         result, err = self.invoke_flow(
-                        raw_job['run'], raw_job, definitions
+                            raw_job['run'], raw_job, definitions
                         )
                 except FlowExecutionFailedError as e:
                     LOG.error(e)
@@ -111,10 +112,11 @@ class EtcdRPC(object):
             LOG.error(msg)
             return False
 
-
     def invoke_flow(self, flow_name, job, definitions):
-        atoms, pre_run, post_run, uuid= self.extract_flow_details(flow_name,
-                                                                  definitions)
+        atoms, pre_run, post_run, uuid = self.extract_flow_details(
+            flow_name,
+            definitions
+        )
         the_flow = None
         flow_path = flow_name.lower().split(".")
         flow_module = flow_path[:-1]
@@ -128,6 +130,7 @@ class EtcdRPC(object):
         namespace = flow_name.split(".flows.")
         flow = definitions[namespace][flow_name.split(".")[-1]]
         return flow['atoms'], flow['pre_run'], flow['post_run'], flow['uuid']
+
 
 class EtcdThread(gevent.greenlet.Greenlet):
     """Present a ZeroRPC API for users
