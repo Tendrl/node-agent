@@ -6,13 +6,15 @@ import uuid
 
 import etcd
 import gevent.event
+import yaml
 
 from tendrl.node_agent.config import TendrlConfig
 from tendrl.node_agent.flows.flow_execution_exception import \
     FlowExecutionFailedError
 from tendrl.node_agent.manager.command import Command
 from tendrl.node_agent.manager import utils
-
+from tendrl.bridge_common.definitions.validator import \
+    DefinitionsSchemaValidator, JobValidator
 
 config = TendrlConfig()
 LOG = logging.getLogger(__name__)
@@ -43,9 +45,11 @@ class EtcdRPC(object):
                 LOG.info("Processing JOB %s" % raw_job[
                     'request_id'])
                 try:
-                    result, err = self.invoke_flow(
-                        raw_job['flow'], raw_job
-                    )
+                    definitions = self.validate_flow(raw_job)
+                    if definitions:
+                        result, err = self.invoke_flow(
+                        raw_job['run'], raw_job, definitions
+                        )
                 except FlowExecutionFailedError as e:
                     LOG.error(e)
                     raise
@@ -87,19 +91,43 @@ class EtcdRPC(object):
     def stop(self):
         pass
 
-    def invoke_flow(self, flow_path, job):
+    def validate_flow(self, raw_job):
+        LOG.info("Validating flow %s for %s" % (raw_job['run'],
+                                                raw_job['request_id']))
+        definitions = yaml.load(self.client.read(
+            '/tendrl_definitions_node_agent/data'))
+        definitions = DefinitionsSchemaValidator(
+            definitions).sanitize_definitions()
+        resp, msg = JobValidator(definitions).validateApi(raw_job)
+        if resp:
+            msg = "Successfull Validation flow %s for %s" %\
+                  (raw_job['run'], raw_job['request_id'])
+            LOG.info(msg)
+
+            return definitions
+        else:
+            msg = "Failed Validation flow %s for %s" % (raw_job['run'],
+                                                        raw_job['request_id'])
+            LOG.error(msg)
+            return False
+
+
+    def invoke_flow(self, flow_name, job, definitions):
+        atoms, pre_run, post_run, uuid= self.extract_flow_details(flow_name,
+                                                                  definitions)
         the_flow = None
-        flow_path = flow_path.lower().split(".")
+        flow_path = flow_name.lower().split(".")
         flow_module = flow_path[:-1]
         kls_name = flow_path[-1:]
         if "tendrl" in flow_path and "flows" in flow_path:
             exec("from %s import %s as the_flow" % (flow_module, kls_name))
-        return the_flow(job).run()
+            return the_flow(flow_name, job, atoms, pre_run, post_run,
+                            uuid).run()
 
-    def convert_flow_name(self, flow_name):
-        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', flow_name)
-        return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
-
+    def extract_flow_details(self, flow_name, definitions):
+        namespace = flow_name.split(".flows.")
+        flow = definitions[namespace][flow_name.split(".")[-1]]
+        return flow['atoms'], flow['pre_run'], flow['post_run'], flow['uuid']
 
 class EtcdThread(gevent.greenlet.Greenlet):
     """Present a ZeroRPC API for users
