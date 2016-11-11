@@ -18,7 +18,8 @@ class ImportCluster(Flow):
                             "node_id": node,
                             "run": self.name,
                             "status": "new",
-                            "parameters": new_params
+                            "parameters": new_params,
+                            "type": "node"
                     }
                     self.etcd_client.write("/queue/%s" % uuid.uuid4(),
                                            json.dumps(job))
