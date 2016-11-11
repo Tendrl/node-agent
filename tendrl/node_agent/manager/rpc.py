@@ -77,6 +77,9 @@ class EtcdRPC(object):
                 executed = False
                 raw_job = json.loads(job.value.decode('utf-8'))
                 try:
+                    if "node_id" in raw_job:
+                        if raw_job['node_id'] != self.node_id:
+                            continue
                     raw_job, executed = self._process_job(raw_job, job.key)
                 except FlowExecutionFailedError as e:
                     LOG.error("Failed to execute job: %s. Error: %s" % (
