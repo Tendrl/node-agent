@@ -1,7 +1,15 @@
 import logging
+
+import etcd
+
+
 from tendrl.node_agent.flows import utils
+from tendrl.node_agent.manager import utils as manager_utils
+from tendrl.node_agent.config import TendrlConfig
+from tendrl.node_agent.manager.command import Command
 
 LOG = logging.getLogger(__name__)
+config = TendrlConfig()
 
 
 class Flow(object):
@@ -12,13 +20,21 @@ class Flow(object):
         self.pre_run = pre_run
         self.post_run = post_run
         self.uuid = uuid
+        self.parameters = self.job['parameters']
+        self.parameters.update({'log': []})
+        etcd_kwargs = {'port': int(config.get("bridge_common", "etcd_port")),
+                       'host': config.get("bridge_common", "etcd_connection")}
+
+        self.etcd_client = etcd.Client(**etcd_kwargs)
+        node_agent_key = manager_utils.configure_tendrl_uuid()
+        cmd = Command({"_raw_params": "cat %s" % node_agent_key})
+        out, err = cmd.start()
+        self.node_id = out['stdout']
 
     def run(self):
         post_atom = None
         pre_atom = None
         the_atom = None
-        parameters = self.job['parameters']
-        parameters.update({'log': []})
 
         # Execute the pre runs for the flow
         LOG.info("Starting execution of pre-runs for flow: %s" %
@@ -29,7 +45,7 @@ class Flow(object):
                 exec("from %s import %s as pre_atom" % (mod,
                                                         class_name))
 
-                ret_val = pre_atom().run(parameters)
+                ret_val = pre_atom().run(self.parameters)
             if not ret_val:
                 LOG.error("Failed executing pre-run: %s for flow: %s" %
                           (pre_atom, self.job['run']))
@@ -49,7 +65,7 @@ class Flow(object):
             if "tendrl" in atom and "atoms" in atom:
                 exec("from %s import %s as the_atom" % (atom,
                                                         class_name))
-                ret_val = the_atom().run(parameters)
+                ret_val = the_atom().run(self.parameters)
             if not ret_val:
                 LOG.error("Failed executing atom: %s on flow: %s" %
                           (the_atom, self.job['run']))
@@ -72,7 +88,7 @@ class Flow(object):
                     class_name)
                 )
 
-                ret_val = post_atom().run(parameters)
+                ret_val = post_atom().run(self.parameters)
 
             if not ret_val:
                 LOG.error("Failed executing post-run: %s for flow: %s" %
