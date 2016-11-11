@@ -107,6 +107,26 @@ def update_node_agent_key(file_name):
     node_agent_key = file_name
 
 
+def getTendrlContext():
+    tendrl_context = {"sds_name": "", "sds_version": ""}
+    cmd = Command({"_raw_params": "gluster --version"})
+    out, err = cmd.start()
+    if out["rc"] == 0:
+        nvr = out['stdout']
+        tendrl_context["sds_name"] = nvr.split()[0]
+        tendrl_context["sds_version"] = nvr.split()[1]
+        return tendrl_context
+
+    cmd = Command({"_raw_params": "ceph --version"})
+    out, err = cmd.start()
+    if out["rc"] == 0:
+        nvr = out['stdout']
+        tendrl_context["sds_name"] = nvr.split()[0]
+        tendrl_context["sds_version"] = nvr.split()[2].split("-")[0]
+
+    return tendrl_context
+
+
 def get_node_inventory():
     node_inventory = {}
 
@@ -124,5 +144,6 @@ def get_node_inventory():
     node_inventory["os"] = getNodeOs()
     node_inventory["cpu"] = getNodeCpu()
     node_inventory["memory"] = getNodeMemory()
+    node_inventory["tendrl_context"] = getTendrlContext()
 
     return node_inventory

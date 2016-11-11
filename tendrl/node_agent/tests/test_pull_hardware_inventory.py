@@ -297,6 +297,14 @@ class Test_pull_hardware_inventory(object):
         monkeypatch.setattr(hi, 'getNodeMemory',
                             mock_getNodeMemory)
 
+        def mock_getTendrlContext():
+            return {
+                "sds_name": "gluster",
+                "sds_version": "3.4.5"
+            }
+        monkeypatch.setattr(hi, 'getTendrlContext',
+                            mock_getTendrlContext)
+
         def mock_getNodeCpu():
             return {
                 "Model": "78", "VendorId": "GenuineIntel",
@@ -326,6 +334,10 @@ class Test_pull_hardware_inventory(object):
             },
             "memory": {
                 "TotalSize": "19965224 kB", "SwapTotal": "10487804 kB"
+            },
+            "tendrl_context": {
+                "sds_name": "gluster",
+                "sds_version": "3.4.5"
             }
         }
 

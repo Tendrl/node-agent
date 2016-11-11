@@ -376,6 +376,20 @@ tendrl_schema_version: 0.3
                 fqdn=raw_data["os"]["FQDN"],
             )
         )
+        if "tendrl_context" in raw_data:
+            LOG.info("on_pull, Updating tendrl context data")
+            tc = raw_data['tendrl_context']
+            self.persister.update_tendrl_context(
+                TendrlContext(
+                    updated=str(time.time()),
+                    sds_name=tc["sds_name"],
+                    sds_version=tc["sds_version"],
+                    node_uuid=raw_data["node_uuid"],
+                    cluster_id="",
+                )
+            )
+            LOG.info("on_pull, Updated tendrl context data successfully")
+
         if "os" in raw_data:
             LOG.info("on_pull, Updating OS data")
             node = raw_data['os']
@@ -400,7 +414,6 @@ tendrl_schema_version: 0.3
                     node_uuid=raw_data["node_uuid"],
                 )
             )
-
         if "cpu" in raw_data:
             LOG.info("on_pull, Updating cpu")
             cpu = raw_data['cpu']

@@ -40,11 +40,24 @@ namespace.tendrl.node_agent:
           run: tendrl.node_agent.atoms.node.cmd.Cmd
           type: Create
           uuid: dc8fff3a-34d9-4786-9282-55eff6abb6c3
+        check_node_up:
+          enabled: true
+          inputs:
+            mandatory:
+              - Node.fqdn
+          outputs:
+            - Node.status
+          name: "check whether the node is up"
+          run: tendrl.node_agent.atoms.node.check_node_up
+          type: Create
+          uuid: eda0b13a-7362-48d5-b5ca-4b6d6533a5ab
       attrs:
         cmd_str:
           type: String
         fqdn:
           type: String
+        status:
+          type: Boolean
       enabled: true
       value: /nodes/$node.id/node
     OS:
@@ -184,7 +197,7 @@ namespace.tendrl.node_agent.gluster_integration:
       post_run:
         - tendrl.node_agent.gluster_integration.objects.Tendrl_context.atoms.check_cluster_id_exists
       pre_run:
-        - tendrl.node_agent.objects.Node.atoms.check_nodes_up
+        - tendrl.node_agent.objects.Node.atoms.check_node_up
         - tendrl.node_agent.objects.Tendrl_context.atoms.compare
       run: tendrl.node_agent.gluster_integration.flows.import_cluster.ImportCluster
       type: Create
