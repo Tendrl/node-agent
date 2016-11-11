@@ -138,6 +138,7 @@ namespace.tendrl.node_agent:
           type: String
       enabled: true
     Tendrl_context:
+      enabled: True
       attrs:
         cluster_id:
           help: "Tendrl managed/generated cluster id for the sds being managed by Tendrl"
@@ -148,20 +149,22 @@ namespace.tendrl.node_agent:
         sds_version:
           help: "Version of the Tendrl managed sds, eg: '3.2.1'"
           type: String
+        node_id:
+          help: "Tendrl ID for the managed node"
+          type: String
+    Node_context:
+      attrs:
+        machine_id:
+          help: "Unique /etc/machine-id"
+          type: String
+        fqdn:
+          help: "FQDN of the Tendrl managed node"
+          type: String
+        node_id:
+          help: "Tendrl ID for the managed node"
+          type: String
       enabled: true
-  valid_objects:
-    - Tendrl_context
-    - Cpu
-    - Network
-    - Disk
-    - Memory
-    - Lvm
-    - Iptable
-    - User
-    - Group
-    - Node
-    - Package
-    - Service
+      value: /nodes/$node.id/node_context
 namespace.tendrl.node_agent.gluster_integration:
   flows:
     ImportCluster:
@@ -187,7 +190,7 @@ namespace.tendrl.node_agent.gluster_integration:
       type: Create
       uuid: 2f94a48a-05d7-408c-b400-e27827f4edef
       version: 1
-  object_details:
+  object:
     Config:
       atoms:
         generate:
@@ -217,6 +220,4 @@ namespace.tendrl.node_agent.gluster_integration:
           help: "Path to the Gluster integration tendrl configuration"
           type: String
       enabled: true
-  valid_objects:
-    - Config
 tendrl_schema_version: 0.3

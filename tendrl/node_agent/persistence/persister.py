@@ -53,8 +53,11 @@ class Persister(gevent.greenlet.Greenlet):
     def update_node(self, fqdn):
         self._store.save(fqdn)
 
-    def update_node_metadata(self, metadata):
-        self._store.save(metadata)
+    def update_node_context(self, context):
+        self._store.save(context)
+
+    def update_tendrl_context(self, context):
+        self._store.save(context)
 
     def _run(self):
         LOG.info("Persister listening")

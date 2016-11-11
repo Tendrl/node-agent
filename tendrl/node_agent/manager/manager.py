@@ -1,5 +1,6 @@
 import logging
 import signal
+import socket
 
 import gevent.event
 import gevent.greenlet
@@ -12,12 +13,16 @@ from tendrl.bridge_common.log import setup_logging
 from tendrl.node_agent.config import TendrlConfig
 config = TendrlConfig()
 
+from tendrl.node_agent.manager.command import Command
 from tendrl.node_agent.persistence.cpu import Cpu
 from tendrl.node_agent.persistence.memory import Memory
 from tendrl.node_agent.persistence.node import Node
-from tendrl.node_agent.persistence.node_metadata import NodeMetadata
+from tendrl.node_agent.persistence.node_context import NodeContext
 from tendrl.node_agent.persistence.os import Os
 from tendrl.node_agent.persistence.persister import Persister
+from tendrl.node_agent.persistence.tendrl_context import TendrlContext
+
+
 import time
 import uuid
 
@@ -84,12 +89,13 @@ class Manager(object):
 
     """
 
-    def __init__(self):
+    def __init__(self, node_id, machine_id):
         self._complete = gevent.event.Event()
 
         self._user_request_thread = EtcdThread(self)
         self._discovery_thread = TopLevelEvents(self)
         self.persister = Persister()
+        self.register_node(node_id, machine_id)
 
     def stop(self):
         LOG.info("%s stopping" % self.__class__.__name__)
@@ -109,13 +115,32 @@ class Manager(object):
         self._discovery_thread.join()
         self.persister.join()
 
-    def on_pull(self, raw_data):
-        LOG.info("on_pull, Updating node metadata data")
-        self.persister.update_node_metadata(
-            NodeMetadata(
+    def register_node(self, node_id, machine_id):
+        self.persister.update_node_context(
+            NodeContext(
                 updated=str(time.time()),
-                node_machine_uuid=raw_data["node_machine_uuid"],
-                node_uuid=raw_data["node_uuid"],
+                machine_id=machine_id,
+                node_id=node_id,
+                fqdn=socket.getfqdn(),
+            )
+        )
+        self.persister.update_tendrl_context(
+            TendrlContext(
+                updated=str(time.time()),
+                sds_version="",
+                node_id=node_id,
+                sds_name="",
+                cluster_id=""
+            )
+        )
+
+    def on_pull(self, raw_data):
+        LOG.info("on_pull, Updating Node_context data")
+        self.persister.update_node_context(
+            NodeContext(
+                updated=str(time.time()),
+                machine_id=raw_data["machine_id"],
+                node_id=raw_data["node_id"],
                 fqdn=raw_data["os"]["FQDN"],
             )
         )
@@ -210,6 +235,7 @@ def main():
         node_agent_key = configure_tendrl_uuid()
         LOG.info("Verified that node uuid exists at"
                  " /etc/tendrl/node_agent_key")
+
         pull_hardware_inventory.update_node_agent_key(node_agent_key)
     except ValueError as e:
         LOG.error("tendrl node key generation failed: Error: %s" % str(e))
@@ -218,7 +244,18 @@ def main():
         LOG.error("Cound not verify/generate valid tendrl node agent id")
         return
 
-    m = Manager()
+    cmd = Command({"_raw_params": "cat /etc/machine-id"})
+    out, err = cmd.start()
+    out = out['stdout']
+
+    machine_id = out
+    cmd = Command({"_raw_params": "cat %s" % node_agent_key})
+    out, err = cmd.start()
+    out = out['stdout']
+
+    node_id = out
+
+    m = Manager(node_id, machine_id)
     m.start()
 
     complete = gevent.event.Event()
