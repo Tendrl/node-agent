@@ -9,7 +9,3 @@ class TendrlDefinitions(EtcdObj):
     __name__ = '/tendrl_definitions_node_agent'
 
     data = fields.StrField("data")
-
-    def render(self):
-        self.__name__ = self.__name__ % self.node_uuid
-        return super(TendrlDefinitions, self).render()
