@@ -67,8 +67,10 @@ class Flow(object):
         for mod in self.post_run:
             class_name = utils.to_camel_case(mod.split(".")[-1])
             if "tendrl" in atom and "atoms" in atom:
-                exec("from %s import %s as post_atom" % (mod,
-                                                        class_name))
+                exec("from %s import %s as post_atom" % (
+                    mod,
+                    class_name)
+                )
 
                 ret_val = post_atom().run(parameters)
 
