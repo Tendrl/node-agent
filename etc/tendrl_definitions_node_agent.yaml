@@ -44,9 +44,9 @@ namespace.tendrl.node_agent:
           enabled: true
           inputs:
             mandatory:
-              - fqdn
-	  outputs:
-	    - status
+              - Node.fqdn
+          outputs:
+            - Node.status
           name: "check whether the node is up"
           run: tendrl.node_agent.atoms.node.check_node_up
           type: Create
@@ -56,8 +56,8 @@ namespace.tendrl.node_agent:
           type: String
         fqdn:
           type: String
-	status:
-	  type: Boolean
+        status:
+          type: Boolean
       enabled: true
       value: /nodes/$node.id/node
     OS:
