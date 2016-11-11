@@ -10,6 +10,8 @@ import gevent.event
 from tendrl.node_agent.config import TendrlConfig
 from tendrl.node_agent.flows.flow_execution_exception import \
     FlowExecutionFailedError
+from tendrl.node_agent.manager.command import Command
+from tendrl.node_agent.manager import utils
 
 
 config = TendrlConfig()
@@ -23,7 +25,10 @@ class EtcdRPC(object):
                        'host': config.get("bridge_common", "etcd_connection")}
 
         self.client = etcd.Client(**etcd_kwargs)
-        self.bridge_id = str(uuid.uuid4())
+        node_agent_key = utils.configure_tendrl_uuid()
+        cmd = Command({"_raw_params": "cat %s" % node_agent_key})
+        out, err = cmd.start()
+        self.node_id = out['stdout']
 
     def _process_job(self, raw_job, job_key):
         # Pick up the "new" job that is not locked by any other bridge
@@ -33,9 +38,9 @@ class EtcdRPC(object):
                 # further by tendrl-api
                 req_id = str(uuid.uuid4())
                 raw_job['request_id'] = "%s/flow_%s" % (
-                    self.bridge_id, req_id)
+                    self.node_id, req_id)
                 self.client.write(job_key, json.dumps(raw_job))
-                LOG.info("Processing API-JOB %s" % raw_job[
+                LOG.info("Processing JOB %s" % raw_job[
                     'request_id'])
                 try:
                     result, err = self.invoke_flow(
@@ -46,7 +51,7 @@ class EtcdRPC(object):
                     raise
                 if err != "":
                     raw_job['status'] = "failed"
-                    LOG.error("API-JOB %s Failed. Error: %s" % (raw_job[
+                    LOG.error("JOB %s Failed. Error: %s" % (raw_job[
                         'request_id'], err))
                 else:
                     raw_job['status'] = "finished"
@@ -61,7 +66,7 @@ class EtcdRPC(object):
 
     def _acceptor(self):
         while True:
-            jobs = self.client.read("/api_job_queue")
+            jobs = self.client.read("/queue")
             gevent.sleep(2)
             for job in jobs.children:
                 executed = False
@@ -82,15 +87,14 @@ class EtcdRPC(object):
     def stop(self):
         pass
 
-    def invoke_flow(self, flow_name, api_job,
-                    flow_module_path="tendrl.node_agent.flows"):
-        # TODO(darshan) parse operations.yaml and correlate here
-        flow_module = flow_module_path + '.%s' % self.convert_flow_name(
-            flow_name
-        )
-        mod = __import__(flow_module, fromlist=[
-            flow_name])
-        return getattr(mod, flow_name)(api_job).start()
+    def invoke_flow(self, flow_path, job):
+        the_flow = None
+        flow_path = flow_path.lower().split(".")
+        flow_module = flow_path[:-1]
+        kls_name = flow_path[-1:]
+        if "tendrl" in flow_path and "flows" in flow_path:
+            exec("from %s import %s as the_flow" % (flow_module, kls_name))
+        return the_flow(job).run()
 
     def convert_flow_name(self, flow_name):
         s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', flow_name)

@@ -1,5 +1,6 @@
 from command import Command
 import platform
+import socket
 
 node_agent_key = ""
 
@@ -95,7 +96,7 @@ def getNodeOs():
         'OSVersion': os_out[1],
         'KernelVersion': platform.release(),
         'SELinuxMode': se_out,
-        'FQDN': platform.node()
+        'FQDN': socket.getfqdn()
     }
 
     return osinfo
@@ -113,12 +114,12 @@ def get_node_inventory():
     out, err = cmd.start()
     out = out['stdout']
 
-    node_inventory["node_machine_uuid"] = out
+    node_inventory["machine_id"] = out
     cmd = Command({"_raw_params": "cat %s" % node_agent_key})
     out, err = cmd.start()
     out = out['stdout']
 
-    node_inventory["node_uuid"] = out
+    node_inventory["node_id"] = out
 
     node_inventory["os"] = getNodeOs()
     node_inventory["cpu"] = getNodeCpu()
