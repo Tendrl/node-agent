@@ -219,4 +219,4 @@ namespace.tendrl.node_agent.gluster_integration:
       enabled: true
   valid_objects:
     - Config
-tendrl_schema_version: 0.2
+tendrl_schema_version: 0.3
