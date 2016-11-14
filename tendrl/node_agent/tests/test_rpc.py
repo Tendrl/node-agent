@@ -38,7 +38,7 @@ class Test_EtcdRpc(object):
 
         server = EtcdRPC()
 
-        assert server.bridge_id == 'aa22a6fe-87f0-45cf-8b70-2d0ff4c02af6'
+        assert server.integration_id == 'aa22a6fe-87f0-45cf-8b70-2d0ff4c02af6'
         local_client = etcd.Client(
             port=2379,
             host="0.0.0.0"
@@ -111,13 +111,11 @@ class Test_EtcdRpc(object):
         monkeypatch.setattr(server, 'invoke_flow', mock_invoke_flow)
 
         input_raw_job1 = {
-            "status": "new", "sds_type": "generic",
+            "status": "new",
             "cluster_id": "49fa2adde8a6e98591f0f5cb4bc5f44d",
-            "errors": {}, "attributes": {"_raw_params": "ls"},
-            "message": "Executing command",
-            "type": "node",
-            "object_type": "generic",
-            "flow": "ExecuteCommand"
+            "parameters": {"node[]": ['node1', 'node2'], "sds_name":
+                "gluster", "sds_version": "3.2.0", "cluster_id": "mycluster"},
+            "run": "tendrl.node_agent.gluster_integration.flows.import_cluster.ImportCluster",
         }
 
         raw_job, executed = server._process_job(

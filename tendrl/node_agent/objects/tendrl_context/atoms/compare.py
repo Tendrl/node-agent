@@ -9,8 +9,8 @@ class Compare(object):
     def run(self, **kwargs):
         sds_name = kwargs.get("sds_name")
         sds_version = kwargs.get("sds_version")
-        etcd_kwargs = {'port': int(config.get("bridge_common", "etcd_port")),
-                       'host': config.get("bridge_common", "etcd_connection")}
+        etcd_kwargs = {'port': int(config.get("common", "etcd_port")),
+                       'host': config.get("common", "etcd_connection")}
 
         client = etcd.Client(**etcd_kwargs)
         # get the node_agent_key some how

@@ -1,7 +1,7 @@
 class Write(object):
-    def run(self, **kwargs):
-        data = kwargs.get("data")
-        file_path = kwargs.get("file_path")
+    def run(self, parameters):
+        data = parameters.get("Config.data")
+        file_path = parameters.get("Config.file_path")
         attributes = {}
         attributes["block"] = data
         attributes["dest"] = file_path
@@ -10,4 +10,4 @@ class Write(object):
                 f.write(data)
         except Exception as e:
             raise e
-        return {}
+        return True

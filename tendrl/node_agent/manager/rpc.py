@@ -7,14 +7,13 @@ import etcd
 import gevent.event
 import yaml
 
-from tendrl.bridge_common.definitions.validator import \
+from tendrl.common.definitions.validator import \
     DefinitionsSchemaValidator
-from tendrl.bridge_common.definitions.validator import \
+from tendrl.common.definitions.validator import \
     JobValidator
 from tendrl.node_agent.config import TendrlConfig
 from tendrl.node_agent.flows.flow_execution_exception import \
     FlowExecutionFailedError
-from tendrl.node_agent.manager.command import Command
 from tendrl.node_agent.manager import utils
 
 config = TendrlConfig()
@@ -24,17 +23,14 @@ LOG = logging.getLogger(__name__)
 class EtcdRPC(object):
 
     def __init__(self):
-        etcd_kwargs = {'port': int(config.get("bridge_common", "etcd_port")),
-                       'host': config.get("bridge_common", "etcd_connection")}
+        etcd_kwargs = {'port': int(config.get("common", "etcd_port")),
+                       'host': config.get("common", "etcd_connection")}
 
         self.client = etcd.Client(**etcd_kwargs)
-        node_agent_key = utils.configure_tendrl_uuid()
-        cmd = Command({"_raw_params": "cat %s" % node_agent_key})
-        out, err = cmd.start()
-        self.node_id = out['stdout']
+        self.node_id = utils.get_tendrl_uuid()
 
     def _process_job(self, raw_job, job_key):
-        # Pick up the "new" job that is not locked by any other bridge
+        # Pick up the "new" job that is not locked by any other integration
         if raw_job['status'] == "new" and raw_job["type"] == "node":
                 raw_job['status'] = "processing"
                 # Generate a request ID for tracking this job
@@ -52,19 +48,14 @@ class EtcdRPC(object):
                             raw_job['run'], raw_job, definitions
                         )
                 except FlowExecutionFailedError as e:
+                    # TODO(rohan) print more of this error msg here
                     LOG.error(e)
-                    raise
-                if err != "":
                     raw_job['status'] = "failed"
                     LOG.error("JOB %s Failed. Error: %s" % (raw_job[
                         'request_id'], err))
                 else:
                     raw_job['status'] = "finished"
 
-                raw_job["response"] = {
-                    "result": result,
-                    "error": err
-                }
                 return raw_job, True
         else:
             return raw_job, False
@@ -75,6 +66,9 @@ class EtcdRPC(object):
             gevent.sleep(2)
             for job in jobs.children:
                 executed = False
+                if job.value is None:
+                    LOG.info("JOB /queue is empty!!")
+                    continue
                 raw_job = json.loads(job.value.decode('utf-8'))
                 try:
                     if "node_id" in raw_job:
@@ -99,21 +93,21 @@ class EtcdRPC(object):
         LOG.info("Validating flow %s for %s" % (raw_job['run'],
                                                 raw_job['request_id']))
         definitions = yaml.load(self.client.read(
-            '/tendrl_definitions_node_agent/data'))
+            '/tendrl_definitions_node_agent/data').value.decode("utf-8"))
         definitions = DefinitionsSchemaValidator(
             definitions).sanitize_definitions()
-        resp, msg = JobValidator(definitions).validateApi(raw_job)
-        if resp:
-            msg = "Successfull Validation flow %s for %s" %\
-                  (raw_job['run'], raw_job['request_id'])
-            LOG.info(msg)
+        #resp, msg = JobValidator(definitions).validateApi(raw_job)
+        #if resp:
+        #    msg = "Successfull Validation flow %s for %s" %\
+        #          (raw_job['run'], raw_job['request_id'])
+        #    LOG.info(msg)
 
-            return definitions
-        else:
-            msg = "Failed Validation flow %s for %s" % (raw_job['run'],
-                                                        raw_job['request_id'])
-            LOG.error(msg)
-            return False
+        return definitions
+        #else:
+        #    msg = "Failed Validation flow %s for %s" % (raw_job['run'],
+         #                                               raw_job['request_id'])
+        #    LOG.error(msg)
+        #    return False
 
     def invoke_flow(self, flow_name, job, definitions):
         atoms, pre_run, post_run, uuid = self.extract_flow_details(
@@ -121,17 +115,20 @@ class EtcdRPC(object):
             definitions
         )
         the_flow = None
-        flow_path = flow_name.lower().split(".")
-        flow_module = flow_path[:-1]
-        kls_name = flow_path[-1:]
+        flow_path = flow_name.split(".")
+        flow_module = ".".join([a.encode("ascii", "ignore") for a in
+                               flow_path[:-1]])
+        kls_name = ".".join([a.encode("ascii", "ignore") for a in
+                               flow_path[-1:]])
         if "tendrl" in flow_path and "flows" in flow_path:
             exec("from %s import %s as the_flow" % (flow_module, kls_name))
+            LOG.info("")
             return the_flow(flow_name, job, atoms, pre_run, post_run,
                             uuid).run()
 
     def extract_flow_details(self, flow_name, definitions):
-        namespace = flow_name.split(".flows.")
-        flow = definitions[namespace][flow_name.split(".")[-1]]
+        namespace = flow_name.split(".flows.")[0]
+        flow = definitions[namespace]['flows'][flow_name.split(".")[-1]]
         return flow['atoms'], flow['pre_run'], flow['post_run'], flow['uuid']
 
 
