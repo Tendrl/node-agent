@@ -6,9 +6,10 @@ config = TendrlConfig()
 
 
 class Compare(object):
-    def run(self, **kwargs):
-        sds_name = kwargs.get("sds_name")
-        sds_version = kwargs.get("sds_version")
+    def run(self, parameters):
+        sds_name = parameters.get("Tendrl_context.sds_name")
+        sds_version = parameters.get("Tendrl_context.sds_version")
+        return True
         etcd_kwargs = {'port': int(config.get("common", "etcd_port")),
                        'host': config.get("common", "etcd_connection")}
 
