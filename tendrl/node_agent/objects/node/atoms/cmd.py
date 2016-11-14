@@ -34,6 +34,5 @@ class Cmd(object):
  #                 "rc": result["rc"],
  #                 "stderr": result["stderr"]}
  #       }
-        LOG.info(result['stdout'])
-        LOG.error(result.get("stderr"))
+        LOG.info(result)
         return True
