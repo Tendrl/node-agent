@@ -39,7 +39,7 @@ class Flow(object):
         for mod in self.pre_run:
             class_name = utils.to_camel_case(mod.split(".")[-1])
             if "tendrl" in mod and "atoms" in mod:
-                exec("from %s import %s as pre_atom" % (mod.strip("."),
+                exec("from %s import %s as pre_atom" % (mod.lower().strip("."),
                                                         class_name.strip(".")))
 
                 ret_val = pre_atom().run(self.parameters)
@@ -60,7 +60,8 @@ class Flow(object):
         for atom in self.atoms:
             class_name = utils.to_camel_case(atom.split(".")[-1])
             if "tendrl" in atom and "atoms" in atom:
-                exec("from %s import %s as the_atom" % (atom.strip("."),
+                exec("from %s import %s as the_atom" % (atom.lower().strip(
+                    "."),
                                                         class_name.strip(".")))
                 ret_val = the_atom().run(self.parameters)
             if not ret_val:
@@ -81,7 +82,7 @@ class Flow(object):
             class_name = utils.to_camel_case(mod.split(".")[-1])
             if "tendrl" in atom and "atoms" in atom:
                 exec("from %s import %s as post_atom" % (
-                    mod.strip("."),
+                    mod.lower().strip("."),
                     class_name.strip("."))
                 )
 
