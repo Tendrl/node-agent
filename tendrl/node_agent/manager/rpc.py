@@ -51,8 +51,6 @@ class EtcdRPC(object):
                     # TODO(rohan) print more of this error msg here
                     LOG.error(e)
                     raw_job['status'] = "failed"
-                    LOG.error("JOB %s Failed. Error: %s" % (raw_job[
-                        'request_id'], err))
                 else:
                     raw_job['status'] = "finished"
 

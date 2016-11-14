@@ -1,3 +1,3 @@
 class CheckClusterIdExists(object):
-    def run(self, **kwargs):
+    def run(self, parameters):
         return True
