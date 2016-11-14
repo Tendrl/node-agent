@@ -70,9 +70,9 @@ Be sure to adjust the value of `source` to the output of:
 
 === Install bridge_common and node_agent
 
-. Install https://github.com/Tendrl/bridge_common[bridge_common].
+. Install the https://github.com/Tendrl/common[bridge common library].
 
- $ git clone https://github.com/Tendrl/bridge_common.git
+ $ git clone https://github.com/Tendrl/common.git bridge_common
  $ pushd bridge_common
  [bridge_common] $ workon tendrl-node-agent
  [bridge_common] $ pip install .
