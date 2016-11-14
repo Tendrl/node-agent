@@ -26,10 +26,7 @@ class Flow(object):
                        'host': config.get("common", "etcd_connection")}
 
         self.etcd_client = etcd.Client(**etcd_kwargs)
-        node_agent_key = manager_utils.configure_tendrl_uuid()
-        cmd = Command({"_raw_params": "cat %s" % node_agent_key})
-        out, err = cmd.start()
-        self.node_id = out['stdout']
+        self.node_id = manager_utils.get_tendrl_uuid()
 
     def run(self):
         post_atom = None

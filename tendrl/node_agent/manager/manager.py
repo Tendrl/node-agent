@@ -214,7 +214,8 @@ def main():
         config.get('node_agent', 'log_cfg_path'),
         config.get('node_agent', 'log_level')
     )
-    node_id = get_local_node_id()
+    node_id = utils.get_tendrl_uuid()
+    pull_hardware_inventory.update_node_id(node_id)
     machine_id = get_machine_id()
 
     m = Manager(node_id, machine_id)
@@ -235,26 +236,6 @@ def main():
 
 def get_machine_id():
     cmd = Command({"_raw_params": "cat /etc/machine-id"})
-    out, err = cmd.start()
-    return out['stdout']
-
-
-def get_local_node_id():
-    # Configure a uuid on the node, so that this can be used by Tendrl for
-    # uniquely identifying the node
-    try:
-        node_agent_key = utils.configure_tendrl_uuid()
-        LOG.info("Verified that node uuid exists at"
-                 " /etc/tendrl/node_agent_key")
-
-        pull_hardware_inventory.update_node_agent_key(node_agent_key)
-    except ValueError as e:
-        LOG.error("tendrl node key generation failed: Error: %s" % str(e))
-        return
-    except Exception:
-        LOG.error("Cound not verify/generate valid tendrl node agent id")
-        return
-    cmd = Command({"_raw_params": "cat %s" % node_agent_key})
     out, err = cmd.start()
     return out['stdout']
 

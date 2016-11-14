@@ -1,40 +1,24 @@
 import logging
 import os
+import os.path
 import uuid
 
-import time
-
 LOG = logging.getLogger(__name__)
+NODE_CONTEXT = "/etc/tendrl/node_agent/node_context"
 
 
-TENDRL_CONF_PATH = "/etc/tendrl/"
-NODE_AGENT_KEY = "/etc/tendrl/node_agent_key" + str(time.time())
-
-
-def configure_tendrl_uuid():
-    # check if valid uuid is already present in node_agent_key
+def get_tendrl_uuid():
+    # check if valid uuid is already present in node_context
     # if not present generate one and update the file
-    file_list = []
-    for f in os.listdir(TENDRL_CONF_PATH):
-        if f.startswith("node_agent_key_"):
-            file_list.append(f)
-    if len(file_list) == 0:
-        with open(NODE_AGENT_KEY, 'w') as f:
-            f.write(str(uuid.uuid4()))
-        LOG.info("tendrl node uuid is being generated")
-        return NODE_AGENT_KEY
-    elif len(file_list) > 1:
-        raise ValueError("detected more than one node agent key")
-
-    try:
-        with open(TENDRL_CONF_PATH + file_list[0]) as f:
+    if os.path.isfile(NODE_CONTEXT):
+        with open(NODE_CONTEXT) as f:
             node_id = f.read()
-            uuid.UUID(node_id, version=4)
-            LOG.info("tendrl node uuid already exists")
-            return TENDRL_CONF_PATH + file_list[0]
-    except ValueError:
-        os.rmdir(file_list[0])
-        with open(NODE_AGENT_KEY, 'w') as f:
-            f.write(str(uuid.uuid4()))
-        LOG.info("tendrl node uuid is being generated")
-        return None
+            LOG.info("Tendrl Node.id==%s found!" % node_id)
+            return node_id
+    else:
+        with open(NODE_CONTEXT, 'w') as f:
+            node_id = str(uuid.uuid4())
+            f.write(node_id)
+            LOG.info("Tendrl Node.id==%s created!" % node_id)
+            return node_id
+

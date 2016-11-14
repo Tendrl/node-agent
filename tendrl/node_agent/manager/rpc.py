@@ -28,10 +28,7 @@ class EtcdRPC(object):
                        'host': config.get("common", "etcd_connection")}
 
         self.client = etcd.Client(**etcd_kwargs)
-        node_agent_key = utils.configure_tendrl_uuid()
-        cmd = Command({"_raw_params": "cat %s" % node_agent_key})
-        out, err = cmd.start()
-        self.node_id = out['stdout']
+        self.node_id = utils.get_tendrl_uuid()
 
     def _process_job(self, raw_job, job_key):
         # Pick up the "new" job that is not locked by any other integration
