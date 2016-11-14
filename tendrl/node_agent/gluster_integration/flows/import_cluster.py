@@ -29,6 +29,7 @@ class ImportCluster(Flow):
         self.parameters['Package.version'] = self.parameters[
             'Tendrl_context.sds_version']
         self.parameters['Node.cmd_str'] = "tendrl-gluster-integration " \
-                                          "cluster-id %s" % self.parameters[
+                                          "--cluster-id %s" % self.parameters[
             'Tendrl_context.cluster_id']
-        super(ImportCluster, self).run()
+        return super(ImportCluster, self).run()
+

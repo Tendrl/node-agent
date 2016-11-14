@@ -44,7 +44,7 @@ class EtcdRPC(object):
                 try:
                     definitions = self.validate_flow(raw_job)
                     if definitions:
-                        result, err = self.invoke_flow(
+                        result = self.invoke_flow(
                             raw_job['run'], raw_job, definitions
                         )
                 except FlowExecutionFailedError as e:

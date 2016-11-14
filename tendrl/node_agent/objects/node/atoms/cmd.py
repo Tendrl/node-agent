@@ -11,8 +11,8 @@ ANSIBLE_MODULE_PATH = "core/commands/command.py"
 
 
 class Cmd(object):
-    def run(self, paramaeters):
-        cmd = paramaeters.get("cmd_str")
+    def run(self, parameters):
+        cmd = parameters.get("Node.cmd_str")
         try:
             runner = AnsibleRunner(
                 ANSIBLE_MODULE_PATH,
