@@ -102,7 +102,7 @@ class EtcdRPC(object):
         #          (raw_job['run'], raw_job['request_id'])
         #    LOG.info(msg)
 
-        #    return definitions
+        return definitions
         #else:
         #    msg = "Failed Validation flow %s for %s" % (raw_job['run'],
          #                                               raw_job['request_id'])
@@ -122,6 +122,7 @@ class EtcdRPC(object):
                                flow_path[-1:]])
         if "tendrl" in flow_path and "flows" in flow_path:
             exec("from %s import %s as the_flow" % (flow_module, kls_name))
+            LOG.info("")
             return the_flow(flow_name, job, atoms, pre_run, post_run,
                             uuid).run()
 
