@@ -7,7 +7,7 @@ import gevent.greenlet
 import json
 import pull_hardware_inventory
 from rpc import EtcdThread
-from tendrl.bridge_common.log import setup_logging
+from tendrl.common.log import setup_logging
 
 from tendrl.node_agent.config import TendrlConfig
 config = TendrlConfig()

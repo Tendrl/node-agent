@@ -1,6 +1,6 @@
 ---
 namespace.tendrl.node_agent:
-  object_details:
+  object:
     Cpu:
       attrs:
         architecture:
@@ -190,7 +190,7 @@ namespace.tendrl.node_agent.gluster_integration:
       enabled: true
       inputs:
         mandatory:
-          - "Node[]"
+          - "node[]"
           - Tendrl_context.sds_name
           - Tendrl_context.sds_version
           - Tendrl_context.cluster_id

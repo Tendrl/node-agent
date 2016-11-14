@@ -7,9 +7,9 @@ import etcd
 import gevent.event
 import yaml
 
-from tendrl.bridge_common.definitions.validator import \
+from tendrl.common.definitions.validator import \
     DefinitionsSchemaValidator
-from tendrl.bridge_common.definitions.validator import \
+from tendrl.common.definitions.validator import \
     JobValidator
 from tendrl.node_agent.config import TendrlConfig
 from tendrl.node_agent.flows.flow_execution_exception import \
@@ -24,8 +24,8 @@ LOG = logging.getLogger(__name__)
 class EtcdRPC(object):
 
     def __init__(self):
-        etcd_kwargs = {'port': int(config.get("bridge_common", "etcd_port")),
-                       'host': config.get("bridge_common", "etcd_connection")}
+        etcd_kwargs = {'port': int(config.get("common", "etcd_port")),
+                       'host': config.get("common", "etcd_connection")}
 
         self.client = etcd.Client(**etcd_kwargs)
         node_agent_key = utils.configure_tendrl_uuid()
@@ -34,7 +34,7 @@ class EtcdRPC(object):
         self.node_id = out['stdout']
 
     def _process_job(self, raw_job, job_key):
-        # Pick up the "new" job that is not locked by any other bridge
+        # Pick up the "new" job that is not locked by any other integration
         if raw_job['status'] == "new" and raw_job["type"] == "node":
                 raw_job['status'] = "processing"
                 # Generate a request ID for tracking this job

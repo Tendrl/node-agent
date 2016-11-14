@@ -22,8 +22,8 @@ class Flow(object):
         self.uuid = uuid
         self.parameters = self.job['parameters']
         self.parameters.update({'log': []})
-        etcd_kwargs = {'port': int(config.get("bridge_common", "etcd_port")),
-                       'host': config.get("bridge_common", "etcd_connection")}
+        etcd_kwargs = {'port': int(config.get("common", "etcd_port")),
+                       'host': config.get("common", "etcd_connection")}
 
         self.etcd_client = etcd.Client(**etcd_kwargs)
         node_agent_key = manager_utils.configure_tendrl_uuid()
