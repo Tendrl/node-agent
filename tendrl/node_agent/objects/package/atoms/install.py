@@ -7,8 +7,8 @@ from tendrl.node_agent.ansible_runner.ansible_module_runner \
 class Install(object):
     def run(self, parameters):
         name = parameters.get("Package.name")
-        package_type = parameters.get("Package.pkg_type", default="pip")
-        version = parameters.get("Package.version", default=None)
+        package_type = parameters.get("Package.pkg_type", "pip")
+        version = parameters.get("Package.version", None)
         attributes = {}
         attributes["name"] = name
         if version:

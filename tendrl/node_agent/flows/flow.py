@@ -72,8 +72,8 @@ class Flow(object):
                     (atom, self.job['run'])
                 )
             else:
-                LOG.info('Successfully executed atoms for flow: %s' %
-                         self.job['run'])
+                LOG.info('Successfully executed atom: %s for flow: %s' %
+                         (the_atom, self.job['run']))
 
         # Execute the post runs for the flow
         LOG.info("Starting execution of post-runs for flow: %s" %
