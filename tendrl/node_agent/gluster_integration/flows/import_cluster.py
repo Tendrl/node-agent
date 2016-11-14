@@ -24,10 +24,10 @@ class ImportCluster(Flow):
                     self.etcd_client.write("/queue/%s" % uuid.uuid4(),
                                            json.dumps(job))
         self.parameters['fqdn'] = socket.getfqdn()
-        self.parameters['Package.name'] = self.parameters[
-            'Tendrl_context.sds_name']
-        self.parameters['Package.version'] = self.parameters[
-            'Tendrl_context.sds_version']
+        self.parameters['Package.name'] = " " \
+                                          "git+https://github.com/Tendrl/gluster_integration"
+#        self.parameters['Package.version'] = self.parameters[
+#            'Tendrl_context.sds_version']
         self.parameters['Node.cmd_str'] = "tendrl-gluster-integration " \
                                           "--cluster-id %s" % self.parameters[
             'Tendrl_context.cluster_id']
