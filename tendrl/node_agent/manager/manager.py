@@ -10,6 +10,8 @@ from rpc import EtcdThread
 from tendrl.common.log import setup_logging
 
 from tendrl.node_agent.config import TendrlConfig
+from tendrl.node_agent.persistence.tendrl_definitions import TendrlDefinitions
+
 config = TendrlConfig()
 
 from tendrl.node_agent.manager.command import Command
@@ -21,7 +23,8 @@ from tendrl.node_agent.persistence.node_context import NodeContext
 from tendrl.node_agent.persistence.os import Os
 from tendrl.node_agent.persistence.persister import Persister
 from tendrl.node_agent.persistence.tendrl_context import TendrlContext
-from tendrl.node_agent.persistence.tendrl_definitions import TendrlDefinitions
+from tendrl.node_agent.manager.tendrl_definitions_node_agent import data as \
+    def_data
 
 import time
 
@@ -131,9 +134,9 @@ class Manager(object):
             )
         )
 
-        with open('tendrl_definitions_node_agent.yaml', 'r') as f:
-            self.persister.update_tendrl_definitions(
-                TendrlDefinitions(updated=str(time.time()), data=f.read()))
+
+        self.persister.update_tendrl_definitions(
+                TendrlDefinitions(updated=str(time.time()), data=def_data))
 
     def on_pull(self, raw_data):
         LOG.info("on_pull, Updating Node_context data")

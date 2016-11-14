@@ -1,6 +1,6 @@
 ---
 namespace.tendrl.node_agent:
-  object:
+  objects:
     Cpu:
       attrs:
         architecture:
@@ -203,7 +203,7 @@ namespace.tendrl.node_agent.gluster_integration:
       type: Create
       uuid: 2f94a48a-05d7-408c-b400-e27827f4edef
       version: 1
-  object:
+  objects:
     Config:
       atoms:
         generate:

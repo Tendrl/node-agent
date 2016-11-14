@@ -1,6 +1,6 @@
----
+data = """---
 namespace.tendrl.node_agent:
-  object:
+  objects:
     Cpu:
       attrs:
         architecture:
@@ -190,10 +190,10 @@ namespace.tendrl.node_agent.gluster_integration:
       enabled: true
       inputs:
         mandatory:
-          - "node[]"
-          - sds_name
-          - sds_version
-          - cluster_id
+          - "Node[]"
+          - Tendrl_context.sds_name
+          - Tendrl_context.sds_version
+          - Tendrl_context.cluster_id
       post_run:
         - tendrl.node_agent.gluster_integration.objects.Tendrl_context.atoms.check_cluster_id_exists
       pre_run:
@@ -203,7 +203,7 @@ namespace.tendrl.node_agent.gluster_integration:
       type: Create
       uuid: 2f94a48a-05d7-408c-b400-e27827f4edef
       version: 1
-  object:
+  objects:
     Config:
       atoms:
         generate:
@@ -234,3 +234,4 @@ namespace.tendrl.node_agent.gluster_integration:
           type: String
       enabled: true
 tendrl_schema_version: 0.3
+"""

@@ -16,7 +16,7 @@ def get_tendrl_uuid():
             LOG.info("Tendrl Node.id==%s found!" % node_id)
             return node_id
     else:
-        with open(NODE_CONTEXT, 'w') as f:
+        with open(NODE_CONTEXT, 'wb+') as f:
             node_id = str(uuid.uuid4())
             f.write(node_id)
             LOG.info("Tendrl Node.id==%s created!" % node_id)
