@@ -25,10 +25,10 @@ class ImportCluster(Flow):
                                            json.dumps(job))
         self.parameters['fqdn'] = socket.getfqdn()
         self.parameters['Package.name'] = " " \
-                                          "git+https://github.com/Tendrl/gluster_integration"
+                                          "git+https://github.com/Tendrl/ceph_integration"
 #        self.parameters['Package.version'] = self.parameters[
 #            'Tendrl_context.sds_version']
-        self.parameters['Node.cmd_str'] = "tendrl-gluster-integration " \
+        self.parameters['Node.cmd_str'] = "tendrl-ceph-integration " \
                                           "--cluster-id %s" % self.parameters[
             'Tendrl_context.cluster_id']
         return super(ImportCluster, self).run()

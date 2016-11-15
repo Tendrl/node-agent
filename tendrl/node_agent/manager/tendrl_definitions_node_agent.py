@@ -233,5 +233,63 @@ namespace.tendrl.node_agent.gluster_integration:
           help: "Path to the Gluster integration tendrl configuration"
           type: String
       enabled: true
+
+namespace.tendrl.node_agent.ceph_integration:
+  flows:
+    ImportCluster:
+      atoms:
+        - tendrl.node_agent.objects.Package.atoms.install
+        - tendrl.node_agent.ceph_integration.objects.Config.atoms.generate
+        - tendrl.node_agent.objects.File.atoms.write
+        - tendrl.node_agent.objects.Node.atoms.cmd
+      description: "Import existing Ceph Cluster"
+      enabled: true
+      inputs:
+        mandatory:
+          - "node[]"
+          - Tendrl_context.sds_name
+          - Tendrl_context.sds_version
+          - Tendrl_context.cluster_id
+          - Tendrl_context.cluster_name
+      post_run:
+        - tendrl.node_agent.ceph_integration.objects.Tendrl_context.atoms.check_cluster_id_exists
+      pre_run:
+        - tendrl.node_agent.objects.Node.atoms.check_nodes_up
+        - tendrl.node_agent.objects.Tendrl_context.atoms.compare
+      run: tendrl.node_agent.ceph_integration.flows.import_cluster.ImportCluster
+      type: Create
+      uuid: 5a48d43b-a163-496c-b01d-9c600ea0a5db
+      version: 1
+  objects:
+    Config:
+      atoms:
+        generate:
+          enabled: true
+          inputs:
+            mandatory:
+              - Config.etcd_port
+              - Config.etcd_connection
+          name: "Generate Ceph Integration configuration based on provided inputs"
+          outputs:
+            - Config.data
+            - Config.file_path
+          run: tendrl.node_agent.ceph_integration.objects.Config.atoms.generate.Generate
+          uuid: 61959242-628f-4847-a5e2-2c8d8daac0cd
+      attrs:
+        data:
+          help: "Configuration data of Ceph Integration for this Tendrl deployment"
+          type: String
+        etcd_connection:
+          help: "Host/IP of the etcd central store for this Tendrl deployment"
+          type: String
+        etcd_port:
+          help: "Port of the etcd central store for this Tendrl deployment"
+          type: String
+        file_path:
+          default: /etc/tendrl/ceph_integration.conf
+          help: "Path to the Ceph integration tendrl configuration"
+          type: String
+      enabled: true
+
 tendrl_schema_version: 0.3
 """
