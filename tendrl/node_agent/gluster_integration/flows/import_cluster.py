@@ -15,7 +15,7 @@ class ImportCluster(Flow):
                     new_params = self.parameters.copy()
                     new_params['Node[]'] = [node]
                 # create same flow for each node in node list except $this
-                    job = {"cluster_id": self.parameters['cluster_id'],
+                    job = {"cluster_id": self.parameters['Tendrl_context.cluster_id'],
                            "node_id": node,
                            "run": self.name,
                            "status": "new",
