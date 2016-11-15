@@ -26,9 +26,10 @@ class ImportCluster(Flow):
                            }
                     self.etcd_client.write("/queue/%s" % uuid.uuid4(),
                                            json.dumps(job))
-        self.parameters['fqdn'] = socket.getfqdn()
-        ceph = "git+https://github.com/Tendrl/ceph_integration"
-        self.parameters['Package.name'] = ceph
-        self.parameters['Node.cmd_str'] = "tendrl-ceph-integration " \
-                                          "--cluster-id %s" % cluster_id
-        return super(ImportCluster, self).run()
+        if self.node_id in node_list:
+            self.parameters['fqdn'] = socket.getfqdn()
+            ceph = "git+https://github.com/Tendrl/ceph_integration"
+            self.parameters['Package.name'] = ceph
+            self.parameters['Node.cmd_str'] = "tendrl-ceph-integration " \
+                                              "--cluster-id %s" % cluster_id
+            return super(ImportCluster, self).run()
