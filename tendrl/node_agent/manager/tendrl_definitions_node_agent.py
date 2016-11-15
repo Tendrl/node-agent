@@ -254,7 +254,7 @@ namespace.tendrl.node_agent.ceph_integration:
       post_run:
         - tendrl.node_agent.ceph_integration.objects.Tendrl_context.atoms.check_cluster_id_exists
       pre_run:
-        - tendrl.node_agent.objects.Node.atoms.check_nodes_up
+        - tendrl.node_agent.objects.Node.atoms.check_node_up
         - tendrl.node_agent.objects.Tendrl_context.atoms.compare
       run: tendrl.node_agent.ceph_integration.flows.import_cluster.ImportCluster
       type: Create

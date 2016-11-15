@@ -113,7 +113,7 @@ class Test_EtcdRpc(object):
         input_raw_job1 = {
             "status": "new",
             "cluster_id": "49fa2adde8a6e98591f0f5cb4bc5f44d",
-            "parameters": {"node[]": ['node1', 'node2'],
+            "parameters": {"Node[]": ['node1', 'node2'],
                            "sds_name": "gluster", "sds_version": "3.2.0",
                            "cluster_id": "mycluster"},
             "run": "tendrl.node_agent.gluster_integration.flows"
