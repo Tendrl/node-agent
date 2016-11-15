@@ -32,6 +32,7 @@ class ImportCluster(Flow):
             self.parameters['Node.cmd_str'] = "tendrl-ceph-integration " \
                                               "--cluster-id %s" % \
                                               self.cluster_id
-            tendrl_context = "nodes/%s/Tendrl_context/cluster_id" % self.node_id
+            tendrl_context = "nodes/%s/Tendrl_context/cluster_id" % \
+                             self.node_id
             self.etcd_client.write(tendrl_context, self.cluster_id)
             return super(ImportCluster, self).run()
