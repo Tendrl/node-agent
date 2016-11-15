@@ -25,11 +25,9 @@ class ImportCluster(Flow):
                     self.etcd_client.write("/queue/%s" % uuid.uuid4(),
                                            json.dumps(job))
         self.parameters['fqdn'] = socket.getfqdn()
-        gluster = "git+https://github.com/Tendrl/gluster_integration"
-        self.parameters['Package.name'] = gluster
-#        self.parameters['Package.version'] = self.parameters[
-#            'Tendrl_context.sds_version']
-        self.parameters['Node.cmd_str'] = "tendrl-gluster-integration " \
+        ceph = "git+https://github.com/Tendrl/ceph_integration"
+        self.parameters['Package.name'] = ceph
+        self.parameters['Node.cmd_str'] = "tendrl-ceph-integration " \
                                           "--cluster-id %s" % self.parameters[
             'Tendrl_context.cluster_id']
         return super(ImportCluster, self).run()

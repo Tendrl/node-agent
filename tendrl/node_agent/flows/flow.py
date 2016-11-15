@@ -2,11 +2,9 @@ import logging
 
 import etcd
 
-
+from tendrl.node_agent.config import TendrlConfig
 from tendrl.node_agent.flows import utils
 from tendrl.node_agent.manager import utils as manager_utils
-from tendrl.node_agent.config import TendrlConfig
-from tendrl.node_agent.manager.command import Command
 
 LOG = logging.getLogger(__name__)
 config = TendrlConfig()
@@ -61,8 +59,7 @@ class Flow(object):
             class_name = utils.to_camel_case(atom.split(".")[-1])
             if "tendrl" in atom and "atoms" in atom:
                 exec("from %s import %s as the_atom" % (atom.lower().strip(
-                    "."),
-                                                        class_name.strip(".")))
+                    "."), class_name.strip(".")))
                 ret_val = the_atom().run(self.parameters)
             if not ret_val:
                 LOG.error("Failed executing atom: %s on flow: %s" %

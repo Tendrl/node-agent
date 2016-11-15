@@ -20,19 +20,7 @@ class Cmd(object):
             )
             result, err = runner.run()
         except AnsibleExecutableGenerationFailed as ex:
-            #{
-            #    cmd: {
-            #        "result": "",
-            #        "rc": 1,
-            #        "stderr": "Ansible execution failed"
-            #    }
-
             LOG.error(ex)
             return False
- #       return {
- #           cmd: {"result": result["stdout"],
- #                 "rc": result["rc"],
- #                 "stderr": result["stderr"]}
- #       }
         LOG.info(result)
         return True
