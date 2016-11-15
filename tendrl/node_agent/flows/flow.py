@@ -25,6 +25,7 @@ class Flow(object):
 
         self.etcd_client = etcd.Client(**etcd_kwargs)
         self.node_id = manager_utils.get_node_context()
+        self.cluster_id = self.parameters['Tendrl_context.cluster_id']
 
     def run(self):
         post_atom = None

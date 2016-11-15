@@ -7,7 +7,6 @@ from tendrl.node_agent.flows.flow import Flow
 
 class ImportCluster(Flow):
     def run(self):
-        cluster_id = self.parameters['Tendrl_context.cluster_id']
         node_list = self.parameters['Node[]']
         if len(node_list) > 1:
             # This is the master node for this flow
@@ -16,7 +15,7 @@ class ImportCluster(Flow):
                     new_params = self.parameters.copy()
                     new_params['Node[]'] = [node]
                 # create same flow for each node in node list except $this
-                    job = {"cluster_id": cluster_id,
+                    job = {"cluster_id": self.cluster_id,
                            "node_id": node,
                            "run": self.name, "status": "new", "parameters":
                                new_params, "parent": self.job['request_id'],
@@ -28,8 +27,8 @@ class ImportCluster(Flow):
             gluster = "git+https://github.com/Tendrl/gluster_integration"
             self.parameters['Package.name'] = gluster
             self.parameters['Node.cmd_str'] = "tendrl-gluster-integration " \
-                                              "--cluster-id %s" % cluster_id
-            tendrl_context = "nodes/%s/Tendrl_context/cluster_id" % \
-                             self.node_id
-            self.etcd_client.write(tendrl_context, cluster_id)
+                                              "--cluster-id %s" % \
+                                              self.cluster_id
+            tendrl_context = "nodes/%s/Tendrl_context/cluster_id" % self.node_id
+            self.etcd_client.write(tendrl_context, self.cluster_id)
             return super(ImportCluster, self).run()
