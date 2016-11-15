@@ -29,4 +29,7 @@ class ImportCluster(Flow):
             self.parameters['Package.name'] = gluster
             self.parameters['Node.cmd_str'] = "tendrl-gluster-integration " \
                                               "--cluster-id %s" % cluster_id
+            tendrl_context = "nodes/%s/Tendrl_context/cluster_id" % \
+                             self.node_id
+            self.etcd_client.write(tendrl_context, cluster_id)
             return super(ImportCluster, self).run()

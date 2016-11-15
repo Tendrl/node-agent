@@ -24,7 +24,7 @@ class Flow(object):
                        'host': config.get("common", "etcd_connection")}
 
         self.etcd_client = etcd.Client(**etcd_kwargs)
-        self.node_id = manager_utils.get_tendrl_uuid()
+        self.node_id = manager_utils.get_node_context()
 
     def run(self):
         post_atom = None
