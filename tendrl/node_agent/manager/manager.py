@@ -96,7 +96,7 @@ class Manager(object):
         self._user_request_thread = EtcdThread(self)
         self._discovery_thread = TopLevelEvents(self)
         self.persister = Persister()
-        self.register_node(node_id, machine_id)
+        self.register_node(machine_id)
 
     def stop(self):
         LOG.info("%s stopping" % self.__class__.__name__)
@@ -116,25 +116,32 @@ class Manager(object):
         self._discovery_thread.join()
         self.persister.join()
 
-    def register_node(self, node_id, machine_id):
+    def register_node(self, machine_id):
         self.persister.update_node_context(
             NodeContext(
                 updated=str(time.time()),
                 machine_id=machine_id,
-                node_id=node_id,
+                node_id=utils.set_node_context(),
                 fqdn=socket.getfqdn(),
             )
         )
+        tendrl_context = pull_hardware_inventory.getTendrlContext()
         self.persister.update_tendrl_context(
             TendrlContext(
                 updated=str(time.time()),
-                sds_version="",
-                node_id=node_id,
-                sds_name="",
-                cluster_id=""
+                sds_version=tendrl_context['sds_version'],
+                node_id=utils.get_node_context(),
+                sds_name=tendrl_context['sds_name'],
             )
         )
 
+        self.persister.update_node(
+            Node(
+                node_id=utils.get_node_context(),
+                fqdn=socket.getfqdn(),
+                status="UP"
+            )
+        )
         self.persister.update_tendrl_definitions(TendrlDefinitions(
             updated=str(time.time()), data=def_data))
 
@@ -151,8 +158,9 @@ class Manager(object):
         LOG.info("on_pull, Updating node data")
         self.persister.update_node(
             Node(
-                node_uuid=raw_data["node_uuid"],
+                node_id=raw_data["node_id"],
                 fqdn=raw_data["os"]["FQDN"],
+                status="UP"
             )
         )
         if "tendrl_context" in raw_data:
@@ -163,8 +171,7 @@ class Manager(object):
                     updated=str(time.time()),
                     sds_name=tc["sds_name"],
                     sds_version=tc["sds_version"],
-                    node_uuid=raw_data["node_uuid"],
-                    cluster_id="",
+                    node_id=raw_data["node_id"],
                 )
             )
             LOG.info("on_pull, Updated tendrl context data successfully")
@@ -179,7 +186,7 @@ class Manager(object):
                     os_version=node["OSVersion"],
                     kernel_version=node["KernelVersion"],
                     selinux_mode=node["SELinuxMode"],
-                    node_uuid=raw_data["node_uuid"],
+                    node_id=raw_data["node_id"],
                 )
             )
         if "memory" in raw_data:
@@ -190,7 +197,7 @@ class Manager(object):
                     updated=str(time.time()),
                     total_size=memory["TotalSize"],
                     total_swap=memory["SwapTotal"],
-                    node_uuid=raw_data["node_uuid"],
+                    node_id=raw_data["node_id"],
                 )
             )
         if "cpu" in raw_data:
@@ -207,7 +214,7 @@ class Manager(object):
                     cpu_op_mode=cpu["CpuOpMode"],
                     cpu_family=cpu["CPUFamily"],
                     cpu_count=cpu["CPUs"],
-                    node_uuid=raw_data["node_uuid"],
+                    node_id=raw_data["node_id"],
                 )
             )
 
@@ -217,11 +224,10 @@ def main():
         config.get('node_agent', 'log_cfg_path'),
         config.get('node_agent', 'log_level')
     )
-    node_id = utils.get_tendrl_uuid()
-    pull_hardware_inventory.update_node_id(node_id)
+
     machine_id = get_machine_id()
 
-    m = Manager(node_id, machine_id)
+    m = Manager(machine_id)
     m.start()
 
     complete = gevent.event.Event()

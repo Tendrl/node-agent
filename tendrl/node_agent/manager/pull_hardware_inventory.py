@@ -2,6 +2,8 @@ from command import Command
 import platform
 import socket
 
+from tendrl.node_agent.manager import utils as mgr_utils
+
 node_id = ""
 
 
@@ -102,11 +104,6 @@ def getNodeOs():
     return osinfo
 
 
-def update_node_id(nid):
-    global node_id
-    node_id = nid
-
-
 def getTendrlContext():
     tendrl_context = {"sds_name": "", "sds_version": ""}
     cmd = Command({"_raw_params": "gluster --version"})
@@ -121,8 +118,14 @@ def getTendrlContext():
     out, err = cmd.start()
     if out["rc"] == 0:
         nvr = out['stdout']
-        tendrl_context["sds_name"] = nvr.split()[0]
-        tendrl_context["sds_version"] = nvr.split()[2].split("-")[0]
+        tendrl_context["sds_name"] = "%s\n%s" %\
+                                     (tendrl_context['sds_name'],
+                                      nvr.split()[0]
+                                      )
+        tendrl_context["sds_version"] = "%s\n%s" %\
+                                        (tendrl_context['sds_version'],
+                                         nvr.split()[2].split("-")[0]
+                                         )
 
     return tendrl_context
 
@@ -136,7 +139,7 @@ def get_node_inventory():
 
     node_inventory["machine_id"] = out
 
-    node_inventory["node_id"] = node_id
+    node_inventory["node_id"] = mgr_utils.get_node_context()
 
     node_inventory["os"] = getNodeOs()
     node_inventory["cpu"] = getNodeCpu()
