@@ -7,13 +7,13 @@ from tendrl.node_agent.flows.flow import Flow
 
 class ImportCluster(Flow):
     def run(self):
-        node_list = self.parameters['node[]']
+        node_list = self.parameters['Node[]']
         if len(node_list) > 1:
             # This is the master node for this flow
             for node in node_list:
                 if self.node_id != node:
                     new_params = self.parameters.copy()
-                    new_params['node[]'] = [node]
+                    new_params['Node[]'] = [node]
                 # create same flow for each node in node list except $this
                     job = {"cluster_id": self.parameters['cluster_id'],
                            "node_id": node,

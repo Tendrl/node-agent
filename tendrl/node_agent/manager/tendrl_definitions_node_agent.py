@@ -247,11 +247,10 @@ namespace.tendrl.node_agent.ceph_integration:
       enabled: true
       inputs:
         mandatory:
-          - "node[]"
+          - "Node[]"
           - Tendrl_context.sds_name
           - Tendrl_context.sds_version
           - Tendrl_context.cluster_id
-          - Tendrl_context.cluster_name
       post_run:
         - tendrl.node_agent.ceph_integration.objects.Tendrl_context.atoms.check_cluster_id_exists
       pre_run:
