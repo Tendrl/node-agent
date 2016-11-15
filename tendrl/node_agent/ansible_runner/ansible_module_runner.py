@@ -26,7 +26,7 @@ class AnsibleRunner(object):
     """
     def __init__(self, module_path, **kwargs):
         self.executable_module_path = config.get(
-            "tendrl_node_agent",
+            "node_agent",
             "tendrl_exe_file_prefix"
         ) + str(uuid.uuid4())
         self.module_path = modules.__path__[0] + "/" + module_path

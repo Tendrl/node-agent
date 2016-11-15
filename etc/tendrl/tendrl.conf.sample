@@ -1,4 +1,4 @@
-[bridge_common]
+[common]
 
 # Central store etcd port
 etcd_port = 2379
@@ -7,12 +7,12 @@ etcd_port = 2379
 etcd_connection = 0.0.0.0
 
 # Path to log file
-log_path = /var/log/tendrl/bridge_common.log
+log_path = /var/log/tendrl/common.log
 log_level = DEBUG
 
 
 [node_agent]
 # Path to log file
-log_path = /var/log/tendrl/node_agent.log
 log_level = DEBUG
 tendrl_exe_file_prefix = /tmp/.tendrl_runner
+log_cfg_path = /etc/tendrl/node_agent_logging.yaml

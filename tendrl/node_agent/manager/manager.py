@@ -1,27 +1,36 @@
 import logging
 import signal
+import socket
 
 import gevent.event
 import gevent.greenlet
 import json
-import os
 import pull_hardware_inventory
 from rpc import EtcdThread
-from tendrl.node_agent import log
+from tendrl.common.log import setup_logging
 
+from tendrl.node_agent.config import TendrlConfig
+from tendrl.node_agent.persistence.tendrl_definitions import TendrlDefinitions
+
+config = TendrlConfig()
+
+from tendrl.node_agent.manager.command import Command
+from tendrl.node_agent.manager.tendrl_definitions_node_agent import data as \
+    def_data
+from tendrl.node_agent.manager import utils
 from tendrl.node_agent.persistence.cpu import Cpu
 from tendrl.node_agent.persistence.memory import Memory
 from tendrl.node_agent.persistence.node import Node
-from tendrl.node_agent.persistence.node_metadata import NodeMetadata
+from tendrl.node_agent.persistence.node_context import NodeContext
 from tendrl.node_agent.persistence.os import Os
 from tendrl.node_agent.persistence.persister import Persister
+from tendrl.node_agent.persistence.tendrl_context import TendrlContext
+
+
 import time
-import uuid
 
 LOG = logging.getLogger(__name__)
 HARDWARE_INVENTORY_FILE = "/etc/tendrl/tendrl-node-inventory.json"
-NODE_AGENT_KEY = "/etc/tendrl/node_agent_key_" + str(time.time())
-TENDRL_CONF_PATH = "/etc/tendrl/"
 
 
 class TopLevelEvents(gevent.greenlet.Greenlet):
@@ -81,12 +90,13 @@ class Manager(object):
 
     """
 
-    def __init__(self):
+    def __init__(self, node_id, machine_id):
         self._complete = gevent.event.Event()
 
         self._user_request_thread = EtcdThread(self)
         self._discovery_thread = TopLevelEvents(self)
         self.persister = Persister()
+        self.register_node(machine_id)
 
     def stop(self):
         LOG.info("%s stopping" % self.__class__.__name__)
@@ -106,23 +116,66 @@ class Manager(object):
         self._discovery_thread.join()
         self.persister.join()
 
-    def on_pull(self, raw_data):
-        LOG.info("on_pull, Updating node metadata data")
-        self.persister.update_node_metadata(
-            NodeMetadata(
+    def register_node(self, machine_id):
+        self.persister.update_node_context(
+            NodeContext(
                 updated=str(time.time()),
-                node_machine_uuid=raw_data["node_machine_uuid"],
-                node_uuid=raw_data["node_uuid"],
+                machine_id=machine_id,
+                node_id=utils.set_node_context(),
+                fqdn=socket.getfqdn(),
+            )
+        )
+        tendrl_context = pull_hardware_inventory.getTendrlContext()
+        self.persister.update_tendrl_context(
+            TendrlContext(
+                updated=str(time.time()),
+                sds_version=tendrl_context['sds_version'],
+                node_id=utils.get_node_context(),
+                sds_name=tendrl_context['sds_name'],
+            )
+        )
+
+        self.persister.update_node(
+            Node(
+                node_id=utils.get_node_context(),
+                fqdn=socket.getfqdn(),
+                status="UP"
+            )
+        )
+        self.persister.update_tendrl_definitions(TendrlDefinitions(
+            updated=str(time.time()), data=def_data))
+
+    def on_pull(self, raw_data):
+        LOG.info("on_pull, Updating Node_context data")
+        self.persister.update_node_context(
+            NodeContext(
+                updated=str(time.time()),
+                machine_id=raw_data["machine_id"],
+                node_id=raw_data["node_id"],
                 fqdn=raw_data["os"]["FQDN"],
             )
         )
         LOG.info("on_pull, Updating node data")
         self.persister.update_node(
             Node(
-                node_uuid=raw_data["node_uuid"],
+                node_id=raw_data["node_id"],
                 fqdn=raw_data["os"]["FQDN"],
+                status="UP"
             )
         )
+        if "tendrl_context" in raw_data:
+            LOG.info("on_pull, Updating tendrl context data")
+            tc = raw_data['tendrl_context']
+            self.persister.update_tendrl_context(
+                TendrlContext(
+                    updated=str(time.time()),
+                    sds_name=tc["sds_name"],
+                    sds_version=tc["sds_version"],
+                    node_id=raw_data["node_id"],
+                )
+            )
+            LOG.info("on_pull, Updated tendrl context data successfully")
+
         if "os" in raw_data:
             LOG.info("on_pull, Updating OS data")
             node = raw_data['os']
@@ -133,7 +186,7 @@ class Manager(object):
                     os_version=node["OSVersion"],
                     kernel_version=node["KernelVersion"],
                     selinux_mode=node["SELinuxMode"],
-                    node_uuid=raw_data["node_uuid"],
+                    node_id=raw_data["node_id"],
                 )
             )
         if "memory" in raw_data:
@@ -144,10 +197,9 @@ class Manager(object):
                     updated=str(time.time()),
                     total_size=memory["TotalSize"],
                     total_swap=memory["SwapTotal"],
-                    node_uuid=raw_data["node_uuid"],
+                    node_id=raw_data["node_id"],
                 )
             )
-
         if "cpu" in raw_data:
             LOG.info("on_pull, Updating cpu")
             cpu = raw_data['cpu']
@@ -162,57 +214,20 @@ class Manager(object):
                     cpu_op_mode=cpu["CpuOpMode"],
                     cpu_family=cpu["CPUFamily"],
                     cpu_count=cpu["CPUs"],
-                    node_uuid=raw_data["node_uuid"],
+                    node_id=raw_data["node_id"],
                 )
             )
 
 
-def configure_tendrl_uuid():
-    # check if valid uuid is already present in node_agent_key
-    # if not present generate one and update the file
-    file_list = []
-    for f in os.listdir(TENDRL_CONF_PATH):
-        if f.startswith("node_agent_key_"):
-            file_list.append(f)
-    if len(file_list) == 0:
-        with open(NODE_AGENT_KEY, 'w') as f:
-            f.write(str(uuid.uuid4()))
-        LOG.info("tendrl node uuid is being generated")
-        return NODE_AGENT_KEY
-    elif len(file_list) > 1:
-        raise ValueError("detected more than one node agent key")
-
-    try:
-        with open(TENDRL_CONF_PATH + file_list[0]) as f:
-            node_id = f.read()
-            uuid.UUID(node_id, version=4)
-            LOG.info("tendrl node uuid already exists")
-            return TENDRL_CONF_PATH + file_list[0]
-    except ValueError:
-        os.rmdir(file_list[0])
-        with open(NODE_AGENT_KEY, 'w') as f:
-            f.write(str(uuid.uuid4()))
-        LOG.info("tendrl node uuid is being generated")
-        return None
-
-
 def main():
-    log.setup_logging()
-    # Configure a uuid on the node, so that this can be used by Tendrl for
-    # uniquely identifying the node
-    try:
-        node_agent_key = configure_tendrl_uuid()
-        LOG.info("Verified that node uuid exists at"
-                 " /etc/tendrl/node_agent_key")
-        pull_hardware_inventory.update_node_agent_key(node_agent_key)
-    except ValueError as e:
-        LOG.error("tendrl node key generation failed: Error: %s" % str(e))
-        return
-    except Exception:
-        LOG.error("Cound not verify/generate valid tendrl node agent id")
-        return
+    setup_logging(
+        config.get('node_agent', 'log_cfg_path'),
+        config.get('node_agent', 'log_level')
+    )
 
-    m = Manager()
+    machine_id = get_machine_id()
+
+    m = Manager(machine_id)
     m.start()
 
     complete = gevent.event.Event()
@@ -227,6 +242,11 @@ def main():
     while not complete.is_set():
         complete.wait(timeout=1)
 
+
+def get_machine_id():
+    cmd = Command({"_raw_params": "cat /etc/machine-id"})
+    out, err = cmd.start()
+    return out['stdout']
 
 if __name__ == "__main__":
     main()

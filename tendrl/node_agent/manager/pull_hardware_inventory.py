@@ -1,7 +1,10 @@
 from command import Command
 import platform
+import socket
 
-node_agent_key = ""
+from tendrl.node_agent.manager import utils as mgr_utils
+
+node_id = ""
 
 
 def getNodeCpu():
@@ -95,15 +98,36 @@ def getNodeOs():
         'OSVersion': os_out[1],
         'KernelVersion': platform.release(),
         'SELinuxMode': se_out,
-        'FQDN': platform.node()
+        'FQDN': socket.getfqdn()
     }
 
     return osinfo
 
 
-def update_node_agent_key(file_name):
-    global node_agent_key
-    node_agent_key = file_name
+def getTendrlContext():
+    tendrl_context = {"sds_name": "", "sds_version": ""}
+    cmd = Command({"_raw_params": "gluster --version"})
+    out, err = cmd.start()
+    if out["rc"] == 0:
+        nvr = out['stdout']
+        tendrl_context["sds_name"] = nvr.split()[0]
+        tendrl_context["sds_version"] = nvr.split()[1]
+        return tendrl_context
+
+    cmd = Command({"_raw_params": "ceph --version"})
+    out, err = cmd.start()
+    if out["rc"] == 0:
+        nvr = out['stdout']
+        tendrl_context["sds_name"] = "%s\n%s" %\
+                                     (tendrl_context['sds_name'],
+                                      nvr.split()[0]
+                                      )
+        tendrl_context["sds_version"] = "%s\n%s" %\
+                                        (tendrl_context['sds_version'],
+                                         nvr.split()[2].split("-")[0]
+                                         )
+
+    return tendrl_context
 
 
 def get_node_inventory():
@@ -113,15 +137,13 @@ def get_node_inventory():
     out, err = cmd.start()
     out = out['stdout']
 
-    node_inventory["node_machine_uuid"] = out
-    cmd = Command({"_raw_params": "cat %s" % node_agent_key})
-    out, err = cmd.start()
-    out = out['stdout']
+    node_inventory["machine_id"] = out
 
-    node_inventory["node_uuid"] = out
+    node_inventory["node_id"] = mgr_utils.get_node_context()
 
     node_inventory["os"] = getNodeOs()
     node_inventory["cpu"] = getNodeCpu()
     node_inventory["memory"] = getNodeMemory()
+    node_inventory["tendrl_context"] = getTendrlContext()
 
     return node_inventory
