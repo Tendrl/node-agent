@@ -21,4 +21,3 @@ def get_tendrl_uuid():
             f.write(node_id)
             LOG.info("Tendrl Node.id==%s created!" % node_id)
             return node_id
-

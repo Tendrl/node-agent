@@ -30,7 +30,7 @@ class Compare(object):
                 etcd_sds_name = el.value
             if el.key.split('/')[-1] == "sds_version":
                 etcd_sds_version = el.value
-        status = kwargs.get("status")
+        status = parameters.get("status")
         if etcd_sds_version == sds_version and etcd_sds_name == sds_name:
             status.append(
                 ("Compare",

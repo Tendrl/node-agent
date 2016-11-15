@@ -1,3 +1,4 @@
+# flake8: noqa
 data = """---
 namespace.tendrl.node_agent:
   objects:

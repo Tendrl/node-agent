@@ -9,8 +9,6 @@ import yaml
 
 from tendrl.common.definitions.validator import \
     DefinitionsSchemaValidator
-from tendrl.common.definitions.validator import \
-    JobValidator
 from tendrl.node_agent.config import TendrlConfig
 from tendrl.node_agent.flows.flow_execution_exception import \
     FlowExecutionFailedError
@@ -44,9 +42,7 @@ class EtcdRPC(object):
                 try:
                     definitions = self.validate_flow(raw_job)
                     if definitions:
-                        result = self.invoke_flow(
-                            raw_job['run'], raw_job, definitions
-                        )
+                        self.invoke_flow(raw_job['run'], raw_job, definitions)
                 except FlowExecutionFailedError as e:
                     # TODO(rohan) print more of this error msg here
                     LOG.error(e)
@@ -94,16 +90,16 @@ class EtcdRPC(object):
             '/tendrl_definitions_node_agent/data').value.decode("utf-8"))
         definitions = DefinitionsSchemaValidator(
             definitions).sanitize_definitions()
-        #resp, msg = JobValidator(definitions).validateApi(raw_job)
-        #if resp:
+        # resp, msg = JobValidator(definitions).validateApi(raw_job)
+        # if resp:
         #    msg = "Successfull Validation flow %s for %s" %\
         #          (raw_job['run'], raw_job['request_id'])
         #    LOG.info(msg)
 
         return definitions
-        #else:
+        # else:
         #    msg = "Failed Validation flow %s for %s" % (raw_job['run'],
-         #                                               raw_job['request_id'])
+        #                                               raw_job['request_id'])
         #    LOG.error(msg)
         #    return False
 
@@ -117,7 +113,7 @@ class EtcdRPC(object):
         flow_module = ".".join([a.encode("ascii", "ignore") for a in
                                flow_path[:-1]])
         kls_name = ".".join([a.encode("ascii", "ignore") for a in
-                               flow_path[-1:]])
+                             flow_path[-1:]])
         if "tendrl" in flow_path and "flows" in flow_path:
             exec("from %s import %s as the_flow" % (flow_module, kls_name))
             LOG.info("")
