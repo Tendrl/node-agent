@@ -6,7 +6,7 @@ class NodeContext(EtcdObj):
     """A table of the node context, lazily updated
 
     """
-    __name__ = 'nodes/%s/node_context'
+    __name__ = 'nodes/%s/Node_context'
 
     node_id = fields.StrField("node_id")
     machine_id = fields.StrField("machine_id")

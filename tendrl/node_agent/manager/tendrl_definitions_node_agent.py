@@ -21,7 +21,7 @@ namespace.tendrl.node_agent:
         vendor_id:
           type: String
       enabled: true
-      value: /nodes/$node.id/cpu
+      value: nodes/$Node_context.node_id/Cpu
     Memory:
       attrs:
         total_size:
@@ -29,7 +29,7 @@ namespace.tendrl.node_agent:
         total_swap:
           type: String
       enabled: true
-      value: /nodes/$node.id/memory
+      value: nodes/$Node_context.node_id/Memory
     Node:
       atoms:
         cmd:
@@ -60,7 +60,7 @@ namespace.tendrl.node_agent:
         status:
           type: Boolean
       enabled: true
-      value: /nodes/$node.id/node
+      value: nodes/$Node_context.node_id/Node
     OS:
       attrs:
         kernel_version:
@@ -72,7 +72,7 @@ namespace.tendrl.node_agent:
         selinux_mode:
           type: String
       enabled: true
-      value: /nodes/$node.id/os
+      value: nodes/$Node_context.node_id/Os
     Package:
       atoms:
         install:
@@ -166,6 +166,7 @@ namespace.tendrl.node_agent:
         node_id:
           help: "Tendrl ID for the managed node"
           type: String
+      value: nodes/$Node_context.node_id/Tendrl_context
     Node_context:
       attrs:
         machine_id:
@@ -178,7 +179,7 @@ namespace.tendrl.node_agent:
           help: "Tendrl ID for the managed node"
           type: String
       enabled: true
-      value: /nodes/$node.id/node_context
+      value: nodes/$Node_context.node_id/Node_context
 namespace.tendrl.node_agent.gluster_integration:
   flows:
     ImportCluster:
