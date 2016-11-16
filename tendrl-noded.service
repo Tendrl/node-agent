@@ -1,0 +1,13 @@
+[Unit]
+Description= A python agent local to every managed storage node in the sds cluster
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/tendrl-node-agent
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

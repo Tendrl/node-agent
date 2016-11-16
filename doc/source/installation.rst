@@ -15,14 +15,14 @@ from the source.
 Development version from the source
 -----------------------------------
 
-1. First install http://github.com/tendrl/bridge_common from the source code::
+1. First install http://github.com/tendrl/common from the source code::
 
-    $ git clone https://github.com/Tendrl/bridge_common.git
-    $ cd bridge_common
+    $ git clone https://github.com/Tendrl/common.git
+    $ cd common
     $ mkvirtualenv node_agent
     $ pip install .
 
-2. Create bridge_common logging config file::
+2. Create common logging config file::
 
     $ cp etc/samples/logging.yaml.timedrotation.sample /etc/tendrl/common_logging.yaml
 
@@ -39,7 +39,7 @@ bundeled for syslog and journald logging as well. These could be used similarly 
 
 Note that we use virtualenvwrapper_ here to activate ``node_agent`` `python
 virtual enviroment`_. This way, we install *node agent* into the same virtual
-enviroment which we have created during installation of *bridge common*.
+enviroment which we have created during installation of *common*.
 
 .. _virtualenvwrapper: https://virtualenvwrapper.readthedocs.io/en/latest/
 .. _`python virtual enviroment`: https://virtualenv.pypa.io/en/stable/

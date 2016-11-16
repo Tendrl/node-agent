@@ -2,7 +2,7 @@ from command import Command
 import platform
 import socket
 
-node_agent_key = ""
+from tendrl.node_agent.manager import utils as mgr_utils
 
 
 def getNodeCpu():
@@ -102,11 +102,6 @@ def getNodeOs():
     return osinfo
 
 
-def update_node_agent_key(file_name):
-    global node_agent_key
-    node_agent_key = file_name
-
-
 def getTendrlContext():
     tendrl_context = {"sds_name": "", "sds_version": ""}
     cmd = Command({"_raw_params": "gluster --version"})
@@ -135,11 +130,8 @@ def get_node_inventory():
     out = out['stdout']
 
     node_inventory["machine_id"] = out
-    cmd = Command({"_raw_params": "cat %s" % node_agent_key})
-    out, err = cmd.start()
-    out = out['stdout']
 
-    node_inventory["node_id"] = out
+    node_inventory["node_id"] = mgr_utils.get_node_context()
 
     node_inventory["os"] = getNodeOs()
     node_inventory["cpu"] = getNodeCpu()

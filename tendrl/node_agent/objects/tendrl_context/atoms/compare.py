@@ -6,11 +6,12 @@ config = TendrlConfig()
 
 
 class Compare(object):
-    def run(self, **kwargs):
-        sds_name = kwargs.get("sds_name")
-        sds_version = kwargs.get("sds_version")
-        etcd_kwargs = {'port': int(config.get("bridge_common", "etcd_port")),
-                       'host': config.get("bridge_common", "etcd_connection")}
+    def run(self, parameters):
+        sds_name = parameters.get("Tendrl_context.sds_name")
+        sds_version = parameters.get("Tendrl_context.sds_version")
+        return True
+        etcd_kwargs = {'port': int(config.get("common", "etcd_port")),
+                       'host': config.get("common", "etcd_connection")}
 
         client = etcd.Client(**etcd_kwargs)
         # get the node_agent_key some how
@@ -29,7 +30,7 @@ class Compare(object):
                 etcd_sds_name = el.value
             if el.key.split('/')[-1] == "sds_version":
                 etcd_sds_version = el.value
-        status = kwargs.get("status")
+        status = parameters.get("status")
         if etcd_sds_version == sds_version and etcd_sds_name == sds_name:
             status.append(
                 ("Compare",

@@ -5,10 +5,10 @@ from tendrl.node_agent.ansible_runner.ansible_module_runner \
 
 
 class Install(object):
-    def run(self, **kwargs):
-        name = kwargs.get("name")
-        package_type = kwargs.get("pkg_type")
-        version = kwargs.get("version", default=None)
+    def run(self, parameters):
+        name = parameters.get("Package.name")
+        package_type = parameters.get("Package.pkg_type", "pip")
+        version = parameters.get("Package.version", None)
         attributes = {}
         attributes["name"] = name
         if version:
@@ -29,5 +29,7 @@ class Install(object):
             )
             result, err = runner.run()
         except AnsibleExecutableGenerationFailed:
-            return {name: False}
-        return {name: True}
+            parameters.update({"Package.state": "uninstalled"})
+            return False
+        parameters.update({"Package.state": "installed"})
+        return True

@@ -17,17 +17,19 @@ class ImportCluster(Flow):
                 # create same flow for each node in node list except $this
                     job = {"cluster_id": self.cluster_id,
                            "node_id": node,
-                           "run": self.name, "status": "new", "parameters":
-                               new_params, "parent": self.job['request_id'],
-                           "type": "node"}
+                           "run": self.name,
+                           "status": "new",
+                           "parameters": new_params,
+                           "parent": self.job['request_id'],
+                           "type": "node"
+                           }
                     self.etcd_client.write("/queue/%s" % uuid.uuid4(),
                                            json.dumps(job))
         if self.node_id in node_list:
             self.parameters['fqdn'] = socket.getfqdn()
-            gluster = "git+https://github.com/Tendrl/gluster_integration.git" \
-                      "@v1.0"
-            self.parameters['Package.name'] = gluster
-            self.parameters['Node.cmd_str'] = "tendrl-gluster-integration " \
+            ceph = "git+https://github.com/Tendrl/ceph_integration.git@v1.0"
+            self.parameters['Package.name'] = ceph
+            self.parameters['Node.cmd_str'] = "tendrl-ceph-integration " \
                                               "--cluster-id %s" % \
                                               self.cluster_id
             tendrl_context = "nodes/%s/Tendrl_context/cluster_id" % \

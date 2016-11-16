@@ -2,11 +2,9 @@ import logging
 
 import etcd
 
-
+from tendrl.node_agent.config import TendrlConfig
 from tendrl.node_agent.flows import utils
 from tendrl.node_agent.manager import utils as manager_utils
-from tendrl.node_agent.config import TendrlConfig
-from tendrl.node_agent.manager.command import Command
 
 LOG = logging.getLogger(__name__)
 config = TendrlConfig()
@@ -22,14 +20,12 @@ class Flow(object):
         self.uuid = uuid
         self.parameters = self.job['parameters']
         self.parameters.update({'log': []})
-        etcd_kwargs = {'port': int(config.get("bridge_common", "etcd_port")),
-                       'host': config.get("bridge_common", "etcd_connection")}
+        etcd_kwargs = {'port': int(config.get("common", "etcd_port")),
+                       'host': config.get("common", "etcd_connection")}
 
         self.etcd_client = etcd.Client(**etcd_kwargs)
-        node_agent_key = manager_utils.configure_tendrl_uuid()
-        cmd = Command({"_raw_params": "cat %s" % node_agent_key})
-        out, err = cmd.start()
-        self.node_id = out['stdout']
+        self.node_id = manager_utils.get_node_context()
+        self.cluster_id = self.parameters['Tendrl_context.cluster_id']
 
     def run(self):
         post_atom = None
@@ -42,8 +38,8 @@ class Flow(object):
         for mod in self.pre_run:
             class_name = utils.to_camel_case(mod.split(".")[-1])
             if "tendrl" in mod and "atoms" in mod:
-                exec("from %s import %s as pre_atom" % (mod,
-                                                        class_name))
+                exec("from %s import %s as pre_atom" % (mod.lower().strip("."),
+                                                        class_name.strip(".")))
 
                 ret_val = pre_atom().run(self.parameters)
             if not ret_val:
@@ -63,8 +59,8 @@ class Flow(object):
         for atom in self.atoms:
             class_name = utils.to_camel_case(atom.split(".")[-1])
             if "tendrl" in atom and "atoms" in atom:
-                exec("from %s import %s as the_atom" % (atom,
-                                                        class_name))
+                exec("from %s import %s as the_atom" % (atom.lower().strip(
+                    "."), class_name.strip(".")))
                 ret_val = the_atom().run(self.parameters)
             if not ret_val:
                 LOG.error("Failed executing atom: %s on flow: %s" %
@@ -74,8 +70,8 @@ class Flow(object):
                     (atom, self.job['run'])
                 )
             else:
-                LOG.info('Successfully executed atoms for flow: %s' %
-                         self.job['run'])
+                LOG.info('Successfully executed atom: %s for flow: %s' %
+                         (the_atom, self.job['run']))
 
         # Execute the post runs for the flow
         LOG.info("Starting execution of post-runs for flow: %s" %
@@ -84,8 +80,8 @@ class Flow(object):
             class_name = utils.to_camel_case(mod.split(".")[-1])
             if "tendrl" in atom and "atoms" in atom:
                 exec("from %s import %s as post_atom" % (
-                    mod,
-                    class_name)
+                    mod.lower().strip("."),
+                    class_name.strip("."))
                 )
 
                 ret_val = post_atom().run(self.parameters)

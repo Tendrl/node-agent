@@ -1,4 +1,5 @@
----
+# flake8: noqa
+data = """---
 namespace.tendrl.node_agent:
   objects:
     Cpu:
@@ -20,7 +21,7 @@ namespace.tendrl.node_agent:
         vendor_id:
           type: String
       enabled: true
-      value: /nodes/$node.id/cpu
+      value: nodes/$Node_context.node_id/Cpu
     Memory:
       attrs:
         total_size:
@@ -28,7 +29,7 @@ namespace.tendrl.node_agent:
         total_swap:
           type: String
       enabled: true
-      value: /nodes/$node.id/memory
+      value: nodes/$Node_context.node_id/Memory
     Node:
       atoms:
         cmd:
@@ -59,7 +60,7 @@ namespace.tendrl.node_agent:
         status:
           type: Boolean
       enabled: true
-      value: /nodes/$node.id/node
+      value: nodes/$Node_context.node_id/Node
     OS:
       attrs:
         kernel_version:
@@ -71,7 +72,7 @@ namespace.tendrl.node_agent:
         selinux_mode:
           type: String
       enabled: true
-      value: /nodes/$node.id/os
+      value: nodes/$Node_context.node_id/Os
     Package:
       atoms:
         install:
@@ -165,6 +166,7 @@ namespace.tendrl.node_agent:
         node_id:
           help: "Tendrl ID for the managed node"
           type: String
+      value: nodes/$Node_context.node_id/Tendrl_context
     Node_context:
       attrs:
         machine_id:
@@ -177,7 +179,7 @@ namespace.tendrl.node_agent:
           help: "Tendrl ID for the managed node"
           type: String
       enabled: true
-      value: /nodes/$node.id/node_context
+      value: nodes/$Node_context.node_id/Node_context
 namespace.tendrl.node_agent.gluster_integration:
   flows:
     ImportCluster:
@@ -233,4 +235,62 @@ namespace.tendrl.node_agent.gluster_integration:
           help: "Path to the Gluster integration tendrl configuration"
           type: String
       enabled: true
+
+namespace.tendrl.node_agent.ceph_integration:
+  flows:
+    ImportCluster:
+      atoms:
+        - tendrl.node_agent.objects.Package.atoms.install
+        - tendrl.node_agent.ceph_integration.objects.Config.atoms.generate
+        - tendrl.node_agent.objects.File.atoms.write
+        - tendrl.node_agent.objects.Node.atoms.cmd
+      description: "Import existing Ceph Cluster"
+      enabled: true
+      inputs:
+        mandatory:
+          - "Node[]"
+          - Tendrl_context.sds_name
+          - Tendrl_context.sds_version
+          - Tendrl_context.cluster_id
+      post_run:
+        - tendrl.node_agent.ceph_integration.objects.Tendrl_context.atoms.check_cluster_id_exists
+      pre_run:
+        - tendrl.node_agent.objects.Node.atoms.check_node_up
+        - tendrl.node_agent.objects.Tendrl_context.atoms.compare
+      run: tendrl.node_agent.ceph_integration.flows.import_cluster.ImportCluster
+      type: Create
+      uuid: 5a48d43b-a163-496c-b01d-9c600ea0a5db
+      version: 1
+  objects:
+    Config:
+      atoms:
+        generate:
+          enabled: true
+          inputs:
+            mandatory:
+              - Config.etcd_port
+              - Config.etcd_connection
+          name: "Generate Ceph Integration configuration based on provided inputs"
+          outputs:
+            - Config.data
+            - Config.file_path
+          run: tendrl.node_agent.ceph_integration.objects.Config.atoms.generate.Generate
+          uuid: 61959242-628f-4847-a5e2-2c8d8daac0cd
+      attrs:
+        data:
+          help: "Configuration data of Ceph Integration for this Tendrl deployment"
+          type: String
+        etcd_connection:
+          help: "Host/IP of the etcd central store for this Tendrl deployment"
+          type: String
+        etcd_port:
+          help: "Port of the etcd central store for this Tendrl deployment"
+          type: String
+        file_path:
+          default: /etc/tendrl/ceph_integration.conf
+          help: "Path to the Ceph integration tendrl configuration"
+          type: String
+      enabled: true
+
 tendrl_schema_version: 0.3
+"""

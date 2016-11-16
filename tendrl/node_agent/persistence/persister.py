@@ -3,7 +3,7 @@ import logging
 import gevent.event
 import gevent.greenlet
 import gevent.queue
-from tendrl.bridge_common.etcdobj.etcdobj import Server as etcd_server
+from tendrl.common.etcdobj.etcdobj import Server as etcd_server
 
 
 from tendrl.node_agent.config import TendrlConfig
@@ -73,6 +73,6 @@ class Persister(gevent.greenlet.Greenlet):
         self._complete.set()
 
     def get_store(self):
-        etcd_kwargs = {'port': int(config.get("bridge_common", "etcd_port")),
-                       'host': config.get("bridge_common", "etcd_connection")}
+        etcd_kwargs = {'port': int(config.get("common", "etcd_port")),
+                       'host': config.get("common", "etcd_connection")}
         return etcd_server(etcd_kwargs=etcd_kwargs)
