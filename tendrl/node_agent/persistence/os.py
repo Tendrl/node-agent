@@ -8,7 +8,7 @@ class Os(EtcdObj):
     """
     __name__ = 'nodes/%s/Os/'
 
-    node_uuid = fields.StrField("node_id")
+    node_id = fields.StrField("node_id")
     os = fields.StrField("os")
     os_version = fields.StrField("os_version")
     kernel_version = fields.StrField("kernel_version")
