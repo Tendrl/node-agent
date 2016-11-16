@@ -118,15 +118,9 @@ def getTendrlContext():
     out, err = cmd.start()
     if out["rc"] == 0:
         nvr = out['stdout']
-        tendrl_context["sds_name"] = "%s\n%s" %\
-                                     (tendrl_context['sds_name'],
-                                      nvr.split()[0]
-                                      )
-        tendrl_context["sds_version"] = "%s\n%s" %\
-                                        (tendrl_context['sds_version'],
-                                         nvr.split()[2].split("-")[0]
-                                         )
-
+        tendrl_context["sds_name"] = nvr.split()[0]
+        tendrl_context["sds_version"] = nvr.split()[2].split("-")[0]
+        
     return tendrl_context
 
 
