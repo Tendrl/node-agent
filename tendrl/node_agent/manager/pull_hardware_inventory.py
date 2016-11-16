@@ -118,7 +118,7 @@ def getTendrlContext():
         nvr = out['stdout']
         tendrl_context["sds_name"] = nvr.split()[0]
         tendrl_context["sds_version"] = nvr.split()[2].split("-")[0]
-        
+
     return tendrl_context
 
 
