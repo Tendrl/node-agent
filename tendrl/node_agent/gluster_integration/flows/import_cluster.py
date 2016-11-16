@@ -24,7 +24,8 @@ class ImportCluster(Flow):
                                            json.dumps(job))
         if self.node_id in node_list:
             self.parameters['fqdn'] = socket.getfqdn()
-            gluster = "git+https://github.com/Tendrl/gluster_integration.git@v1.0"
+            gluster = "git+https://github.com/Tendrl/gluster_integration.git" \
+                      "@v1.0"
             self.parameters['Package.name'] = gluster
             self.parameters['Node.cmd_str'] = "tendrl-gluster-integration " \
                                               "--cluster-id %s" % \
