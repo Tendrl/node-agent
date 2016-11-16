@@ -27,7 +27,7 @@ class ImportCluster(Flow):
                                            json.dumps(job))
         if self.node_id in node_list:
             self.parameters['fqdn'] = socket.getfqdn()
-            ceph = "git+https://github.com/Tendrl/ceph_integration"
+            ceph = "git+https://github.com/Tendrl/ceph_integration.git@v1.0"
             self.parameters['Package.name'] = ceph
             self.parameters['Node.cmd_str'] = "tendrl-ceph-integration " \
                                               "--cluster-id %s" % \
