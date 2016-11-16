@@ -7,9 +7,14 @@ Source0: %{name}-%{version}.tar.gz
 License: LGPLv2+
 URL: https://github.com/Tendrl/node_agent
 
+# BuildRequires: ansible
+# BuildRequires: python-gevent
+# BuildRequires: python2-python-etcd
+# BuildRequires: python-urllib3
 BuildRequires: python2-devel
 BuildRequires: pytest
 BuildRequires: systemd
+# BuildRequires: python-mock
 
 Requires: python-etcd
 Requires: python-gevent
@@ -50,8 +55,7 @@ install -Dm 0644 tendrl-noded.service $RPM_BUILD_ROOT%{_unitdir}/tendrl-noded.se
 %systemd_postun_with_restart tendrl-noded.service
 
 %check
-# the following can be enabled once the unit test issues fixed.
-# py.test -v tendrl/node_agent/tests
+#py.test -v tendrl/node_agent/tests
 
 %files -f INSTALLED_FILES
 %doc README.rst

@@ -2,7 +2,7 @@ from setuptools import find_packages
 from setuptools import setup
 
 setup(
-    name="tendrl_node_agent",
+    name="tendrl-node-agent",
     version="0.0.1",
     packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*",
                                     "tests"]),
