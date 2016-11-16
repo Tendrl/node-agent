@@ -90,7 +90,7 @@ class Manager(object):
 
     """
 
-    def __init__(self, node_id, machine_id):
+    def __init__(self, machine_id):
         self._complete = gevent.event.Event()
 
         self._user_request_thread = EtcdThread(self)
