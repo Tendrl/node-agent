@@ -4,8 +4,6 @@ import socket
 
 from tendrl.node_agent.manager import utils as mgr_utils
 
-node_id = ""
-
 
 def getNodeCpu():
     '''returns structure
