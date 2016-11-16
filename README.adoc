@@ -29,7 +29,8 @@ cluster that is to be managed by tendrl.
 
 NOTE: All the commands are run as a regular user that has `sudo` privileges.
 The commands are all assumed to be run from a single directory, which by
-default could be the user's home directory.
+default could be the user's home directory. If different, the required current
+directory is indicated in `[]` before the shell prompt `$`.
 
 === Deployment Requirements
 
@@ -45,11 +46,15 @@ the node you're about to install the node agent on. Note it's address and port.
 
 . Install https://virtualenvwrapper.readthedocs.io/[virtualenvwrapper].
 
- $ sudo yum install python-virtualenv python-virtualenvwrapper
+ $ sudo yum install python-virtualenv python-virtualenvwrapper python-devel pip
 
 . Create system directories.
 
- $ sudo mkdir -p /etc/tendrl /var/log/tendrl/node_agent
+ $ sudo mkdir -p /etc/tendrl/node_agent \
+   /etc/tendrl/{ceph,gluster}_integration \
+   /var/log/tendrl/node_agent \
+   /var/log/tendrl/common \
+   /var/log/tendrl/{ceph,gluster}_integration
 
 === Environment Setup
 
@@ -86,6 +91,11 @@ Be sure to adjust the value of `source` to the output of:
  [node_agent] $ pip install .
  [node_agent] $ popd
 
+. Fetch the ceph_integration and gluster_integration codebases.
+
+ $ git clone https://github.com/Tendrl/ceph_integration.git
+ $ git clone https://github.com/Tendrl/gluster_integration.git
+
 === Configuration
 
 . Create the tendrl configuration file `/etc/tendrl/tendrl.conf`.
@@ -111,6 +121,10 @@ different system configuration such as via syslog and journald.
 
  $ cp node_agent/etc/logging.yaml.timedrotation.sample \
    /etc/tendrl/node_agent_logging.yaml
+ $ cp ceph_integration/etc/logging.yaml.timedrotation.sample \
+   /etc/tendrl/ceph_integration_logging.yaml
+ $ cp gluster_integration/etc/logging.yaml.timedrotation.sample \
+   /etc/tendrl/gluster_integration_logging.yaml
 
 NOTE: There are other sample configuration files in the `node_agent/etc`
 directory which could be used to setup logging for different system
