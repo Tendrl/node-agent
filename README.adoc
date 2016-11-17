@@ -7,7 +7,7 @@ management, process monitoring etc. The node agent also serves as the
 provisioning controller and can invoke provisioning operations on the node.
 
 * Free software: LGPL2
-* Documentation: TODO (rk)
+* Documentation: https://github.com/Tendrl/node_agent/tree/master/doc/source
 * Source: https://github.com/Tendrl/node_agent
 * Bugs: https://github.com/Tendrl/node_agent/issues
 
@@ -19,7 +19,8 @@ link="https://coveralls.io/github/Tendrl/node_agent?branch=master"]
 
 == Features
 
-TODO
+* Provide Node hardware inventory (cpu, memory, processes etc) details in central store.
+* Implements operations Ceph/Gluster cluster import .
 
 
 == Installation from Source on CentOS 7
@@ -73,15 +74,15 @@ Be sure to adjust the value of `source` to the output of:
  $ mkvirtualenv tendrl-node-agent
  $ workon tendrl-node-agent
 
-=== Install bridge_common and node_agent
+=== Install Tendrl common and node_agent
 
-. Install the https://github.com/Tendrl/common[bridge common library].
+. Install the https://github.com/Tendrl/common[common library].
 
- $ git clone https://github.com/Tendrl/common.git bridge_common
- $ pushd bridge_common
- [bridge_common] $ workon tendrl-node-agent
- [bridge_common] $ pip install .
- [bridge_common] $ popd
+ $ git clone https://github.com/Tendrl/common.git common
+ $ pushd common
+ [common] $ workon tendrl-node-agent
+ [common] $ pip install .
+ [common] $ popd
 
 . Install the node agent.
 
@@ -100,20 +101,20 @@ Be sure to adjust the value of `source` to the output of:
 
 . Create the tendrl configuration file `/etc/tendrl/tendrl.conf`.
 
- $ cp bridge_common/etc/tendrl/tendrl.conf.sample /etc/tendrl/tendrl.conf
+ $ cp common/etc/tendrl/tendrl.conf.sample /etc/tendrl/tendrl.conf
 
 .. Configure the following `etcd_port` and `etcd_connection` directives in
 `/etc/tendrl/tendrl.conf` to point to the etcd instance discussed in the first
 step.
 
-. Install the bridge_common logging configuration file
+. Install the common logging configuration file
 `/etc/tendrl/common_logging.yaml`.
 
- $ cp bridge_common/etc/samples/logging.yaml.timedrotation.sample \
+ $ cp common/etc/samples/logging.yaml.timedrotation.sample \
    /etc/tendrl/common_logging.yaml
 
 NOTE: There are other sample configuration files in the
-`bridge_common/etc/samples` directory which could be used to setup logging for
+`common/etc/samples` directory which could be used to setup logging for
 different system configuration such as via syslog and journald.
 
 . Install the node agent logging configuration file
