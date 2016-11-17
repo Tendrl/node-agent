@@ -7,21 +7,22 @@ Source0: %{name}-%{version}.tar.gz
 License: LGPLv2+
 URL: https://github.com/Tendrl/node_agent
 
-# BuildRequires: ansible
-# BuildRequires: python-gevent
-# BuildRequires: python2-python-etcd
-# BuildRequires: python-urllib3
+BuildRequires: ansible
+BuildRequires: python-gevent
+BuildRequires: python-etcd
+BuildRequires: python-urllib3
 BuildRequires: python2-devel
 BuildRequires: pytest
 BuildRequires: systemd
-# BuildRequires: python-mock
+BuildRequires: python-mock
 
+Requires: ansible
 Requires: python-etcd
 Requires: python-gevent
 Requires: python-greenlet
 Requires: collectd
 Requires: python-jinja2
-Requires: tendrl-bridge-common
+Requires: tendrl-common
 
 %description
 Python module for Tendrl node bridge to manage storage node in the sds cluster
@@ -43,7 +44,13 @@ rm -rf html/.{doctrees,buildinfo}
 
 %install
 %{__python} setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=INSTALLED_FILES
+install -m  644  --directory $RPM_BUILD_ROOT%{_var}/log/tendrl/node_agent
+install -m  644  --directory $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node_agent
+install -m  755  --directory $RPM_BUILD_ROOT%{_datadir}/tendrl/node_agent
 install -Dm 0644 tendrl-noded.service $RPM_BUILD_ROOT%{_unitdir}/tendrl-noded.service
+install -Dm 0644 etc/tendrl/tendrl.conf.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/tendrl.conf
+install -Dm 0644 etc/logging.yaml.timedrotation.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node_agent_logging.yaml
+install -Dm 644 etc/*.sample $RPM_BUILD_ROOT%{_datadir}/tendrl/node_agent/.
 
 %post
 %systemd_post tendrl-noded.service
@@ -55,11 +62,17 @@ install -Dm 0644 tendrl-noded.service $RPM_BUILD_ROOT%{_unitdir}/tendrl-noded.se
 %systemd_postun_with_restart tendrl-noded.service
 
 %check
-#py.test -v tendrl/node_agent/tests
+py.test -v tendrl/node_agent/tests || :
 
 %files -f INSTALLED_FILES
+%dir %{_var}/log/tendrl/node_agent
+%dir %{_sysconfdir}/tendrl/node_agent
+%dir %{_datadir}/tendrl/node_agent
 %doc README.rst
 %license LICENSE
+%{_datadir}/tendrl/node_agent/
+%{_sysconfdir}/tendrl/tendrl.conf
+%{_sysconfdir}/tendrl/node_agent_logging.yaml
 %{_unitdir}/tendrl-noded.service
 
 %changelog
