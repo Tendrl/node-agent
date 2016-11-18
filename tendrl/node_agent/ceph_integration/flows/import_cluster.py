@@ -2,7 +2,10 @@ import json
 import socket
 import uuid
 
+from tendrl.node_agent.config import TendrlConfig
 from tendrl.node_agent.flows.flow import Flow
+
+config = TendrlConfig()
 
 
 class ImportCluster(Flow):
@@ -27,8 +30,14 @@ class ImportCluster(Flow):
                                            json.dumps(job))
         if self.node_id in node_list:
             self.parameters['fqdn'] = socket.getfqdn()
-            ceph = "git+https://github.com/Tendrl/ceph_integration.git@v1.0"
-            self.parameters['Package.name'] = ceph
+            if config.get("node_agent", "deployment_type") == "production":
+                self.parameters['Package.name'] = "tendrl-ceph-integration"
+                self.parameters['Package.pkg_type'] = "yum"
+            else:
+                ceph = "git+https://github.com/Tendrl/" \
+                       "ceph_integration.git@v1.0"
+                self.parameters['Package.name'] = ceph
+
             self.parameters['Node.cmd_str'] = "tendrl-ceph-integration " \
                                               "--cluster-id %s" % \
                                               self.cluster_id

@@ -2,7 +2,10 @@ import json
 import socket
 import uuid
 
+from tendrl.node_agent.config import TendrlConfig
 from tendrl.node_agent.flows.flow import Flow
+
+config = TendrlConfig()
 
 
 class ImportCluster(Flow):
@@ -24,9 +27,13 @@ class ImportCluster(Flow):
                                            json.dumps(job))
         if self.node_id in node_list:
             self.parameters['fqdn'] = socket.getfqdn()
-            gluster = "git+https://github.com/Tendrl/gluster_integration.git" \
-                      "@v1.0"
-            self.parameters['Package.name'] = gluster
+            if config.get("node_agent", "deployment_type") == "production":
+                self.parameters['Package.name'] = "tendrl-gluster-integration"
+                self.parameters['Package.pkg_type'] = "yum"
+            else:
+                gluster = "git+https://github.com/Tendrl/" \
+                          "gluster_integration.git@v1.0"
+                self.parameters['Package.name'] = gluster
             self.parameters['Node.cmd_str'] = "tendrl-gluster-integration " \
                                               "--cluster-id %s" % \
                                               self.cluster_id
