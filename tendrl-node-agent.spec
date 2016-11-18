@@ -44,9 +44,9 @@ rm -rf html/.{doctrees,buildinfo}
 
 %install
 %{__python} setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=INSTALLED_FILES
-install -m  644  --directory $RPM_BUILD_ROOT%{_var}/log/tendrl/node_agent
-install -m  644  --directory $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node_agent
-install -m  755  --directory $RPM_BUILD_ROOT%{_datadir}/tendrl/node_agent
+install -m  0755  --directory $RPM_BUILD_ROOT%{_var}/log/tendrl/node_agent
+install -m  0755  --directory $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node_agent
+install -m  0755  --directory $RPM_BUILD_ROOT%{_datadir}/tendrl/node_agent
 install -Dm 0644 tendrl-noded.service $RPM_BUILD_ROOT%{_unitdir}/tendrl-noded.service
 install -Dm 0644 etc/tendrl/tendrl.conf.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/tendrl.conf
 install -Dm 0644 etc/logging.yaml.timedrotation.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node_agent_logging.yaml
