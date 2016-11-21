@@ -39,6 +39,8 @@ bundeled for syslog and journald logging as well. These could be used similarly 
 For installing node agent following dependencies have to be manually installed:
 
     $ yum install libffi-devel gcc python-devel openssl-devel
+    $ yum install -y http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-1.el7.nux.noarch.rpm
+    $ yum install hwinfo 
 
 Clone and install the node-agent
 
