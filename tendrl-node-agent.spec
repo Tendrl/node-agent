@@ -68,7 +68,7 @@ py.test -v tendrl/node_agent/tests || :
 %dir %{_var}/log/tendrl/node_agent
 %dir %{_sysconfdir}/tendrl/node_agent
 %dir %{_datadir}/tendrl/node_agent
-%doc README.rst
+%doc README.adoc
 %license LICENSE
 %{_datadir}/tendrl/node_agent/
 %{_sysconfdir}/tendrl/tendrl.conf
