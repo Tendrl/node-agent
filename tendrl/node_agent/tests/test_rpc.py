@@ -1,7 +1,6 @@
 import etcd
 import gevent.event
 from mock import MagicMock
-import pytest
 from sample_manager import SampleManager
 import sys
 sys.modules['tendrl.node_agent.config'] = MagicMock()
@@ -11,6 +10,7 @@ from tendrl.node_agent.flows.flow_execution_exception import \
 from tendrl.node_agent.manager.rpc import config
 from tendrl.node_agent.manager.rpc import EtcdRPC
 from tendrl.node_agent.manager.rpc import EtcdThread
+from tendrl.node_agent.manager import utils
 import uuid
 del sys.modules['tendrl.node_agent.config']
 
@@ -32,38 +32,19 @@ class Test_EtcdRpc(object):
                 return "0.0.0.0"
         monkeypatch.setattr(config, 'get', mock_config_get)
 
-        def mock_uuid4():
+        def mock_node_id():
             return 'aa22a6fe-87f0-45cf-8b70-2d0ff4c02af6'
-        monkeypatch.setattr(uuid, 'uuid4', mock_uuid4)
+        monkeypatch.setattr(utils, 'get_node_context', mock_node_id)
 
         server = EtcdRPC()
 
-        assert server.integration_id == 'aa22a6fe-87f0-45cf-8b70-2d0ff4c02af6'
+        assert server.node_id == 'aa22a6fe-87f0-45cf-8b70-2d0ff4c02af6'
         local_client = etcd.Client(
             port=2379,
             host="0.0.0.0"
         )
         assert server.client.port == local_client.port
         assert server.client.host == local_client.host
-
-    def test_convert_flow_name(self, monkeypatch):
-        def mock_config_get(package, parameter):
-            if parameter == "etcd_port":
-                return 2379
-            elif parameter == "etcd_connection":
-                return "0.0.0.0"
-        monkeypatch.setattr(config, 'get', mock_config_get)
-
-        def mock_uuid4():
-            return 'aa22a6fe-87f0-45cf-8b70-2d0ff4c02af6'
-        monkeypatch.setattr(uuid, 'uuid4', mock_uuid4)
-
-        server = EtcdRPC()
-
-        assert server.convert_flow_name("ExecuteCommand") == "execute_command"
-        assert server.convert_flow_name(
-            "InstallDnfPackage") == "install_dnf_package"
-        assert server.convert_flow_name("Create") == "create"
 
     def test_invoke_flow(self, monkeypatch):
         def mock_config_get(package, parameter):
@@ -79,11 +60,28 @@ class Test_EtcdRpc(object):
 
         server = EtcdRPC()
         api_job = {'message': "sample message"}
-        result = server.invoke_flow(
-            "SampleFlow", api_job,
-            flow_module_path="tendrl.node_agent.tests"
-        )
-        assert result == "sample message"
+        sys.modules[
+            'tendrl.node_agent.gluster_integration.' +
+            'flows.import_cluster'] = MagicMock()
+        server.invoke_flow(
+            "tendrl.node_agent.gluster_integration." +
+            "flows.import_cluster.ImportCluster",
+            api_job, (
+                {
+                    "tendrl.node_agent.gluster_integration": {
+                        "flows": {
+                            "ImportCluster": {
+                                "atoms": "atoms",
+                                "pre_run": "pre_run",
+                                "post_run": "post_run",
+                                "uuid": "uuid"
+                                }
+                            }
+                        }
+                    }))
+        del sys.modules[
+            'tendrl.node_agent.gluster_integration.flows.import_cluster']
+        return True
 
     def test_stop(self):
         assert True
@@ -96,6 +94,10 @@ class Test_EtcdRpc(object):
                 return "0.0.0.0"
         monkeypatch.setattr(config, 'get', mock_config_get)
 
+        def mock_node_id():
+            return 'aa22a6fe-87f0-45cf-8b70-2d0ff4c02af6'
+        monkeypatch.setattr(utils, 'get_node_context', mock_node_id)
+
         def mock_uuid4():
             return 'aa22a6fe-87f0-45cf-8b70-2d0ff4c02af6'
         monkeypatch.setattr(uuid, 'uuid4', mock_uuid4)
@@ -106,13 +108,14 @@ class Test_EtcdRpc(object):
             pass
         monkeypatch.setattr(server.client, 'write', mock_etcd_write)
 
-        def mock_invoke_flow(flow, job):
-            return {"key1": "value1", "key2": "value2"}, ""
+        def mock_invoke_flow(flow, job, definitions):
+            return {"key1": "value1", "key2": "value2"}, "", ""
         monkeypatch.setattr(server, 'invoke_flow', mock_invoke_flow)
 
         input_raw_job1 = {
             "status": "new",
             "cluster_id": "49fa2adde8a6e98591f0f5cb4bc5f44d",
+            "type": "node",
             "parameters": {"Node[]": ['node1', 'node2'],
                            "sds_name": "gluster", "sds_version": "3.2.0",
                            "cluster_id": "mycluster"},
@@ -120,6 +123,7 @@ class Test_EtcdRpc(object):
                    ".import_cluster.ImportCluster",
         }
 
+        server.validate_flow = MagicMock(return_value=True)
         raw_job, executed = server._process_job(
             input_raw_job1,
             "9a9604c0-d2a6-4be0-9a82-262f10037a8f"
@@ -129,10 +133,6 @@ class Test_EtcdRpc(object):
         assert raw_job['status'] == "finished"
         assert raw_job['request_id'] == "aa22a6fe-87f0-45cf-8b70-2d0ff4c02af6"\
             "/flow_aa22a6fe-87f0-45cf-8b70-2d0ff4c02af6"
-        assert raw_job["response"] == {
-            "result": {"key1": "value1", "key2": "value2"},
-            "error": ""
-        }
 
         input_raw_job2 = {
             "status": "processing", "sds_type": "generic",
@@ -186,7 +186,7 @@ class Test_EtcdRpc(object):
         )
         assert not executed
 
-    def test_process_job_exception(self, monkeypatch):
+    def test_process_job_finished(self, monkeypatch):
         def mock_config_get(package, parameter):
             if parameter == "etcd_port":
                 return 2379
@@ -217,13 +217,10 @@ class Test_EtcdRpc(object):
             "object_type": "generic",
             "flow": "ExecuteCommand"
         }
-
-        pytest.raises(
-            FlowExecutionFailedError,
-            server._process_job,
-            input_raw_job1,
-            "9a9604c0-d2a6-4be0-9a82-262f10037a8f"
-        )
+        server.validate_flow = MagicMock(return_value=False)
+        raw_job, executed = server._process_job(
+            input_raw_job1, "9a9604c0-d2a6-4be0-9a82-262f10037a8f")
+        assert raw_job['status'] == "finished"
 
 
 class TestEtcdThread(object):
