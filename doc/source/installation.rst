@@ -43,11 +43,6 @@ Clone and install the node-agent
     $ workon node_agent
     $ pip install .
 
-One of the dependency of node-agent needs a higher version of setuptools, So user
-has to manually upgrade the setuptools package to alteast setuptools>=11.3
-
-    $ pip install setuptools --upgrade
-
 Note that we use virtualenvwrapper_ here to activate ``node_agent`` `python
 virtual enviroment`_. This way, we install *node agent* into the same virtual
 enviroment which we have created during installation of *common*.
