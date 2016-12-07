@@ -131,7 +131,7 @@ def get_node_inventory():
 
     node_inventory["machine_id"] = out
 
-    node_inventory["node_id"] = mgr_utils.get_node_context()
+    node_inventory["node_id"] = mgr_utils.get_local_node_context()
 
     node_inventory["os"] = getNodeOs()
     node_inventory["cpu"] = getNodeCpu()

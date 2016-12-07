@@ -257,10 +257,10 @@ class Test_pull_hardware_inventory(object):
 
         monkeypatch.setattr(Command, 'start', mock_cmd_start)
 
-        def mock_get_node_context():
+        def mock_get_local_node_context():
             return "e3bf35c1-31e6-421a-bd68-f22ce2274d96"
         monkeypatch.setattr(
-            mgr_utils, 'get_node_context', mock_get_node_context)
+            mgr_utils, 'get_node_context', mock_get_local_node_context)
 
         def mock_getNodeOs():
             return {
@@ -301,7 +301,7 @@ class Test_pull_hardware_inventory(object):
         node_inventory = hi.get_node_inventory()
         node_inventory_expected = {
             "machine_id": "5bb3458a09004b2d9bdadf0705889958",
-            "node_id": 'e3bf35c1-31e6-421a-bd68-f22ce2274d96',
+            "node_id": 'a44342f7-5158-414c-b2c6-970e2684c77d',
             "os": {
                 "KernelVersion": "4.6.4-301.fc24.x86_64",
                 "SELinuxMode": "Enforcing", "OSVersion": "24",
