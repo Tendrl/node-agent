@@ -1,19 +1,20 @@
+import json
 import logging
 import signal
 import socket
+import time
 
-import etcd
 import gevent.event
 import gevent.greenlet
-import json
 import pull_hardware_inventory
-from rpc import EtcdThread
-from tendrl.common.log import setup_logging
 
-from tendrl.node_agent.config import TendrlConfig
+from tendrl.common.config import TendrlConfig
+from tendrl.common.log import setup_logging
+from tendrl.common.manager.manager import Manager
+from tendrl.common.manager.manager import TopLevelEvents
 from tendrl.node_agent.persistence.tendrl_definitions import TendrlDefinitions
 
-config = TendrlConfig()
+config = TendrlConfig("/etc/tendrl/tendrl.conf")
 
 from tendrl.node_agent.manager.tendrl_definitions_node_agent import data as \
     def_data
@@ -23,26 +24,20 @@ from tendrl.node_agent.persistence.memory import Memory
 from tendrl.node_agent.persistence.node import Node
 from tendrl.node_agent.persistence.node_context import NodeContext
 from tendrl.node_agent.persistence.os import Os
-from tendrl.node_agent.persistence.persister import Persister
+from tendrl.node_agent.persistence.persister import NodeAgentPersister
 from tendrl.node_agent.persistence.tendrl_context import TendrlContext
-
-
-import time
 
 LOG = logging.getLogger(__name__)
 HARDWARE_INVENTORY_FILE = "/etc/tendrl/tendrl-node-inventory.json"
 
 
-class TopLevelEvents(gevent.greenlet.Greenlet):
+class NodeAgentTopLevelEvents(TopLevelEvents):
 
     def __init__(self, manager):
-        super(TopLevelEvents, self).__init__()
+        super(NodeAgentTopLevelEvents, self).__init__(manager)
 
         self._manager = manager
         self._complete = gevent.event.Event()
-
-    def stop(self):
-        self._complete.set()
 
     def _run(self):
         LOG.info("%s running" % self.__class__.__name__)
@@ -85,40 +80,26 @@ class TopLevelEvents(gevent.greenlet.Greenlet):
         LOG.info("%s complete" % self.__class__.__name__)
 
 
-class Manager(object):
+class NodeAgentManager(Manager):
     """manage user request thread
 
     """
 
     def __init__(self, machine_id):
         self._complete = gevent.event.Event()
-
-        self._user_request_thread = EtcdThread(self)
-        self._discovery_thread = TopLevelEvents(self)
-        self.persister = Persister()
-        etcd_kwargs = {'port': int(config.get("common", "etcd_port")),
-                       'host': config.get("common", "etcd_connection")}
-        self.etcd_client = etcd.Client(**etcd_kwargs)
-
+        self._discovery_thread = NodeAgentTopLevelEvents(self)
+        super(
+            NodeAgentManager,
+            self
+        ).__init__(
+            "node",
+            utils.get_node_context(),
+            config,
+            NodeAgentTopLevelEvents(self),
+            NodeAgentPersister(config),
+            "/tendrl_definitions_node_agent/data"
+        )
         self.register_node(machine_id)
-
-    def stop(self):
-        LOG.info("%s stopping" % self.__class__.__name__)
-        self._user_request_thread.stop()
-        self._discovery_thread.stop()
-        self.persister.stop()
-
-    def start(self):
-        LOG.info("%s starting" % self.__class__.__name__)
-        self._user_request_thread.start()
-        self._discovery_thread.start()
-        self.persister.start()
-
-    def join(self):
-        LOG.info("%s joining" % self.__class__.__name__)
-        self._user_request_thread.join()
-        self._discovery_thread.join()
-        self.persister.join()
 
     def register_node(self, machine_id):
         local_node_context = utils.get_local_node_context()
@@ -237,7 +218,7 @@ def main():
 
     machine_id = utils.get_machine_id()
 
-    m = Manager(machine_id)
+    m = NodeAgentManager(machine_id)
     m.start()
 
     complete = gevent.event.Event()

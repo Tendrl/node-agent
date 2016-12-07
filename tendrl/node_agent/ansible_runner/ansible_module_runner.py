@@ -2,10 +2,10 @@ import ansible.executor.module_common as module_common
 from ansible import modules
 import os
 import subprocess
-from tendrl.node_agent.config import TendrlConfig
+from tendrl.common.config import TendrlConfig
 import uuid
 
-config = TendrlConfig()
+config = TendrlConfig("/etc/tendrl/tendrl.conf")
 
 try:
     import json

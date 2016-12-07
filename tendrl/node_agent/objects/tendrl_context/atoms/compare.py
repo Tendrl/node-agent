@@ -1,19 +1,15 @@
-import etcd
 import json
-from tendrl.node_agent.config import TendrlConfig
 
-config = TendrlConfig()
+from tendrl.common.atoms.base_atom import BaseAtom
 
 
-class Compare(object):
+class Compare(BaseAtom):
     def run(self, parameters):
         sds_name = parameters.get("Tendrl_context.sds_name")
         sds_version = parameters.get("Tendrl_context.sds_version")
         return True
-        etcd_kwargs = {'port': int(config.get("common", "etcd_port")),
-                       'host': config.get("common", "etcd_connection")}
 
-        client = etcd.Client(**etcd_kwargs)
+        client = parameters['etcd_client']
         # get the node_agent_key some how
         # for now reading it from the json file
 

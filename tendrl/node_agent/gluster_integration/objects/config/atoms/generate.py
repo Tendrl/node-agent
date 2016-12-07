@@ -1,4 +1,7 @@
-class Generate(object):
+from tendrl.common.atoms.base_atom import BaseAtom
+
+
+class Generate(BaseAtom):
     def run(self, parameters):
         data = "\n[gluster_integration]\n# Path to log file\n"\
                "log_level = DEBUG\n" \

@@ -1,7 +1,9 @@
 import os
 
+from tendrl.common.atoms.base_atom import BaseAtom
 
-class CheckNodeUp(object):
+
+class CheckNodeUp(BaseAtom):
     def run(self, parameters):
         fqdn = parameters.get("fqdn")
         response = os.system("ping -c 1 " + fqdn)
