@@ -1,3 +1,9 @@
+.. vim: tw=79
+
+===================
+ Tendrl Node Agent
+===================
+
 Tendrl node agent resides on every node managed by tendlr. It is
 responsible for operating system level operations such as hardware
 inventory, service management, process monitoring etc. The node agent
@@ -26,12 +32,12 @@ Features
 Installation from Source on CentOS 7
 ====================================
 
-    **Important**
+.. important::
 
     Node agent needs to be installed on every node of the storage
     cluster that is to be managed by tendrl.
 
-    **Note**
+.. note::
 
     All the commands are run as a regular user that has ``sudo``
     privileges. The commands are all assumed to be run from a single
@@ -42,28 +48,28 @@ Installation from Source on CentOS 7
 Deployment Requirements
 -----------------------
 
-1. Ensure that etcd is running on a node in the network and is reachable
+#. Ensure that etcd is running on a node in the network and is reachable
    from the node you’re about to install the node agent on. Note it’s
    address and port.
 
 System Setup
 ------------
 
-1. Install the build toolchain and other development packages.
+#. Install the build toolchain and other development packages.
 
    ::
 
        $ sudo yum groupinstall 'Development Tools'
        $ sudo yum install libffi-devel openssl-devel
 
-2. Install
+#. Install
    `virtualenvwrapper <https://virtualenvwrapper.readthedocs.io/>`__.
 
    ::
 
        $ sudo yum install python-virtualenv python-virtualenvwrapper python-devel pip
 
-3. Create system directories.
+#. Create system directories.
 
    ::
 
@@ -76,7 +82,7 @@ System Setup
 Environment Setup
 -----------------
 
-1. Configure ``virtualenvwrapper``.
+#. Configure ``virtualenvwrapper``.
 
    Setup the shell startup files based on the ``virtualenvwrapper``
    documentation at:
@@ -88,7 +94,7 @@ Environment Setup
 
        $ which virtualenvwrapper.sh # Should be /usr/bin/virtualenvwrapper.sh
 
-2. Create and load the virtual environment for the node agent.
+#. Create and load the virtual environment for the node agent.
 
    ::
 
@@ -98,7 +104,7 @@ Environment Setup
 Install Tendrl common and node\_agent
 -------------------------------------
 
-1. Install the `common library <https://github.com/Tendrl/common>`__.
+#. Install the `common library <https://github.com/Tendrl/common>`__.
 
    ::
 
@@ -108,7 +114,7 @@ Install Tendrl common and node\_agent
        [common] $ pip install .
        [common] $ popd
 
-2. Install the node agent.
+#. Install the node agent.
 
    ::
 
@@ -118,7 +124,7 @@ Install Tendrl common and node\_agent
        [node_agent] $ pip install .
        [node_agent] $ popd
 
-3. Fetch the ceph\_integration and gluster\_integration codebases.
+#. Fetch the ceph\_integration and gluster\_integration codebases.
 
    ::
 
@@ -128,17 +134,17 @@ Install Tendrl common and node\_agent
 Configuration
 -------------
 
-1. Create the tendrl configuration file ``/etc/tendrl/tendrl.conf``.
+#. Create the tendrl configuration file ``/etc/tendrl/tendrl.conf``.
 
    ::
 
        $ cp common/etc/tendrl/tendrl.conf.sample /etc/tendrl/tendrl.conf
 
-   a. Configure the following ``etcd_port`` and ``etcd_connection``
-      directives in ``/etc/tendrl/tendrl.conf`` to point to the etcd
-      instance discussed in the first step.
+   * Configure the following ``etcd_port`` and ``etcd_connection``
+     directives in ``/etc/tendrl/tendrl.conf`` to point to the etcd
+     instance discussed in the first step.
 
-2. Install the common logging configuration file
+#. Install the common logging configuration file
    ``/etc/tendrl/common_logging.yaml``.
 
    ::
@@ -146,14 +152,14 @@ Configuration
        $ cp common/etc/samples/logging.yaml.timedrotation.sample \
          /etc/tendrl/common_logging.yaml
 
-    **Note**
+   .. note::
 
-    There are other sample configuration files in the
-    ``common/etc/samples`` directory which could be used to setup
-    logging for different system configuration such as via syslog and
-    journald.
+       There are other sample configuration files in the
+       ``common/etc/samples`` directory which could be used to setup
+       logging for different system configuration such as via syslog and
+       journald.
 
-1. Install the node agent logging configuration file
+#. Install the node agent logging configuration file
    ``/etc/tendrl/node_agent_logging.yaml``.
 
    ::
@@ -165,13 +171,13 @@ Configuration
        $ cp gluster_integration/etc/logging.yaml.timedrotation.sample \
          /etc/tendrl/gluster_integration_logging.yaml
 
-    **Note**
+   .. note::
 
-    There are other sample configuration files in the ``node_agent/etc``
-    directory which could be used to setup logging for different system
-    configuration such as via syslog and journald.
+       There are other sample configuration files in the ``node_agent/etc``
+       directory which could be used to setup logging for different system
+       configuration such as via syslog and journald.
 
-1. Append the following configuration to the tendrl configuration file
+#. Append the following configuration to the tendrl configuration file
    ``/etc/tendrl/tendrl.conf``:
 
    ::
@@ -202,4 +208,3 @@ run:
 
 .. |Build status| image:: https://travis-ci.org/Tendrl/node_agent.svg?branch=master
 .. |Coverage| image:: https://coveralls.io/repos/github/Tendrl/node_agent/badge.svg?branch=master
-
