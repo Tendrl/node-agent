@@ -2,6 +2,7 @@ import logging
 import signal
 import socket
 
+import etcd
 import gevent.event
 import gevent.greenlet
 import json
@@ -14,7 +15,6 @@ from tendrl.node_agent.persistence.tendrl_definitions import TendrlDefinitions
 
 config = TendrlConfig()
 
-from tendrl.node_agent.manager.command import Command
 from tendrl.node_agent.manager.tendrl_definitions_node_agent import data as \
     def_data
 from tendrl.node_agent.manager import utils
@@ -96,6 +96,10 @@ class Manager(object):
         self._user_request_thread = EtcdThread(self)
         self._discovery_thread = TopLevelEvents(self)
         self.persister = Persister()
+        etcd_kwargs = {'port': int(config.get("common", "etcd_port")),
+                       'host': config.get("common", "etcd_connection")}
+        self.etcd_client = etcd.Client(**etcd_kwargs)
+
         self.register_node(machine_id)
 
     def stop(self):
@@ -117,11 +121,17 @@ class Manager(object):
         self.persister.join()
 
     def register_node(self, machine_id):
+        local_node_context = utils.get_local_node_context()
+        if local_node_context:
+            if utils.get_node_context(self.etcd_client, local_node_context) \
+                    is None:
+                utils.delete_local_node_context()
+
         self.persister.update_node_context(
             NodeContext(
                 updated=str(time.time()),
                 machine_id=machine_id,
-                node_id=utils.set_node_context(),
+                node_id=utils.set_local_node_context(),
                 fqdn=socket.getfqdn(),
             )
         )
@@ -130,14 +140,14 @@ class Manager(object):
             TendrlContext(
                 updated=str(time.time()),
                 sds_version=tendrl_context['sds_version'],
-                node_id=utils.get_node_context(),
+                node_id=utils.get_local_node_context(),
                 sds_name=tendrl_context['sds_name'],
             )
         )
 
         self.persister.update_node(
             Node(
-                node_id=utils.get_node_context(),
+                node_id=utils.get_local_node_context(),
                 fqdn=socket.getfqdn(),
                 status="UP"
             )
@@ -225,7 +235,7 @@ def main():
         config.get('node_agent', 'log_level')
     )
 
-    machine_id = get_machine_id()
+    machine_id = utils.get_machine_id()
 
     m = Manager(machine_id)
     m.start()
@@ -242,11 +252,6 @@ def main():
     while not complete.is_set():
         complete.wait(timeout=1)
 
-
-def get_machine_id():
-    cmd = Command({"_raw_params": "cat /etc/machine-id"})
-    out, err = cmd.start()
-    return out['stdout']
 
 if __name__ == "__main__":
     main()

@@ -34,7 +34,7 @@ class Test_EtcdRpc(object):
 
         def mock_node_id():
             return 'aa22a6fe-87f0-45cf-8b70-2d0ff4c02af6'
-        monkeypatch.setattr(utils, 'get_node_context', mock_node_id)
+        monkeypatch.setattr(utils, 'get_local_node_context', mock_node_id)
 
         server = EtcdRPC()
 
@@ -96,7 +96,7 @@ class Test_EtcdRpc(object):
 
         def mock_node_id():
             return 'aa22a6fe-87f0-45cf-8b70-2d0ff4c02af6'
-        monkeypatch.setattr(utils, 'get_node_context', mock_node_id)
+        monkeypatch.setattr(utils, 'get_local_node_context', mock_node_id)
 
         def mock_uuid4():
             return 'aa22a6fe-87f0-45cf-8b70-2d0ff4c02af6'

@@ -257,10 +257,10 @@ class Test_pull_hardware_inventory(object):
 
         monkeypatch.setattr(Command, 'start', mock_cmd_start)
 
-        def mock_get_node_context():
+        def mock_get_local_node_context():
             return "e3bf35c1-31e6-421a-bd68-f22ce2274d96"
         monkeypatch.setattr(
-            mgr_utils, 'get_node_context', mock_get_node_context)
+            mgr_utils, 'get_local_node_context', mock_get_local_node_context)
 
         def mock_getNodeOs():
             return {
