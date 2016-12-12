@@ -38,6 +38,7 @@ namespace.tendrl.node_agent:
             mandatory:
               - Node.cmd_str
           name: "Execute CMD on Node"
+          help: "Executes a command"
           run: tendrl.node_agent.atoms.node.cmd.Cmd
           type: Create
           uuid: dc8fff3a-34d9-4786-9282-55eff6abb6c3
@@ -49,6 +50,7 @@ namespace.tendrl.node_agent:
           outputs:
             - Node.status
           name: "check whether the node is up"
+          help: "Checks if a node is up"
           run: tendrl.node_agent.atoms.node.check_node_up
           type: Create
           uuid: eda0b13a-7362-48d5-b5ca-4b6d6533a5ab
@@ -84,6 +86,7 @@ namespace.tendrl.node_agent:
             optional:
               - Package.version
           name: "Install Package"
+          help: "Checks if a package is installed"
           post_run:
             - tendrl.node_agent.atoms.package.validations.check_package_installed
           run: tendrl.node_agent.atoms.package.install.Install
@@ -110,6 +113,7 @@ namespace.tendrl.node_agent:
               - Service.config_path
               - Service.config_data
           name: "Configure Service"
+          help: "Checks if a service is running"
           post_run:
             - tendrl.node_agent.atoms.service.validations.check_service_running
           run: tendrl.node_agent.atoms.service.configure.Configure
@@ -132,6 +136,7 @@ namespace.tendrl.node_agent:
               - Service.config_path
               - Service.config_data
           name: "Configure Service"
+          help: "Checks if a service is running"
           post_run:
             - tendrl.node_agent.atoms.service.validations.check_service_running
           run: tendrl.node_agent.atoms.service.configure.Configure
@@ -152,6 +157,17 @@ namespace.tendrl.node_agent:
           type: String
       enabled: true
     Tendrl_context:
+      atoms:
+        compare:
+          enabled: true
+          inputs:
+            mandatory:
+              - Tendrl_context.sds_name
+              - Tendrl_context.sds_version
+          name: "Compare SDS details"
+          help: "Compares the SDS details in context"
+          run: tendrl.node_agent.objects.tendrl_context.atoms.compare.Compare
+          uuid: b90a0d97-8c9f-4ab1-8f64-dbb5638159a9
       enabled: True
       attrs:
         cluster_id:
@@ -180,6 +196,26 @@ namespace.tendrl.node_agent:
           type: String
       enabled: true
       value: nodes/$Node_context.node_id/Node_context
+    File:
+      atoms:
+        write:
+          enabled: true
+          inputs:
+            mandatory:
+              - Config.data
+              - Config.file_path
+          name: "Write configuration data"
+          help: "Writes the configuration data"
+          run: tendrl.node_agent.objects.File.atoms.write.Write
+          uuid: b90a0d97-8c9f-4ab1-8f64-dbb5638159a5
+      attrs:
+        data:
+          help: "Configuration data"
+          type: String
+        file_path:
+          help: "configuration file path"
+          type: String
+      enabled: true
 namespace.tendrl.node_agent.gluster_integration:
   flows:
     ImportCluster:
@@ -188,7 +224,7 @@ namespace.tendrl.node_agent.gluster_integration:
         - tendrl.node_agent.gluster_integration.objects.Config.atoms.generate
         - tendrl.node_agent.objects.File.atoms.write
         - tendrl.node_agent.objects.Node.atoms.cmd
-      description: "Import existing Gluster Cluster"
+      help: "Import existing Gluster Cluster"
       enabled: true
       inputs:
         mandatory:
@@ -206,6 +242,26 @@ namespace.tendrl.node_agent.gluster_integration:
       uuid: 2f94a48a-05d7-408c-b400-e27827f4edef
       version: 1
   objects:
+    Tendrl_context:
+      atoms:
+        check_cluster_id_exists:
+          enabled: true
+          name: "Check cluster id existence"
+          help: "Checks if a cluster id exists"
+          run: tendrl.node_agent.gluster_integration.objects.Tendrl_context.atoms.check_cluster_id_exists.CheckClusterIdExists
+          uuid: b90a0d97-8c9f-4ab1-8f64-dbb5638159a4
+      enabled: True
+      attrs:
+        cluster_id:
+          help: "Tendrl managed/generated cluster id for the sds being managed by Tendrl"
+          type: String
+        sds_name:
+          help: "Name of the Tendrl managed sds, eg: 'gluster'"
+          type: String
+        sds_version:
+          help: "Version of the Tendrl managed sds, eg: '3.2.1'"
+          type: String
+      value: clusters/$Tendrl_context.cluster_id/Tendrl_context
     Config:
       atoms:
         generate:
@@ -215,6 +271,7 @@ namespace.tendrl.node_agent.gluster_integration:
               - Config.etcd_port
               - Config.etcd_connection
           name: "Generate Gluster Integration configuration based on provided inputs"
+          help: "Generates configuration content"
           outputs:
             - Config.data
             - Config.file_path
@@ -244,7 +301,7 @@ namespace.tendrl.node_agent.ceph_integration:
         - tendrl.node_agent.ceph_integration.objects.Config.atoms.generate
         - tendrl.node_agent.objects.File.atoms.write
         - tendrl.node_agent.objects.Node.atoms.cmd
-      description: "Import existing Ceph Cluster"
+      help: "Import existing Ceph Cluster"
       enabled: true
       inputs:
         mandatory:
@@ -262,6 +319,26 @@ namespace.tendrl.node_agent.ceph_integration:
       uuid: 5a48d43b-a163-496c-b01d-9c600ea0a5db
       version: 1
   objects:
+    Tendrl_context:
+      atoms:
+        check_cluster_id_exists:
+          enabled: true
+          name: "Check cluster id existence"
+          help: "Checks if a cluster id exists"
+          run: tendrl.node_agent.ceph_integration.objects.Tendrl_context.atoms.check_cluster_id_exists.CheckClusterIdExists
+          uuid: b90a0d97-8c9f-4ab1-8f64-dbb5638159a1
+      enabled: True
+      attrs:
+        cluster_id:
+          help: "Tendrl managed/generated cluster id for the sds being managed by Tendrl"
+          type: String
+        sds_name:
+          help: "Name of the Tendrl managed sds, eg: 'ceph'"
+          type: String
+        sds_version:
+          help: "Version of the Tendrl managed sds, eg: '2.1'"
+          type: String
+      value: clusters/$Tendrl_context.cluster_id/Tendrl_context
     Config:
       atoms:
         generate:
@@ -271,6 +348,7 @@ namespace.tendrl.node_agent.ceph_integration:
               - Config.etcd_port
               - Config.etcd_connection
           name: "Generate Ceph Integration configuration based on provided inputs"
+          help: "Generates configuration content"
           outputs:
             - Config.data
             - Config.file_path

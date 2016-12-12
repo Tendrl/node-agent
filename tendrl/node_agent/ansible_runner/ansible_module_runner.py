@@ -5,7 +5,7 @@ import subprocess
 from tendrl.common.config import TendrlConfig
 import uuid
 
-config = TendrlConfig("/etc/tendrl/tendrl.conf")
+config = TendrlConfig("node_agent", "/etc/tendrl/tendrl.conf")
 
 try:
     import json

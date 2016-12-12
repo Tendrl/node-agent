@@ -11,10 +11,10 @@ import pull_hardware_inventory
 from tendrl.common.config import TendrlConfig
 from tendrl.common.log import setup_logging
 from tendrl.common.manager.manager import Manager
-from tendrl.common.manager.manager import TopLevelEvents
+from tendrl.common.manager.manager import SyncStateThread
 from tendrl.node_agent.persistence.tendrl_definitions import TendrlDefinitions
 
-config = TendrlConfig("/etc/tendrl/tendrl.conf")
+config = TendrlConfig("node_agent", "/etc/tendrl/tendrl.conf")
 
 from tendrl.node_agent.manager.tendrl_definitions_node_agent import data as \
     def_data
@@ -24,17 +24,17 @@ from tendrl.node_agent.persistence.memory import Memory
 from tendrl.node_agent.persistence.node import Node
 from tendrl.node_agent.persistence.node_context import NodeContext
 from tendrl.node_agent.persistence.os import Os
-from tendrl.node_agent.persistence.persister import NodeAgentPersister
+from tendrl.node_agent.persistence.persister import NodeAgentEtcdPersister
 from tendrl.node_agent.persistence.tendrl_context import TendrlContext
 
 LOG = logging.getLogger(__name__)
 HARDWARE_INVENTORY_FILE = "/etc/tendrl/tendrl-node-inventory.json"
 
 
-class NodeAgentTopLevelEvents(TopLevelEvents):
+class NodeAgentSyncStateThread(SyncStateThread):
 
     def __init__(self, manager):
-        super(NodeAgentTopLevelEvents, self).__init__(manager)
+        super(NodeAgentSyncStateThread, self).__init__(manager)
 
         self._manager = manager
         self._complete = gevent.event.Event()
@@ -87,7 +87,7 @@ class NodeAgentManager(Manager):
 
     def __init__(self, machine_id):
         self._complete = gevent.event.Event()
-        self._discovery_thread = NodeAgentTopLevelEvents(self)
+        self._discovery_thread = NodeAgentSyncStateThread(self)
         super(
             NodeAgentManager,
             self
@@ -95,8 +95,8 @@ class NodeAgentManager(Manager):
             "node",
             utils.get_node_context(),
             config,
-            NodeAgentTopLevelEvents(self),
-            NodeAgentPersister(config),
+            self._discovery_thread,
+            NodeAgentEtcdPersister(config),
             "/tendrl_definitions_node_agent/data"
         )
         self.register_node(machine_id)
