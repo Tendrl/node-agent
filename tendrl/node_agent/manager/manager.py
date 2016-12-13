@@ -1,3 +1,4 @@
+import etcd
 import json
 import logging
 import signal
@@ -87,13 +88,24 @@ class NodeAgentManager(Manager):
 
     def __init__(self, machine_id):
         self._complete = gevent.event.Event()
+        # Initialize the state sync thread which gets the underlying
+        # node details and pushes the same to etcd
         self._discovery_thread = NodeAgentSyncStateThread(self)
+        etcd_kwargs = {'port': int(config.get("common", "etcd_port")),
+                       'host': config.get("common", "etcd_connection")}
+        self.etcd_client = etcd.Client(**etcd_kwargs)
+        local_node_context = utils.set_local_node_context()
+        if local_node_context:
+            if utils.get_node_context(self.etcd_client, local_node_context) \
+                    is None:
+                utils.delete_local_node_context()
+
         super(
             NodeAgentManager,
             self
         ).__init__(
             "node",
-            utils.get_node_context(),
+            utils.get_local_node_context(),
             config,
             self._discovery_thread,
             NodeAgentEtcdPersister(config),
@@ -102,13 +114,7 @@ class NodeAgentManager(Manager):
         self.register_node(machine_id)
 
     def register_node(self, machine_id):
-        local_node_context = utils.get_local_node_context()
-        if local_node_context:
-            if utils.get_node_context(self.etcd_client, local_node_context) \
-                    is None:
-                utils.delete_local_node_context()
-
-        self.persister.update_node_context(
+        self.persister_thread.update_node_context(
             NodeContext(
                 updated=str(time.time()),
                 machine_id=machine_id,
@@ -117,7 +123,7 @@ class NodeAgentManager(Manager):
             )
         )
         tendrl_context = pull_hardware_inventory.getTendrlContext()
-        self.persister.update_tendrl_context(
+        self.persister_thread.update_tendrl_context(
             TendrlContext(
                 updated=str(time.time()),
                 sds_version=tendrl_context['sds_version'],
@@ -126,19 +132,19 @@ class NodeAgentManager(Manager):
             )
         )
 
-        self.persister.update_node(
+        self.persister_thread.update_node(
             Node(
                 node_id=utils.get_local_node_context(),
                 fqdn=socket.getfqdn(),
                 status="UP"
             )
         )
-        self.persister.update_tendrl_definitions(TendrlDefinitions(
+        self.persister_thread.update_tendrl_definitions(TendrlDefinitions(
             updated=str(time.time()), data=def_data))
 
     def on_pull(self, raw_data):
         LOG.info("on_pull, Updating Node_context data")
-        self.persister.update_node_context(
+        self.persister_thread.update_node_context(
             NodeContext(
                 updated=str(time.time()),
                 machine_id=raw_data["machine_id"],
@@ -147,7 +153,7 @@ class NodeAgentManager(Manager):
             )
         )
         LOG.info("on_pull, Updating node data")
-        self.persister.update_node(
+        self.persister_thread.update_node(
             Node(
                 node_id=raw_data["node_id"],
                 fqdn=raw_data["os"]["FQDN"],
@@ -157,7 +163,7 @@ class NodeAgentManager(Manager):
         if "tendrl_context" in raw_data:
             LOG.info("on_pull, Updating tendrl context data")
             tc = raw_data['tendrl_context']
-            self.persister.update_tendrl_context(
+            self.persister_thread.update_tendrl_context(
                 TendrlContext(
                     updated=str(time.time()),
                     sds_name=tc["sds_name"],
@@ -170,7 +176,7 @@ class NodeAgentManager(Manager):
         if "os" in raw_data:
             LOG.info("on_pull, Updating OS data")
             node = raw_data['os']
-            self.persister.update_os(
+            self.persister_thread.update_os(
                 Os(
                     updated=str(time.time()),
                     os=node["Name"],
@@ -183,7 +189,7 @@ class NodeAgentManager(Manager):
         if "memory" in raw_data:
             LOG.info("on_pull, Updating memory")
             memory = raw_data['memory']
-            self.persister.update_memory(
+            self.persister_thread.update_memory(
                 Memory(
                     updated=str(time.time()),
                     total_size=memory["TotalSize"],
@@ -194,7 +200,7 @@ class NodeAgentManager(Manager):
         if "cpu" in raw_data:
             LOG.info("on_pull, Updating cpu")
             cpu = raw_data['cpu']
-            self.persister.update_cpu(
+            self.persister_thread.update_cpu(
                 Cpu(
                     updated=str(time.time()),
                     model=cpu["Model"],

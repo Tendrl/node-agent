@@ -2,7 +2,7 @@ import json
 import socket
 import uuid
 
-from tendrl.common.flows.flow import Flow
+from tendrl.common.flows.base_flow import BaseFlow
 from tendrl.node_agent.manager import utils as manager_utils
 
 
@@ -15,7 +15,7 @@ def get_package_name(installation_source_type):
         return ceph
 
 
-class ImportCluster(Flow):
+class ImportCluster(BaseFlow):
     def run(self):
         curr_node_id = manager_utils.get_local_node_context()
         cluster_id = self.parameters['Tendrl_context.cluster_id']
