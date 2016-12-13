@@ -17,13 +17,17 @@ Development version from the source
 
 1. First install http://github.com/tendrl/common from the source code::
 
+    $ yum install git python-pip
     $ git clone https://github.com/Tendrl/common.git
     $ cd common
+    $ pip install virtualenvwrapper
+    $ source /usr/bin/virtualenvwrapper.sh
     $ mkvirtualenv node_agent
     $ pip install .
 
 2. Create common logging config file::
 
+    $ mkdir /etc/tendrl
     $ cp etc/samples/logging.yaml.timedrotation.sample /etc/tendrl/common_logging.yaml
 
 Note that there are other sample config files for logging shipped with the product
@@ -55,21 +59,17 @@ enviroment which we have created during installation of *common*.
     $ cp etc/logging.yaml.timedrotation.sample /etc/tendrl/node_agent_logging.yaml
     $ cp etc/tendrl/tendrl.conf.sample /etc/tendrl/tendrl.conf
 
-4. Add suitable configuration in config file by modifying following lines in
-   tendrl configfile(/etc/tendrl/tendrl.conf) if required::
+5. Add suitable configuration in config file by updating following lines to
+   tendrl configfile(/etc/tendrl/tendrl.conf)::
 
-   [node_agent]
-   # Path to log file and log leval
-   log_cfg_path = /etc/tendrl/node_agent_logging.yaml
-   log_level = DEBUG
-   tendrl_exe_file_prefix = /tmp/.tendrl_runner
+   etcd_connection = <specify etcd server ip>
 
-4. Create log and conf dirs::
+6. Create log and conf dirs::
 
      $ mkdir /var/log/tendrl/common
      $ mkdir /var/log/tendrl/node_agent/
      $ mkdir /etc/tendrl/node_agent/
 
-5. Run::
+7. Run::
 
     $ tendrl-node-agent
