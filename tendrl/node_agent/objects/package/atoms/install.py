@@ -17,7 +17,7 @@ class Install(object):
         if package_type == "pip":
             attributes["editable"] = "false"
             ansible_module_path = "core/packaging/language/pip.py"
-        elif package_type == "yum":
+        elif package_type == "rpm":
             ansible_module_path = "core/packaging/os/yum.py"
         elif package_type == "deb":
             ansible_module_path = "core/packaging/os/apt.py"
