@@ -257,3 +257,16 @@ class TestEtcdThread(object):
                             'run', mock_server_run)
 
         assert True
+
+    def test_etcdthread_error(self, monkeypatch):
+        manager = SampleManager()
+
+        def Mock_read(param):
+            if param == '/queue':
+                user_request_thread._complete.set()
+                raise etcd.EtcdKeyNotFound
+        user_request_thread = EtcdThread(manager)
+        monkeypatch.setattr(
+            user_request_thread._server.client, "read", Mock_read)
+        user_request_thread._run()
+        assert True
