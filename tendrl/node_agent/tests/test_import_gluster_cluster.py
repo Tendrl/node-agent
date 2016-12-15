@@ -1,9 +1,9 @@
 from mock import MagicMock
 import sys
-sys.modules['tendrl.node_agent.config'] = MagicMock()
+sys.modules['tendrl.common.config'] = MagicMock()
 from tendrl.node_agent.gluster_integration.flows.import_cluster \
     import get_package_name
-del sys.modules['tendrl.node_agent.config']
+del sys.modules['tendrl.common.config']
 
 
 class TestImportGlusterCluster(object):

@@ -90,7 +90,6 @@ class NodeAgentManager(Manager):
         self._complete = gevent.event.Event()
         # Initialize the state sync thread which gets the underlying
         # node details and pushes the same to etcd
-        self._discovery_thread = NodeAgentSyncStateThread(self)
         etcd_kwargs = {'port': int(config.get("common", "etcd_port")),
                        'host': config.get("common", "etcd_connection")}
         self.etcd_client = etcd.Client(**etcd_kwargs)
@@ -107,7 +106,7 @@ class NodeAgentManager(Manager):
             "node",
             utils.get_local_node_context(),
             config,
-            self._discovery_thread,
+            NodeAgentSyncStateThread(self),
             NodeAgentEtcdPersister(config),
             "/tendrl_definitions_node_agent/data"
         )
