@@ -8,6 +8,15 @@ from tendrl.node_agent.flows.flow import Flow
 config = TendrlConfig()
 
 
+def get_package_name(installation_source_type):
+    if installation_source_type in ["rpm", "deb"]:
+        return "tendrl-ceph-integration"
+    else:
+        ceph = "git+https://github.com/Tendrl/" \
+               "ceph_integration.git@v1.1"
+        return ceph
+
+
 class ImportCluster(Flow):
     def run(self):
         node_list = self.parameters['Node[]']
@@ -30,14 +39,13 @@ class ImportCluster(Flow):
                                            json.dumps(job))
         if self.node_id in node_list:
             self.parameters['fqdn'] = socket.getfqdn()
-            if config.get("node_agent", "deployment_type") == "production":
-                self.parameters['Package.name'] = "tendrl-ceph-integration"
-                self.parameters['Package.pkg_type'] = "yum"
-            else:
-                ceph = "git+https://github.com/Tendrl/" \
-                       "ceph_integration.git@v1.0"
-                self.parameters['Package.name'] = ceph
-
+            installation_source_type = config.get(
+                "node_agent",
+                "installation_source_type"
+            )
+            self.parameters['Package.pkg_type'] = installation_source_type
+            self.parameters['Package.name'] = get_package_name(
+                installation_source_type)
             self.parameters['Node.cmd_str'] = "tendrl-ceph-integration " \
                                               "--cluster-id %s" % \
                                               self.cluster_id
