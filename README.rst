@@ -67,6 +67,7 @@ System Setup
 
    ::
 
+       $ sudo yum install epel-release
        $ sudo yum install python-virtualenv python-virtualenvwrapper python-devel pip
 
 #. Create system directories.
