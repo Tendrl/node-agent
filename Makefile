@@ -1,5 +1,6 @@
 NAME=tendrl-node-agent
-VERSION=1.1
+VERSION := $(shell PYTHONPATH=. python -c \
+             'import tendrl.node_agent; print tendrl.node_agent.__version__')
 RELEASE=1
 
 all: srpm
