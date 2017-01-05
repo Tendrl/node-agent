@@ -1,10 +1,11 @@
+from tendrl.common.atoms.base_atom import BaseAtom
 from tendrl.node_agent.ansible_runner.ansible_module_runner \
     import AnsibleExecutableGenerationFailed
 from tendrl.node_agent.ansible_runner.ansible_module_runner \
     import AnsibleRunner
 
 
-class Install(object):
+class Install(BaseAtom):
     def run(self, parameters):
         name = parameters.get("Package.name")
         package_type = parameters.get("Package.pkg_type", "pip")

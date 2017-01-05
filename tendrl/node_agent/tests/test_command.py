@@ -1,13 +1,13 @@
 from mock import MagicMock
 import sys
-sys.modules['tendrl.node_agent.config'] = MagicMock()
+sys.modules['tendrl.common.config'] = MagicMock()
 from tendrl.node_agent.ansible_runner.ansible_module_runner \
     import AnsibleExecutableGenerationFailed
 from tendrl.node_agent.ansible_runner.ansible_module_runner \
     import AnsibleRunner
 from tendrl.node_agent.manager.command \
     import Command
-del sys.modules['tendrl.node_agent.config']
+del sys.modules['tendrl.common.config']
 
 
 class Test_command_atom(object):

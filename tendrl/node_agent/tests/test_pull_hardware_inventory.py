@@ -1,8 +1,15 @@
 import platform
 import socket
+import sys
+
+from mock import MagicMock
+sys.modules['tendrl.node_agent.ansible_runner.ansible_module_runner'] = \
+    MagicMock()
+
 from tendrl.node_agent.manager.command import Command
 import tendrl.node_agent.manager.pull_hardware_inventory as hi
 from tendrl.node_agent.manager import utils as mgr_utils
+del sys.modules['tendrl.node_agent.ansible_runner.ansible_module_runner']
 
 
 class Test_pull_hardware_inventory(object):
