@@ -1,5 +1,5 @@
 NAME=tendrl-node-agent
-VERSION=0.0.1
+VERSION=1.1
 RELEASE=1
 
 all: srpm
