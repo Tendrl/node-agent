@@ -197,6 +197,30 @@ Run
     $ workon tendrl-node-agent
     $ tendrl-node-agent
 
+Release process
+===============
+
+When you are ready to cut a new version:
+
+#. Bump the version number in ``tendrl/node_agent/__init__.py`` and commit your
+   changes.
+   ::
+
+      python setup.py bumpversion
+
+#. Tag and push to GitHub.
+   ::
+
+      python setup.py release
+
+#. Make an SRPM.
+   ::
+
+      make srpm
+
+#. Build SRPM in Copr.
+
+
 Developer documentation
 =======================
 
