@@ -1,5 +1,5 @@
 ---
-namespace.tendrl.node-agent:
+namespace.tendrl.node_agent:
   objects:
     Cpu:
       attrs:
@@ -37,7 +37,7 @@ namespace.tendrl.node-agent:
             mandatory:
               - Node.cmd_str
           name: "Execute CMD on Node"
-          run: tendrl.node-agent.atoms.node.cmd.Cmd
+          run: tendrl.node_agent.atoms.node.cmd.Cmd
           type: Create
           uuid: dc8fff3a-34d9-4786-9282-55eff6abb6c3
         check_node_up:
@@ -48,7 +48,7 @@ namespace.tendrl.node-agent:
           outputs:
             - Node.status
           name: "check whether the node is up"
-          run: tendrl.node-agent.atoms.node.check_node_up
+          run: tendrl.node_agent.atoms.node.check_node_up
           type: Create
           uuid: eda0b13a-7362-48d5-b5ca-4b6d6533a5ab
       attrs:
@@ -84,8 +84,8 @@ namespace.tendrl.node-agent:
               - Package.version
           name: "Install Package"
           post_run:
-            - tendrl.node-agent.atoms.package.validations.check_package_installed
-          run: tendrl.node-agent.atoms.package.install.Install
+            - tendrl.node_agent.atoms.package.validations.check_package_installed
+          run: tendrl.node_agent.atoms.package.install.Install
           type: Create
           uuid: 16abcfd0-aca9-4022-aa0f-5de1c5a742c7
       attrs:
@@ -110,8 +110,8 @@ namespace.tendrl.node-agent:
               - Service.config_data
           name: "Configure Service"
           post_run:
-            - tendrl.node-agent.atoms.service.validations.check_service_running
-          run: tendrl.node-agent.atoms.service.configure.Configure
+            - tendrl.node_agent.atoms.service.validations.check_service_running
+          run: tendrl.node_agent.atoms.service.configure.Configure
           type: Update
           uuid: b90a0d97-8c9f-4ab1-8f64-dbb5638159a3
       attrs:
@@ -132,8 +132,8 @@ namespace.tendrl.node-agent:
               - Service.config_data
           name: "Configure Service"
           post_run:
-            - tendrl.node-agent.atoms.service.validations.check_service_running
-          run: tendrl.node-agent.atoms.service.configure.Configure
+            - tendrl.node_agent.atoms.service.validations.check_service_running
+          run: tendrl.node_agent.atoms.service.configure.Configure
           type: Update
           uuid: b90a0d97-8c9f-4ab1-8f64-dbb5638159a3
       attrs:
@@ -178,14 +178,14 @@ namespace.tendrl.node-agent:
           type: String
       enabled: true
       value: /nodes/$node.id/node_context
-namespace.tendrl.node-agent.gluster_integration:
+namespace.tendrl.node_agent.gluster_integration:
   flows:
     ImportCluster:
       atoms:
-        - tendrl.node-agent.objects.Package.atoms.install
-        - tendrl.node-agent.gluster_integration.objects.Config.atoms.generate
-        - tendrl.node-agent.objects.File.atoms.write
-        - tendrl.node-agent.objects.Node.atoms.cmd
+        - tendrl.node_agent.objects.Package.atoms.install
+        - tendrl.node_agent.gluster_integration.objects.Config.atoms.generate
+        - tendrl.node_agent.objects.File.atoms.write
+        - tendrl.node_agent.objects.Node.atoms.cmd
       description: "Import existing Gluster Cluster"
       enabled: true
       inputs:
@@ -195,11 +195,11 @@ namespace.tendrl.node-agent.gluster_integration:
           - Tendrl_context.sds_version
           - Tendrl_context.cluster_id
       post_run:
-        - tendrl.node-agent.gluster_integration.objects.Tendrl_context.atoms.check_cluster_id_exists
+        - tendrl.node_agent.gluster_integration.objects.Tendrl_context.atoms.check_cluster_id_exists
       pre_run:
-        - tendrl.node-agent.objects.Node.atoms.check_node_up
-        - tendrl.node-agent.objects.Tendrl_context.atoms.compare
-      run: tendrl.node-agent.gluster_integration.flows.import_cluster.ImportCluster
+        - tendrl.node_agent.objects.Node.atoms.check_node_up
+        - tendrl.node_agent.objects.Tendrl_context.atoms.compare
+      run: tendrl.node_agent.gluster_integration.flows.import_cluster.ImportCluster
       type: Create
       uuid: 2f94a48a-05d7-408c-b400-e27827f4edef
       version: 1
@@ -216,7 +216,7 @@ namespace.tendrl.node-agent.gluster_integration:
           outputs:
             - Config.data
             - Config.file_path
-          run: tendrl.node-agent.gluster_integration.objects.Config.atoms.generate.Generate
+          run: tendrl.node_agent.gluster_integration.objects.Config.atoms.generate.Generate
           uuid: 807a1ead-bd70-4f55-99d0-dbd9d76d2a10
       attrs:
         data:

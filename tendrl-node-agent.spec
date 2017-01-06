@@ -2,7 +2,7 @@ Name: tendrl-node-agent
 Version: 0.0.1
 Release: 1%{?dist}
 BuildArch: noarch
-Summary: Module for Node Agent
+Summary: Module for Tendrl Node Agent
 Source0: %{name}-%{version}.tar.gz
 License: LGPLv2+
 URL: https://github.com/Tendrl/node-agent
