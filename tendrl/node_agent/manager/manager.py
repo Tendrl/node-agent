@@ -105,6 +105,7 @@ class NodeAgentManager(Manager):
         ).__init__(
             "node",
             utils.get_local_node_context(),
+            utils.get_local_node_context(),
             config,
             NodeAgentSyncStateThread(self),
             NodeAgentEtcdPersister(config),
