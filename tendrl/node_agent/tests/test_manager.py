@@ -4,13 +4,13 @@ import os
 import shutil
 import sys
 import tempfile
-sys.modules['tendrl.common.config'] = MagicMock()
-sys.modules['tendrl.common.log'] = MagicMock()
+sys.modules['tendrl.commons.config'] = MagicMock()
+sys.modules['tendrl.commons.log'] = MagicMock()
 sys.modules['tendrl.node_agent.persistence.persister'] = MagicMock()
-from tendrl.common.manager.rpc_job_process import RpcJobProcessThread
+from tendrl.commons.manager.rpc_job_process import RpcJobProcessThread
 from tendrl.node_agent.manager import manager
-del sys.modules['tendrl.common.log']
-del sys.modules['tendrl.common.config']
+del sys.modules['tendrl.commons.log']
+del sys.modules['tendrl.commons.config']
 del sys.modules['tendrl.node_agent.persistence.persister']
 
 
@@ -35,7 +35,7 @@ class TestNodeAgentManager(object):
             self.manager._discovery_thread,
             manager.SyncStateThread
         )
-        assert self.manager.defs_dir == "/tendrl_definitions_node_agent/data"
+        assert self.manager.defs_dir == "/tendrl_definitions_node-agent/data"
 
     def test_register_node(self):
         self.manager.persister_thread.update_node_context.assert_called()

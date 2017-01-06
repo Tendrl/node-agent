@@ -1,5 +1,5 @@
-from tendrl.common.etcdobj.etcdobj import EtcdObj
-from tendrl.common.etcdobj import fields
+from tendrl.commons.etcdobj.etcdobj import EtcdObj
+from tendrl.commons.etcdobj import fields
 
 
 class TendrlDefinitions(EtcdObj):
@@ -7,6 +7,6 @@ class TendrlDefinitions(EtcdObj):
 
     """
     # TODO(rohan) add the definitions in etcd at startup
-    __name__ = '/tendrl_definitions_node_agent'
+    __name__ = '/tendrl_definitions_node-agent'
 
     data = fields.StrField("data")

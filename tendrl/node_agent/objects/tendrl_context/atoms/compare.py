@@ -1,6 +1,6 @@
 import json
 
-from tendrl.common.atoms.base_atom import BaseAtom
+from tendrl.commons.atoms.base_atom import BaseAtom
 
 
 class Compare(BaseAtom):
@@ -10,7 +10,7 @@ class Compare(BaseAtom):
         return True
 
         client = parameters['etcd_client']
-        # get the node_agent_key some how
+        # get the node-agent_key some how
         # for now reading it from the json file
 
         with open("/etc/tendrl/tendrl-node-inventory.json") as f:

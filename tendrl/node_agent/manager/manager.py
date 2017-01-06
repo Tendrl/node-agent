@@ -9,13 +9,13 @@ import gevent.event
 import gevent.greenlet
 import pull_hardware_inventory
 
-from tendrl.common.config import TendrlConfig
-from tendrl.common.log import setup_logging
-from tendrl.common.manager.manager import Manager
-from tendrl.common.manager.manager import SyncStateThread
+from tendrl.commons.config import TendrlConfig
+from tendrl.commons.log import setup_logging
+from tendrl.commons.manager.manager import Manager
+from tendrl.commons.manager.manager import SyncStateThread
 from tendrl.node_agent.persistence.tendrl_definitions import TendrlDefinitions
 
-config = TendrlConfig("node_agent", "/etc/tendrl/tendrl.conf")
+config = TendrlConfig("node-agent", "/etc/tendrl/tendrl.conf")
 
 from tendrl.node_agent.manager.tendrl_definitions_node_agent import data as \
     def_data
@@ -90,8 +90,8 @@ class NodeAgentManager(Manager):
         self._complete = gevent.event.Event()
         # Initialize the state sync thread which gets the underlying
         # node details and pushes the same to etcd
-        etcd_kwargs = {'port': int(config.get("common", "etcd_port")),
-                       'host': config.get("common", "etcd_connection")}
+        etcd_kwargs = {'port': int(config.get("commons", "etcd_port")),
+                       'host': config.get("commons", "etcd_connection")}
         self.etcd_client = etcd.Client(**etcd_kwargs)
         local_node_context = utils.set_local_node_context()
         if local_node_context:
@@ -105,10 +105,11 @@ class NodeAgentManager(Manager):
         ).__init__(
             "node",
             utils.get_local_node_context(),
+            utils.get_local_node_context(),
             config,
             NodeAgentSyncStateThread(self),
             NodeAgentEtcdPersister(config),
-            "/tendrl_definitions_node_agent/data"
+            "/tendrl_definitions_node-agent/data"
         )
         self.register_node(machine_id)
 
@@ -217,8 +218,8 @@ class NodeAgentManager(Manager):
 
 def main():
     setup_logging(
-        config.get('node_agent', 'log_cfg_path'),
-        config.get('node_agent', 'log_level')
+        config.get('node-agent', 'log_cfg_path'),
+        config.get('node-agent', 'log_level')
     )
 
     machine_id = utils.get_machine_id()
