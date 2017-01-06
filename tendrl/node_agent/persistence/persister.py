@@ -1,4 +1,4 @@
-from tendrl.common.persistence.etcd_persister import EtcdPersister
+from tendrl.commons.persistence.etcd_persister import EtcdPersister
 
 
 class NodeAgentEtcdPersister(EtcdPersister):

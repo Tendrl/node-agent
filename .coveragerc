@@ -1,6 +1,6 @@
 [run]
 branch = True
-source = node_agent
+source = node-agent
 
 [report]
 ignore_errors = True

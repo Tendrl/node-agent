@@ -4,14 +4,14 @@ Status
 Builds
 ------
 
-.. image:: https://travis-ci.org/Tendrl/node_agent.svg?branch=master
-    :target: https://travis-ci.org/Tendrl/node_agent
+.. image:: https://travis-ci.org/Tendrl/node-agent.svg?branch=master
+    :target: https://travis-ci.org/Tendrl/node-agent
 
 Code Coverage
 -------------
 
-.. image:: https://coveralls.io/repos/github/Tendrl/node_agent/badge.svg?branch=master
-    :target: https://coveralls.io/github/Tendrl/node_agent?branch=master
+.. image:: https://coveralls.io/repos/github/Tendrl/node-agent/badge.svg?branch=master
+    :target: https://coveralls.io/github/Tendrl/node-agent?branch=master
 
 
 Testing
@@ -72,14 +72,14 @@ To run functional tests locally::
   $ tox -e functional
 
 Tendrl CI scripts
-----------------
+-----------------
 
 *Files: /tests/ci/**
 
 This directory contains scripts and files related to the Tendrl CI system.
 
 Tendrl Style Commandments
-------------------------
+-------------------------
 
 *File: /tests/hacking/checks.py*
 

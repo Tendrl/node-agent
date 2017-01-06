@@ -5,7 +5,7 @@ BuildArch: noarch
 Summary: Module for Node Agent
 Source0: %{name}-%{version}.tar.gz
 License: LGPLv2+
-URL: https://github.com/Tendrl/node_agent
+URL: https://github.com/Tendrl/node-agent
 
 BuildRequires: ansible
 BuildRequires: python-gevent
@@ -22,7 +22,7 @@ Requires: python-gevent
 Requires: python-greenlet
 Requires: collectd
 Requires: python-jinja2
-Requires: tendrl-common
+Requires: tendrl-commons
 
 %description
 Python module for Tendrl node bridge to manage storage node in the sds cluster
@@ -44,13 +44,13 @@ rm -rf html/.{doctrees,buildinfo}
 
 %install
 %{__python} setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=INSTALLED_FILES
-install -m  0755  --directory $RPM_BUILD_ROOT%{_var}/log/tendrl/node_agent
-install -m  0755  --directory $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node_agent
-install -m  0755  --directory $RPM_BUILD_ROOT%{_datadir}/tendrl/node_agent
+install -m  0755  --directory $RPM_BUILD_ROOT%{_var}/log/tendrl/node-agent
+install -m  0755  --directory $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node-agent
+install -m  0755  --directory $RPM_BUILD_ROOT%{_datadir}/tendrl/node-agent
 install -Dm 0644 tendrl-noded.service $RPM_BUILD_ROOT%{_unitdir}/tendrl-noded.service
 install -Dm 0644 etc/tendrl/tendrl.conf.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/tendrl.conf
-install -Dm 0644 etc/logging.yaml.timedrotation.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node_agent_logging.yaml
-install -Dm 644 etc/*.sample $RPM_BUILD_ROOT%{_datadir}/tendrl/node_agent/.
+install -Dm 0644 etc/logging.yaml.timedrotation.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node-agent_logging.yaml
+install -Dm 644 etc/*.sample $RPM_BUILD_ROOT%{_datadir}/tendrl/node-agent/.
 
 %post
 %systemd_post tendrl-noded.service
@@ -62,17 +62,17 @@ install -Dm 644 etc/*.sample $RPM_BUILD_ROOT%{_datadir}/tendrl/node_agent/.
 %systemd_postun_with_restart tendrl-noded.service
 
 %check
-py.test -v tendrl/node_agent/tests || :
+py.test -v tendrl/node-agent/tests || :
 
 %files -f INSTALLED_FILES
-%dir %{_var}/log/tendrl/node_agent
-%dir %{_sysconfdir}/tendrl/node_agent
-%dir %{_datadir}/tendrl/node_agent
+%dir %{_var}/log/tendrl/node-agent
+%dir %{_sysconfdir}/tendrl/node-agent
+%dir %{_datadir}/tendrl/node-agent
 %doc README.adoc
 %license LICENSE
-%{_datadir}/tendrl/node_agent/
+%{_datadir}/tendrl/node-agent/
 %{_sysconfdir}/tendrl/tendrl.conf
-%{_sysconfdir}/tendrl/node_agent_logging.yaml
+%{_sysconfdir}/tendrl/node-agent_logging.yaml
 %{_unitdir}/tendrl-noded.service
 
 %changelog

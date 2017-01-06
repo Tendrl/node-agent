@@ -1,8 +1,8 @@
 .. vim: tw=79
 
-===================
+==================
  Tendrl Node Agent
-===================
+==================
 
 Tendrl node agent resides on every node managed by tendlr. It is
 responsible for operating system level operations such as hardware
@@ -13,11 +13,11 @@ operations on the node.
 -  Free software: LGPL2
 
 -  Documentation:
-   https://github.com/Tendrl/node_agent/tree/master/doc/source
+   https://github.com/Tendrl/node-agent/tree/master/doc/source
 
--  Source: https://github.com/Tendrl/node_agent
+-  Source: https://github.com/Tendrl/node-agent
 
--  Bugs: https://github.com/Tendrl/node_agent/issues
+-  Bugs: https://github.com/Tendrl/node-agent/issues
 
 |Build status| |Coverage|
 
@@ -73,10 +73,10 @@ System Setup
 
    ::
 
-       $ sudo mkdir -p /etc/tendrl/node_agent \
+       $ sudo mkdir -p /etc/tendrl/node-agent \
          /etc/tendrl/{ceph,gluster}_integration \
-         /var/log/tendrl/node_agent \
-         /var/log/tendrl/common \
+         /var/log/tendrl/node-agent \
+         /var/log/tendrl/commons \
          /var/log/tendrl/{ceph,gluster}_integration
 
 Environment Setup
@@ -101,28 +101,28 @@ Environment Setup
        $ mkvirtualenv tendrl-node-agent
        $ workon tendrl-node-agent
 
-Install Tendrl common and node\_agent
--------------------------------------
+Install Tendrl commons and node\_agent
+--------------------------------------
 
-#. Install the `common library <https://github.com/Tendrl/common>`__.
+#. Install the `commons library <https://github.com/Tendrl/commons>`__.
 
    ::
 
-       $ git clone https://github.com/Tendrl/common.git common
-       $ pushd common
-       [common] $ workon tendrl-node-agent
-       [common] $ pip install .
-       [common] $ popd
+       $ git clone https://github.com/Tendrl/commons.git commons
+       $ pushd commons
+       [commons] $ workon tendrl-node-agent
+       [commons] $ pip install .
+       [commons] $ popd
 
 #. Install the node agent.
 
    ::
 
-       $ git clone https://github.com/Tendrl/node_agent.git
-       $ pushd node_agent
-       [node_agent] $ workon tendrl-node-agent
-       [node_agent] $ pip install .
-       [node_agent] $ popd
+       $ git clone https://github.com/Tendrl/node-agent.git
+       $ pushd node-agent
+       [node-agent] $ workon tendrl-node-agent
+       [node-agent] $ pip install .
+       [node-agent] $ popd
 
 #. Fetch the ceph\_integration and gluster\_integration codebases.
 
@@ -138,34 +138,34 @@ Configuration
 
    ::
 
-       $ cp common/etc/tendrl/tendrl.conf.sample /etc/tendrl/tendrl.conf
+       $ cp commons/etc/tendrl/tendrl.conf.sample /etc/tendrl/tendrl.conf
 
    * Configure the following ``etcd_port`` and ``etcd_connection``
      directives in ``/etc/tendrl/tendrl.conf`` to point to the etcd
      instance discussed in the first step.
 
-#. Install the common logging configuration file
-   ``/etc/tendrl/common_logging.yaml``.
+#. Install the commons logging configuration file
+   ``/etc/tendrl/commons_logging.yaml``.
 
    ::
 
-       $ cp common/etc/samples/logging.yaml.timedrotation.sample \
-         /etc/tendrl/common_logging.yaml
+       $ cp commons/etc/samples/logging.yaml.timedrotation.sample \
+         /etc/tendrl/commons_logging.yaml
 
    .. note::
 
        There are other sample configuration files in the
-       ``common/etc/samples`` directory which could be used to setup
+       ``commons/etc/samples`` directory which could be used to setup
        logging for different system configuration such as via syslog and
        journald.
 
 #. Install the node agent logging configuration file
-   ``/etc/tendrl/node_agent_logging.yaml``.
+   ``/etc/tendrl/node-agent_logging.yaml``.
 
    ::
 
-       $ cp node_agent/etc/logging.yaml.timedrotation.sample \
-         /etc/tendrl/node_agent_logging.yaml
+       $ cp node-agent/etc/logging.yaml.timedrotation.sample \
+         /etc/tendrl/node-agent_logging.yaml
        $ cp ceph_integration/etc/logging.yaml.timedrotation.sample \
          /etc/tendrl/ceph_integration_logging.yaml
        $ cp gluster_integration/etc/logging.yaml.timedrotation.sample \
@@ -173,7 +173,7 @@ Configuration
 
    .. note::
 
-       There are other sample configuration files in the ``node_agent/etc``
+       There are other sample configuration files in the ``node-agent/etc``
        directory which could be used to setup logging for different system
        configuration such as via syslog and journald.
 
@@ -182,9 +182,9 @@ Configuration
 
    ::
 
-       [node_agent]
+       [node-agent]
        # Path to the log file and log level
-       log_cfg_path = /etc/tendrl/node_agent_logging.yaml
+       log_cfg_path = /etc/tendrl/node-agent_logging.yaml
        log_level = DEBUG
        tendrl_exe_file_prefix = /tmp/.tendrl_runner
 
@@ -206,5 +206,5 @@ run:
 
     $ python setup.py build_sphinx
 
-.. |Build status| image:: https://travis-ci.org/Tendrl/node_agent.svg?branch=master
-.. |Coverage| image:: https://coveralls.io/repos/github/Tendrl/node_agent/badge.svg?branch=master
+.. |Build status| image:: https://travis-ci.org/Tendrl/node-agent.svg?branch=master
+.. |Coverage| image:: https://coveralls.io/repos/github/Tendrl/node-agent/badge.svg?branch=master
