@@ -1,4 +1,4 @@
-from tendrl.common.atoms.base_atom import BaseAtom
+from tendrl.commons.atoms.base_atom import BaseAtom
 from tendrl.node_agent.ansible_runner.ansible_module_runner \
     import AnsibleExecutableGenerationFailed
 from tendrl.node_agent.ansible_runner.ansible_module_runner \

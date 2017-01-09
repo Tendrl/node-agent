@@ -2,7 +2,7 @@ import json
 import socket
 import uuid
 
-from tendrl.common.flows.base_flow import BaseFlow
+from tendrl.commons.flows.base_flow import BaseFlow
 from tendrl.node_agent.manager import utils as manager_utils
 
 
@@ -39,7 +39,7 @@ class ImportCluster(BaseFlow):
         if curr_node_id in node_list:
             self.parameters['fqdn'] = socket.getfqdn()
             installation_source_type = self.config.get(
-                "node_agent",
+                "node-agent",
                 "installation_source_type"
             )
             self.parameters['Package.pkg_type'] = installation_source_type

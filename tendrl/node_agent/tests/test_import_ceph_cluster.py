@@ -1,9 +1,9 @@
 from mock import MagicMock
 import sys
-sys.modules['tendrl.common.config'] = MagicMock()
+sys.modules['tendrl.commons.config'] = MagicMock()
 from tendrl.node_agent.ceph_integration.flows.import_cluster \
     import get_package_name
-del sys.modules['tendrl.common.config']
+del sys.modules['tendrl.commons.config']
 
 
 class TestImportCephCluster(object):
