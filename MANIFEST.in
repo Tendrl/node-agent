@@ -3,7 +3,7 @@ include AUTHORS
 include README.adoc
 include ChangeLog
 include requirements.txt
-include tendrl-noded.service
+include tendrl-node-agent.service
 exclude .gitignore
 exclude .gitreview
 graft docs
