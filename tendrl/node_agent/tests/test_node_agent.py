@@ -2,10 +2,10 @@
 
 
 """
-test_node_agent
+test_node-agent
 ----------------------------------
 
-Tests for `node_agent` module.
+Tests for `node-agent` module.
 """
 
 from tendrl.node_agent.tests import base

@@ -1,19 +1,21 @@
+import etcd
+import json
 import logging
 import signal
 import socket
+import time
 
-import etcd
 import gevent.event
 import gevent.greenlet
-import json
 import pull_hardware_inventory
-from rpc import EtcdThread
-from tendrl.common.log import setup_logging
 
-from tendrl.node_agent.config import TendrlConfig
+from tendrl.commons.config import TendrlConfig
+from tendrl.commons.log import setup_logging
+from tendrl.commons.manager.manager import Manager
+from tendrl.commons.manager.manager import SyncStateThread
 from tendrl.node_agent.persistence.tendrl_definitions import TendrlDefinitions
 
-config = TendrlConfig()
+config = TendrlConfig("node-agent", "/etc/tendrl/tendrl.conf")
 
 from tendrl.node_agent.manager.tendrl_definitions_node_agent import data as \
     def_data
@@ -23,26 +25,20 @@ from tendrl.node_agent.persistence.memory import Memory
 from tendrl.node_agent.persistence.node import Node
 from tendrl.node_agent.persistence.node_context import NodeContext
 from tendrl.node_agent.persistence.os import Os
-from tendrl.node_agent.persistence.persister import Persister
+from tendrl.node_agent.persistence.persister import NodeAgentEtcdPersister
 from tendrl.node_agent.persistence.tendrl_context import TendrlContext
-
-
-import time
 
 LOG = logging.getLogger(__name__)
 HARDWARE_INVENTORY_FILE = "/etc/tendrl/tendrl-node-inventory.json"
 
 
-class TopLevelEvents(gevent.greenlet.Greenlet):
+class NodeAgentSyncStateThread(SyncStateThread):
 
     def __init__(self, manager):
-        super(TopLevelEvents, self).__init__()
+        super(NodeAgentSyncStateThread, self).__init__(manager)
 
         self._manager = manager
         self._complete = gevent.event.Event()
-
-    def stop(self):
-        self._complete.set()
 
     def _run(self):
         LOG.info("%s running" % self.__class__.__name__)
@@ -85,49 +81,40 @@ class TopLevelEvents(gevent.greenlet.Greenlet):
         LOG.info("%s complete" % self.__class__.__name__)
 
 
-class Manager(object):
+class NodeAgentManager(Manager):
     """manage user request thread
 
     """
 
     def __init__(self, machine_id):
         self._complete = gevent.event.Event()
-
-        self._user_request_thread = EtcdThread(self)
-        self._discovery_thread = TopLevelEvents(self)
-        self.persister = Persister()
-        etcd_kwargs = {'port': int(config.get("common", "etcd_port")),
-                       'host': config.get("common", "etcd_connection")}
+        # Initialize the state sync thread which gets the underlying
+        # node details and pushes the same to etcd
+        etcd_kwargs = {'port': int(config.get("commons", "etcd_port")),
+                       'host': config.get("commons", "etcd_connection")}
         self.etcd_client = etcd.Client(**etcd_kwargs)
-
-        self.register_node(machine_id)
-
-    def stop(self):
-        LOG.info("%s stopping" % self.__class__.__name__)
-        self._user_request_thread.stop()
-        self._discovery_thread.stop()
-        self.persister.stop()
-
-    def start(self):
-        LOG.info("%s starting" % self.__class__.__name__)
-        self._user_request_thread.start()
-        self._discovery_thread.start()
-        self.persister.start()
-
-    def join(self):
-        LOG.info("%s joining" % self.__class__.__name__)
-        self._user_request_thread.join()
-        self._discovery_thread.join()
-        self.persister.join()
-
-    def register_node(self, machine_id):
-        local_node_context = utils.get_local_node_context()
+        local_node_context = utils.set_local_node_context()
         if local_node_context:
             if utils.get_node_context(self.etcd_client, local_node_context) \
                     is None:
                 utils.delete_local_node_context()
 
-        self.persister.update_node_context(
+        super(
+            NodeAgentManager,
+            self
+        ).__init__(
+            "node",
+            utils.get_local_node_context(),
+            utils.get_local_node_context(),
+            config,
+            NodeAgentSyncStateThread(self),
+            NodeAgentEtcdPersister(config),
+            "/tendrl_definitions_node-agent/data"
+        )
+        self.register_node(machine_id)
+
+    def register_node(self, machine_id):
+        self.persister_thread.update_node_context(
             NodeContext(
                 updated=str(time.time()),
                 machine_id=machine_id,
@@ -136,7 +123,7 @@ class Manager(object):
             )
         )
         tendrl_context = pull_hardware_inventory.getTendrlContext()
-        self.persister.update_tendrl_context(
+        self.persister_thread.update_tendrl_context(
             TendrlContext(
                 updated=str(time.time()),
                 sds_version=tendrl_context['sds_version'],
@@ -145,19 +132,19 @@ class Manager(object):
             )
         )
 
-        self.persister.update_node(
+        self.persister_thread.update_node(
             Node(
                 node_id=utils.get_local_node_context(),
                 fqdn=socket.getfqdn(),
                 status="UP"
             )
         )
-        self.persister.update_tendrl_definitions(TendrlDefinitions(
+        self.persister_thread.update_tendrl_definitions(TendrlDefinitions(
             updated=str(time.time()), data=def_data))
 
     def on_pull(self, raw_data):
         LOG.info("on_pull, Updating Node_context data")
-        self.persister.update_node_context(
+        self.persister_thread.update_node_context(
             NodeContext(
                 updated=str(time.time()),
                 machine_id=raw_data["machine_id"],
@@ -166,7 +153,7 @@ class Manager(object):
             )
         )
         LOG.info("on_pull, Updating node data")
-        self.persister.update_node(
+        self.persister_thread.update_node(
             Node(
                 node_id=raw_data["node_id"],
                 fqdn=raw_data["os"]["FQDN"],
@@ -176,7 +163,7 @@ class Manager(object):
         if "tendrl_context" in raw_data:
             LOG.info("on_pull, Updating tendrl context data")
             tc = raw_data['tendrl_context']
-            self.persister.update_tendrl_context(
+            self.persister_thread.update_tendrl_context(
                 TendrlContext(
                     updated=str(time.time()),
                     sds_name=tc["sds_name"],
@@ -189,7 +176,7 @@ class Manager(object):
         if "os" in raw_data:
             LOG.info("on_pull, Updating OS data")
             node = raw_data['os']
-            self.persister.update_os(
+            self.persister_thread.update_os(
                 Os(
                     updated=str(time.time()),
                     os=node["Name"],
@@ -202,7 +189,7 @@ class Manager(object):
         if "memory" in raw_data:
             LOG.info("on_pull, Updating memory")
             memory = raw_data['memory']
-            self.persister.update_memory(
+            self.persister_thread.update_memory(
                 Memory(
                     updated=str(time.time()),
                     total_size=memory["TotalSize"],
@@ -213,7 +200,7 @@ class Manager(object):
         if "cpu" in raw_data:
             LOG.info("on_pull, Updating cpu")
             cpu = raw_data['cpu']
-            self.persister.update_cpu(
+            self.persister_thread.update_cpu(
                 Cpu(
                     updated=str(time.time()),
                     model=cpu["Model"],
@@ -231,13 +218,13 @@ class Manager(object):
 
 def main():
     setup_logging(
-        config.get('node_agent', 'log_cfg_path'),
-        config.get('node_agent', 'log_level')
+        config.get('node-agent', 'log_cfg_path'),
+        config.get('node-agent', 'log_level')
     )
 
     machine_id = utils.get_machine_id()
 
-    m = Manager(machine_id)
+    m = NodeAgentManager(machine_id)
     m.start()
 
     complete = gevent.event.Event()

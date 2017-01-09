@@ -1,10 +1,11 @@
+from tendrl.commons.atoms.base_atom import BaseAtom
 from tendrl.node_agent.ansible_runner.ansible_module_runner \
     import AnsibleExecutableGenerationFailed
 from tendrl.node_agent.ansible_runner.ansible_module_runner \
     import AnsibleRunner
 
 
-class Install(object):
+class Install(BaseAtom):
     def run(self, parameters):
         name = parameters.get("Package.name")
         package_type = parameters.get("Package.pkg_type", "pip")
@@ -17,7 +18,7 @@ class Install(object):
         if package_type == "pip":
             attributes["editable"] = "false"
             ansible_module_path = "core/packaging/language/pip.py"
-        elif package_type == "yum":
+        elif package_type == "rpm":
             ansible_module_path = "core/packaging/os/yum.py"
         elif package_type == "deb":
             ansible_module_path = "core/packaging/os/apt.py"

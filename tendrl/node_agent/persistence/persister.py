@@ -1,44 +1,9 @@
-import logging
-
-import gevent.event
-import gevent.greenlet
-import gevent.queue
-from tendrl.common.etcdobj.etcdobj import Server as etcd_server
+from tendrl.commons.persistence.etcd_persister import EtcdPersister
 
 
-from tendrl.node_agent.config import TendrlConfig
-
-
-config = TendrlConfig()
-LOG = logging.getLogger(__name__)
-
-
-class deferred_call(object):
-
-    def __init__(self, fn, args, kwargs):
-        self.fn = fn
-        self.args = args
-        self.kwargs = kwargs
-
-    def call_it(self):
-        self.fn(*self.args, **self.kwargs)
-
-
-class Persister(gevent.greenlet.Greenlet):
-    """Asynchronously persist a queue of updates.  This is for use by classes
-
-    that maintain the primary copy of state in memory, but also lazily update
-
-    the DB so that they can recover from it on restart.
-
-    """
-
-    def __init__(self):
-        super(Persister, self).__init__()
-
-        self._queue = gevent.queue.Queue()
-        self._complete = gevent.event.Event()
-
+class NodeAgentEtcdPersister(EtcdPersister):
+    def __init__(self, config):
+        super(NodeAgentEtcdPersister, self).__init__(config)
         self._store = self.get_store()
 
     def update_cpu(self, cpu):
@@ -61,18 +26,3 @@ class Persister(gevent.greenlet.Greenlet):
 
     def update_tendrl_definitions(self, definition):
         self._store.save(definition)
-
-    def _run(self):
-        LOG.info("Persister listening")
-
-        while not self._complete.is_set():
-            gevent.sleep(0.1)
-            pass
-
-    def stop(self):
-        self._complete.set()
-
-    def get_store(self):
-        etcd_kwargs = {'port': int(config.get("common", "etcd_port")),
-                       'host': config.get("common", "etcd_connection")}
-        return etcd_server(etcd_kwargs=etcd_kwargs)

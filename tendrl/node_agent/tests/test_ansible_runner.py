@@ -1,6 +1,6 @@
 from mock import MagicMock
 import sys
-sys.modules['tendrl.node_agent.config'] = MagicMock()
+sys.modules['tendrl.commons.config'] = MagicMock()
 
 import ansible.executor.module_common as module_common
 from ansible import modules
@@ -12,7 +12,7 @@ from tendrl.node_agent.ansible_runner.ansible_module_runner \
     import AnsibleRunner
 from tendrl.node_agent.ansible_runner.ansible_module_runner \
     import config as cnf
-del sys.modules['tendrl.node_agent.config']
+del sys.modules['tendrl.commons.config']
 
 
 class Test_ansible_runner_constructor(object):

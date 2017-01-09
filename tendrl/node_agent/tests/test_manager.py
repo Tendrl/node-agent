@@ -4,110 +4,53 @@ import os
 import shutil
 import sys
 import tempfile
+sys.modules['tendrl.commons.config'] = MagicMock()
+sys.modules['tendrl.commons.log'] = MagicMock()
 sys.modules['tendrl.node_agent.persistence.persister'] = MagicMock()
-sys.modules['tendrl.node_agent.config'] = MagicMock()
-sys.modules['tendrl.common.log'] = MagicMock()
+from tendrl.commons.manager.rpc_job_process import RpcJobProcessThread
 from tendrl.node_agent.manager import manager
-from tendrl.node_agent.manager.rpc import EtcdThread
+del sys.modules['tendrl.commons.log']
+del sys.modules['tendrl.commons.config']
 del sys.modules['tendrl.node_agent.persistence.persister']
-del sys.modules['tendrl.common.log']
-del sys.modules['tendrl.node_agent.config']
 
 
-class TestManager(object):
+class TestNodeAgentManager(object):
     def setup_method(self, method):
         manager.pull_hardware_inventory = MagicMock()
         manager.utils = MagicMock()
-        self.manager = manager.Manager(
-            'aa22a6fe-87f0-45cf-8b70-2d0ff4c02af6')
+        self.manager = manager.NodeAgentManager(
+            'aa22a6fe-87f0-45cf-8b70-2d0ff4c02af6'
+        )
 
     def test_manager_constructor(self):
-        assert isinstance(self.manager._user_request_thread, EtcdThread)
-        assert isinstance(self.manager._complete, gevent.event.Event)
         assert isinstance(
-            self.manager._discovery_thread, manager.TopLevelEvents)
+            self.manager._rpc_job_process_thread,
+            RpcJobProcessThread
+        )
+        assert isinstance(
+            self.manager._complete,
+            gevent.event.Event
+        )
+        assert isinstance(
+            self.manager._discovery_thread,
+            manager.SyncStateThread
+        )
+        assert self.manager.defs_dir == "/tendrl_definitions_node-agent/data"
 
     def test_register_node(self):
-        self.manager.persister.update_node_context.assert_called()
-        self.manager.persister.update_node_context.assert_called()
-        self.manager.persister.update_tendrl_definitions.assert_called()
-
-    def test_manager_stop(self, monkeypatch):
-
-        def mock_user_request_thread_stop():
-            return
-        monkeypatch.setattr(self.manager._user_request_thread,
-                            'stop',
-                            mock_user_request_thread_stop)
-
-        def mock_discovery_thread_stop():
-            return
-        monkeypatch.setattr(self.manager._discovery_thread,
-                            'stop',
-                            mock_discovery_thread_stop)
-
-        def mock_persister_stop():
-            return
-        monkeypatch.setattr(self.manager.persister,
-                            'stop',
-                            mock_persister_stop)
-
-        self.manager.stop()
-        assert True
-
-    def test_manager_start(self, monkeypatch):
-
-        def mock_user_request_thread_start():
-            return
-        monkeypatch.setattr(self.manager._user_request_thread,
-                            'start',
-                            mock_user_request_thread_start)
-
-        def mock_discovery_thread_start():
-            return
-        monkeypatch.setattr(self.manager._discovery_thread,
-                            'start',
-                            mock_discovery_thread_start)
-
-        def mock_persister_start():
-            return
-        monkeypatch.setattr(self.manager.persister,
-                            'start',
-                            mock_persister_start)
-
-        self.manager.start()
-        assert True
-
-    def test_manager_join(self, monkeypatch):
-
-        def mock_user_request_thread_join():
-            return
-        monkeypatch.setattr(self.manager._user_request_thread,
-                            'join',
-                            mock_user_request_thread_join)
-
-        def mock_discovery_thread_join():
-            return
-        monkeypatch.setattr(self.manager._discovery_thread,
-                            'join',
-                            mock_discovery_thread_join)
-
-        def mock_persister_join():
-            return
-        monkeypatch.setattr(self.manager.persister,
-                            'join',
-                            mock_persister_join)
-
-        self.manager.join()
-        assert True
+        self.manager.persister_thread.update_node_context.assert_called()
+        self.manager.persister_thread.update_node_context.assert_called()
+        self.manager.persister_thread.update_tendrl_definitions.assert_called()
 
 
-class TestTopLevelEvents(object):
+class TestNodeAgentSyncStateThread(object):
     def setup_method(self, method):
         manager.gevent = MagicMock()
         manager.json = MagicMock()
-        self.manager = manager.Manager('aa22a6fe-87f0-45cf-8b70-2d0ff4c02af6')
-        self.TopLevelEvents = manager.TopLevelEvents(self.manager)
+        self.manager = manager.NodeAgentManager(
+            'aa22a6fe-87f0-45cf-8b70-2d0ff4c02af6'
+        )
+        self.SyncStateThread = manager.NodeAgentSyncStateThread(self.manager)
         self.ret = True
 
     def test_run(self, monkeypatch):
@@ -141,14 +84,14 @@ class TestTopLevelEvents(object):
             MagicMock(return_value=node_inventory)
         self.tempdir = tempfile.mkdtemp()
         manager.HARDWARE_INVENTORY_FILE = os.path.join(self.tempdir, "temp")
-        self.TopLevelEvents._complete = self
-        self.TopLevelEvents._run()
-        self.manager.persister.update_node_context.assert_called()
-        self.manager.persister.update_node.assert_called()
-        self.manager.persister.update_tendrl_context.assert_called()
-        self.manager.persister.update_os.assert_called()
-        self.manager.persister.update_memory.assert_called()
-        self.manager.persister.update_cpu.assert_called()
+        self.SyncStateThread._complete = self
+        self.SyncStateThread._run()
+        self.manager.persister_thread.update_node_context.assert_called()
+        self.manager.persister_thread.update_node.assert_called()
+        self.manager.persister_thread.update_tendrl_context.assert_called()
+        self.manager.persister_thread.update_os.assert_called()
+        self.manager.persister_thread.update_memory.assert_called()
+        self.manager.persister_thread.update_cpu.assert_called()
 
     def is_set(self):
         self.ret = not self.ret

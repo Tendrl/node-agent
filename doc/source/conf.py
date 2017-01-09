@@ -37,7 +37,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'node_agent'
+project = u'node-agent'
 copyright = u'2016, Tendrl Project'
 
 # If true, '()' will be appended to :func: etc. cross-reference text.

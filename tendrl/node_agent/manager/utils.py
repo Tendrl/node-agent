@@ -8,12 +8,12 @@ import etcd
 from tendrl.node_agent.manager.command import Command
 
 LOG = logging.getLogger(__name__)
-NODE_CONTEXT = "/etc/tendrl/node_agent/node_context"
+NODE_CONTEXT = "/etc/tendrl/node-agent/node_context"
 
 
 def get_local_node_context():
     # check if valid uuid is already present in local node_context
-    # (/etc/tendrl/node_agent/node_context, if not present generate one and
+    # (/etc/tendrl/node-agent/node_context, if not present generate one and
     # update the file
     if os.path.isfile(NODE_CONTEXT):
         with open(NODE_CONTEXT) as f:
