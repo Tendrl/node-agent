@@ -48,19 +48,19 @@ rm -rf html/.{doctrees,buildinfo}
 install -m  0755  --directory $RPM_BUILD_ROOT%{_var}/log/tendrl/node-agent
 install -m  0755  --directory $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node-agent
 install -m  0755  --directory $RPM_BUILD_ROOT%{_datadir}/tendrl/node-agent
-install -Dm 0644 tendrl-noded.service $RPM_BUILD_ROOT%{_unitdir}/tendrl-noded.service
+install -Dm 0644 tendrl-node-agent.service $RPM_BUILD_ROOT%{_unitdir}/tendrl-node-agent.service
 install -Dm 0644 etc/tendrl/tendrl.conf.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/tendrl.conf
 install -Dm 0644 etc/logging.yaml.timedrotation.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node-agent_logging.yaml
 install -Dm 644 etc/*.sample $RPM_BUILD_ROOT%{_datadir}/tendrl/node-agent/.
 
 %post
-%systemd_post tendrl-noded.service
+%systemd_post tendrl-node-agent.service
 
 %preun
-%systemd_preun tendrl-noded.service
+%systemd_preun tendrl-node-agent.service
 
 %postun
-%systemd_postun_with_restart tendrl-noded.service
+%systemd_postun_with_restart tendrl-node-agent.service
 
 %check
 py.test -v tendrl/node-agent/tests || :
@@ -74,7 +74,7 @@ py.test -v tendrl/node-agent/tests || :
 %{_datadir}/tendrl/node-agent/
 %{_sysconfdir}/tendrl/tendrl.conf
 %{_sysconfdir}/tendrl/node-agent_logging.yaml
-%{_unitdir}/tendrl-noded.service
+%{_unitdir}/tendrl-node-agent.service
 
 %changelog
 * Tue Nov 01 2016 Timothy Asir Jeyasingh <tjeyasin@redhat.com> - 0.0.1-1
