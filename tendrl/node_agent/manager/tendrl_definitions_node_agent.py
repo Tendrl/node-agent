@@ -30,6 +30,172 @@ namespace.tendrl.node_agent:
           type: String
       enabled: true
       value: nodes/$Node_context.node_id/Memory
+    Disk:
+      attrs:
+        disk_id:
+          help: "disk unique id"
+          type: String
+        device_name:
+          help: "disk name"
+          type: String
+        disk_kernel_name:
+          help: "disk internal kernel name"
+          type: String
+        parent_id:
+          help: "disk parent id"
+          type: String
+        parent_name:
+          help: "disk parent name"
+          type: String
+        disk_type:
+          help: "disk type"
+          type: String
+        fsuuid:
+          help: "file system uuid"
+          type: String
+        mount_point:
+          help: "disk mount point"
+          type: String
+        Model:
+          help: "disk model name"
+          type: String
+        vendor:
+          help: "disk vendor name"
+          type: String
+        used:
+          help: "disk used or not True/False"
+          type: String
+        serial_no:
+          help: "disk serial number"
+          type: String
+        rmversion:
+          help: "disk firmeware version"
+          type: String
+        fstype:
+          help: "file system type"
+          type: String
+        ssd:
+          help: "ssd is true / not"
+          type: String
+        size:
+          help: "size of the disk"
+          type: Integer
+        device_number:
+          help: "device number"
+          type: String
+        driver:
+          help: "driver"
+          type: String
+        group:
+          help: "disk group"
+          type: String
+        device:
+          help: "device"
+          type: String
+        bios_id:
+          help: "Bios id"
+          type: String 
+        state:
+          help: "disk state"
+          type: String
+        drive_status:
+          help: "disk status"
+          type: String
+        label:
+          help: "label"
+          type: String
+        req_queue_size:
+          help: "request queue size"
+          type: String
+        driver_modules:
+          help: "driver modules"
+          type: String
+        mode:
+          help: "driver mode"
+          type: String
+        owner:
+          help: "driver owner"
+          type: String
+        min_io_size:
+          help: "min I/O size"
+          type: String
+        major_to_minor_no:
+          help: "major to minor number"
+          type: String
+        device_files:
+          help: "device files"
+          type: String
+        sysfs_busid:
+          help: "sysfs bus id"
+          type: String
+        alignement:
+          help: "alignement"
+          type: String
+        read_only:
+          help: "disk is read only or not"
+          type: String
+        read_ahead:
+          help: "read ahead"
+          type: String
+        removable_device:
+          help: "removable device or not"
+          type: String
+        scheduler_name:
+          help: "scheduler_name"
+          type: String
+        sysfs_id:
+          help: "sysfs id"
+          type: String
+        sysfs_device_link:
+          help: "sysfs device link"
+          type: String
+        geo_bios_edd:
+          help: "geometry bios edd"
+          type: String
+        geo_bios_legacy:
+          help: "geometry bios legacy"
+          type: String
+        geo_logical:
+          help: "geometry logical"
+          type: String
+        phy_sector_size:
+          help: "physical sector size"
+          type: String
+        discard_granularity:
+          help: "discard granularity"
+          type: String
+        discard_align_offset:
+          help: "discard align offset"
+          type: String
+        discard_max_bytes:
+          help: "discard max bytes"
+          type: String
+        discard_zeroes_data:
+          help: "discard zeroes data"
+          type: String
+        optimal_io_size:
+          help: "optimal I/O size"
+          type: String
+        log_sector_size:
+          help: "logical sector size"
+          type: String
+
+      enabled: true
+      list: nodes/$Node_context.node_id/Disks
+    UsedDisk:
+      attrs:
+        disk_id:
+          help: "File system UUID"
+          type: String
+      enabled: true
+      list: nodes/$Node_context.node_id/Disks/used
+    FreeDisk:
+      attrs:
+        disk_id:
+          help: "File system UUID"
+          type: String
+      enabled: true
+      list: nodes/$Node_context.node_id/Disks/free
     Node:
       atoms:
         cmd:

@@ -305,6 +305,24 @@ class Test_pull_hardware_inventory(object):
         monkeypatch.setattr(hi, 'getNodeCpu',
                             mock_getNodeCpu)
 
+        def mock_get_node_disks():
+            return{
+                "model": "",
+                "disk_id": "",
+                "vendor": "0x1af4",
+                "name": "/dev/vdc",
+                "ssd": False,
+                "fs_type": "",
+                "mount_point": [""],
+                "parent": "",
+                "fs_uuid": "",
+                "used": False,
+                "type": "disk",
+                "device_name": "/dev/vdc",
+                "size": 536870912000L
+            }
+        monkeypatch.setattr(hi, 'get_node_disks',
+                            mock_get_node_disks)
         node_inventory = hi.get_node_inventory()
         node_inventory_expected = {
             "machine_id": "5bb3458a09004b2d9bdadf0705889958",
@@ -328,6 +346,232 @@ class Test_pull_hardware_inventory(object):
             "tendrl_context": {
                 "sds_name": "gluster",
                 "sds_version": "3.4.5"
+            },
+            "disks": {
+                "model": "",
+                "disk_id": "",
+                "vendor": "0x1af4",
+                "name": "/dev/vdc",
+                "ssd": False,
+                "fs_type": "",
+                "mount_point": [""],
+                "parent": "",
+                "fs_uuid": "",
+                "used": False,
+                "type": "disk",
+                "device_name": "/dev/vdc",
+                "size": 536870912000
             }
         }
         assert node_inventory == node_inventory_expected
+
+    def test_get_node_disks(self, monkeypatch):
+        self.cmd_obj = ""
+        out1 = {
+            u'stdout': u'[Created at block.434]\n'
+            'Unique ID: bdUI.SE1wIdpsiiC\n'
+            'Parent ID: 3OOL.qPX1W_dGFo7\n'
+            'SysFS ID: /class/block/sda/sda1\n'
+            'Hardware Class: partition\n'
+            'Model: "Partition"\n'
+            'Device File: /dev/sda1\n'
+            'Device Files: /dev/sda1, '
+            '/dev/disk/by-id/ata-SAMSUNG_'
+            'MZ7TE512HMHP-000L1_S1GJNSAG400778-part1, '
+            '/dev/disk/by-id/wwn-0x4d30445853885002-part1, '
+            '/dev/disk/by-uuid/dda9f15f-c5ec-4674-894a-d9ae57b8243c\n'
+            'Config Status: cfg=new, avail=yes, need=no, active=unknown\n'
+            'Attached to: #18 (Disk)\n\n'
+            '[Created at block.245]\n'
+            'Unique ID: 3OOL.qPX1W_dGFo7\n'
+            'Parent ID: w7Y8.HhbUszJC6y1\n'
+            'SysFS ID: /class/block/sda\n'
+            'SysFS BusID: 0:0:0:0\n'
+            'SysFS Device Link: /devices/pci0000:00/0000:00:1f.2'
+            '/ata1/host0/target0:0:0/0:0:0:0\n'
+            'Hardware Class: disk\n'
+            'Model: "SAMSUNG MZ7TE512"\n'
+            'Device: "MZ7TE512"\n'
+            'Revision: "6L0Q"\n'
+            'Driver: "ahci", "sd"\n'
+            'Driver Modules: "ahci"\n'
+            'Device File: /dev/sda\n'
+            'Device Files: /dev/sda, /dev/disk/by-id/ata-'
+            'SAMSUNG_MZ7TE512HMHP-000L1_S1GJNSAG400778, '
+            '/dev/disk/by-id/wwn-0x4d30445853885002\n'
+            'Device Number: block 8:0-8:15\n'
+            'BIOS id: 0x80\n'
+            'Geometry (BIOS EDD): CHS 992277/16/63\n'
+            'Size (BIOS EDD): 1000215216 sectors\n'
+            'Geometry (BIOS Legacy): CHS 1023/255/63\n\n'
+            '[Created at block.245]\n'
+            'Unique ID: sdsaddsaSDSAFDSa\n'
+            'Parent ID: sdsafkdsaSDvfv\n'
+            'SysFS ID: /class/block/sdb\n'
+            'SysFS BusID: 0:0:0:0\n'
+            'SysFS Device Link: /devices/pci0000:00/0000:00:1f.2'
+            '/ata1/host0/target0:0:0/0:0:0:0\n'
+            'Hardware Class: disk\n'
+            'Model: "SAMSUNG MZ7TE512"\n'
+            'Vendor: "SAMSUNG"\n'
+            'Serial ID: "S1GJNSAG400778"\n'
+            'Device: "MZ7TE512"\n'
+            'Revision: "6L0Q"\n'
+            'Driver: "ahci", "sd"\n'
+            'Driver Modules: "ahci"\n'
+            'Device File: /dev/sdb\n'
+            'Device Files: /dev/sdb, /dev/disk/by-id/ata-'
+            'SAMSUNG_MZ7TE512HMHP-000L1_S1GJNSAG400778, '
+            '/dev/disk/by-id/wwn-0x4d30445853885002\n'
+            'Device Number: block 8:0-8:15\n'
+            'BIOS id: 0x80\n'
+            'Geometry (BIOS EDD): CHS 992277/16/63\n'
+            'Size (BIOS EDD): 1000215216 sectors\n'
+            'Geometry (BIOS Legacy): CHS 1023/255/63\n',
+            u'stderr': u''
+        }
+        out2 = {
+            u'stdout': '/dev/sda /dev/sda  8:0     '
+            '128 0 0 512110190592 running root disk brw-rw---- '
+            '0 512 0 512 512 0 cfq 128 0 512 2147450880 0\n'
+            '/dev/sda1 /dev/sda1 /dev/sda 8:1 ext4 /boot  '
+            'dda9f15f-c5ec-4674-894a-d9ae57b8243c 128 0 0 1073741824  '
+            'root disk brw-rw---- 0 512 0 512 512 0 cfq 128 0 '
+            '512 2147450880 0 SAMSOUNG XAM004\n'
+            '/dev/sdb /dev/sdb  8:0     '
+            '128 0 0 512110190592 running root disk brw-rw---- '
+            '0 512 0 512 512 0 cfq 128 0 512 2147450880 0\n',
+            u'stderr': ''
+        }
+        self.count = 0
+
+        def mock_cmd_start(value):
+            if self.count <= 2:
+                self.count = self.count + 1
+                return out1, ""
+            else:
+                return out2, ""
+
+        monkeypatch.setattr(Command, 'start', mock_cmd_start)
+        expected = (
+            {
+                'used_disks_id': [u'bdUI.SE1wIdpsiiC'],
+                'free_disks_id': [u'sdsaddsaSDSAFDSa'],
+                'disks': [
+                    {'phy_sector_size': '512',
+                     'label': '',
+                     'discard_max_bytes': '2147450880',
+                     'mount_point': '',
+                     'discard_granularity': '512',
+                     'discard_align_offset': '0',
+                     'alignement': '0',
+                     'disk_id': u'sdsaddsaSDSAFDSa',
+                     'req_queue_size': '128',
+                     'geo_bios_legacy': u'CHS 1023/255/63',
+                     'parent_name': '',
+                     'removable_device': False,
+                     'driver': [u'"ahci"', u'"sd"'],
+                     'disk_type': u'disk',
+                     'Model': u'"SAMSUNG MZ7TE512"',
+                     'fstype': '',
+                     'parent_id': '',
+                     'rmversion': u'"6L0Q"',
+                     'mode': 'brw-rw----',
+                     'disk_kernel_name': '/dev/sdb',
+                     'major_to_minor_no': '8:0',
+                     'scheduler_name': 'cfq',
+                     'state': 'running',
+                     'fsuuid': '',
+                     'sysfs_busid': u'0',
+                     'log_sector_size': '512',
+                     'sysfs_device_link': u'/devices/pci0000',
+                     'read_only': False,
+                     'bios_id': u'0x80',
+                     'driver_modules': [u'"ahci"'],
+                     'size': '512110190592',
+                     'device': u'"MZ7TE512"',
+                     'read_ahead': '128',
+                     'ssd': True,
+                     'owner': 'root',
+                     'min_io_size': '512',
+                     'sysfs_id': u'/class/block/sdb',
+                     'vendor': u'"SAMSUNG"',
+                     'group': 'disk',
+                     'device_files': [
+                         u'/dev/sdb',
+                         u'/dev/disk/by-id/ata-SAMSUNG'
+                         '_MZ7TE512HMHP-000L1_S1GJNSAG400778',
+                         u'/dev/disk/by-id/wwn-0x4d30445853885002'
+                     ],
+                     'device_number': u'block 8',
+                     'device_name': u'/dev/sdb',
+                     'optimal_io_size': '0',
+                     'discard_zeroes_data': '0'
+                     },
+                    {'phy_sector_size': '512',
+                     'label': '',
+                     'mount_point': '/boot',
+                     'alignement': '0',
+                     'req_queue_size': '128',
+                     'parent_name': '/dev/sda',
+                     'disk_type': u'partition',
+                     'Model': u'"Partition"',
+                     'sysfs_busid': '',
+                     'mode': 'brw-rw----',
+                     'min_io_size': '512',
+                     'read_ahead': '128',
+                     'disk_id': u'bdUI.SE1wIdpsiiC',
+                     'vendor': 'SAMSOUNG',
+                     'device_number': '',
+                     'discard_granularity': '512',
+                     'discard_align_offset': '0',
+                     'geo_bios_legacy': '',
+                     'removable_device': False,
+                     'driver': '',
+                     'fstype': 'ext4',
+                     'parent_id': u'3OOL.qPX1W_dGFo7',
+                     'rmversion': '',
+                     'ssd': False,
+                     'disk_kernel_name': '/dev/sda1',
+                     'major_to_minor_no': '8:1',
+                     'scheduler_name': 'cfq',
+                     'device_files': [
+                         u'/dev/sda1',
+                         u'/dev/disk/by-id/ata-SAMSUNG_'
+                         'MZ7TE512HMHP-000L1_S1GJNSAG400778-part1',
+                         u'/dev/disk/by-id/'
+                         'wwn-0x4d30445853885002-part1',
+                         u'/dev/disk/by-uuid/'
+                         'dda9f15f-c5ec-4674-894a-d9ae57b8243c'
+                     ],
+                     'fsuuid': 'dda9f15f-c5ec-4674-894a-d9ae57b8243c',
+                     'read_only': False,
+                     'log_sector_size': '512',
+                     'sysfs_device_link': '',
+                     'group': 'disk',
+                     'bios_id': '',
+                     'size': '1073741824',
+                     'device': '',
+                     'discard_max_bytes': '2147450880',
+                     'owner': 'root',
+                     'driver_modules': '',
+                     'sysfs_id': u'/class/block/sda/sda1',
+                     'state': '',
+                     'device_name': u'/dev/sda1',
+                     'optimal_io_size': '0',
+                     'discard_zeroes_data': '0'
+                     }]})
+        result = hi.get_node_disks()
+        for exp in expected:
+            assert exp in result
+
+    def test_get_node_disks_error(self, monkeypatch):
+        out = {"stderr": "Error"}
+
+        def mock_cmd_start(value):
+            return out, ""
+        monkeypatch.setattr(Command, 'start', mock_cmd_start)
+        result = hi.get_node_disks()
+        assert result == {"free_disks_id": [],
+                          "used_disks_id": [],
+                          "disks": []}

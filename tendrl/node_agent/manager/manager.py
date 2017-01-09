@@ -21,6 +21,7 @@ from tendrl.node_agent.manager.tendrl_definitions_node_agent import data as \
     def_data
 from tendrl.node_agent.manager import utils
 from tendrl.node_agent.persistence.cpu import Cpu
+from tendrl.node_agent.persistence.disk import Disk
 from tendrl.node_agent.persistence.memory import Memory
 from tendrl.node_agent.persistence.node import Node
 from tendrl.node_agent.persistence.node_context import NodeContext
@@ -214,6 +215,29 @@ class NodeAgentManager(Manager):
                     node_id=raw_data["node_id"],
                 )
             )
+        if "disks" in raw_data:
+            LOG.info("on_pull, Updating disks")
+            try:
+                self.etcd_client.delete(
+                    ("nodes/%s/Disks") % raw_data["node_id"], recursive=True)
+            except etcd.EtcdKeyNotFound as ex:
+                LOG.debug("Given key is not present in etcd . %s", ex)
+            disks = raw_data['disks']
+            if "disks" in disks:
+                for disk in disks['disks']:
+                    disk['node_id'] = raw_data['node_id']
+                    disk_obj = Disk(disk)
+                    disk_json = disk_obj.to_json_string()
+                    self.etcd_client.write((disk_obj.__name__) % (
+                        raw_data["node_id"], disk['disk_id']), disk_json)
+            if "used_disks_id" in disks:
+                for disk in disks['used_disks_id']:
+                    self.etcd_client.write(("nodes/%s/Disks/used/%s") % (
+                        raw_data["node_id"], disk), "")
+            if "free_disks_id" in disks:
+                for disk in disks['free_disks_id']:
+                    self.etcd_client.write(("nodes/%s/Disks/free/%s") % (
+                        raw_data["node_id"], disk), "")
 
 
 def main():
