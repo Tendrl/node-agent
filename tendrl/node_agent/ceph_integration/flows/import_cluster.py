@@ -37,6 +37,9 @@ class ImportCluster(BaseFlow):
                            }
                     if "etcd_client" in job['parameters']:
                         del job['parameters']['etcd_client']
+                    if "manager" in job['parameters']:
+                        del job['parameters']['manager']
+
                     self.etcd_client.write("/queue/%s" % uuid.uuid4(),
                                            json.dumps(job))
         if curr_node_id in node_list:
