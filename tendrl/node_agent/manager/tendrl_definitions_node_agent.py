@@ -360,6 +360,21 @@ namespace.tendrl.node_agent:
         node_id:
           help: "Tendrl ID for the managed node"
           type: String
+        cluster_id:
+          help: Id of the cluster to which node belongs to
+          type: String
+        sds_pkg_name:
+          help: Storage system package name
+          type: String
+        sds_pkg_version:
+          help: Storage system package version
+          type: String
+        detected_cluster_id:
+          help: Detected cluster id
+          type: String
+        cluster_attrs:
+          help: Additional cluster specific attributes
+          type: json
       enabled: true
       value: nodes/$Node_context.node_id/Node_context
     File:
