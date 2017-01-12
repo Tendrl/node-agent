@@ -1,6 +1,6 @@
 include LICENSE
 include AUTHORS
-include README.adoc
+include README.rst
 include ChangeLog
 include requirements.txt
 include tendrl-node-agent.service

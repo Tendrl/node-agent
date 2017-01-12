@@ -30,9 +30,6 @@ Python module for Tendrl node bridge to manage storage node in the sds cluster
 
 %prep
 %setup
-# Remove the requirements file to avoid adding into
-# distutils requiers_dist config
-rm -rf {test-,}requirements.txt
 
 # Remove bundled egg-info
 rm -rf %{name}.egg-info
@@ -69,7 +66,7 @@ py.test -v tendrl/node-agent/tests || :
 %dir %{_var}/log/tendrl/node-agent
 %dir %{_sysconfdir}/tendrl/node-agent
 %dir %{_datadir}/tendrl/node-agent
-%doc README.adoc
+%doc README.rst
 %license LICENSE
 %{_datadir}/tendrl/node-agent/
 %{_sysconfdir}/tendrl/tendrl.conf
