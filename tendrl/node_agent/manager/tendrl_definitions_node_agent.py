@@ -198,16 +198,6 @@ namespace.tendrl.node_agent:
       list: nodes/$Node_context.node_id/Disks/free
     Node:
       atoms:
-        cmd:
-          enabled: true
-          inputs:
-            mandatory:
-              - Node.cmd_str
-          name: "Execute CMD on Node"
-          help: "Executes a command"
-          run: tendrl.node_agent.atoms.node.cmd.Cmd
-          type: Create
-          uuid: dc8fff3a-34d9-4786-9282-55eff6abb6c3
         check_node_up:
           enabled: true
           inputs:
@@ -295,6 +285,17 @@ namespace.tendrl.node_agent:
       enabled: true
     Service:
       atoms:
+        start_integration_service:
+          enabled: true
+          inputs:
+            mandatory:
+              - Tendrl_context.sds_name
+              - Tendrl_context.cluster_id
+          name: "Start integration service on node"
+          help: "starts the integration service on node"
+          run: tendrl.node_agent.atoms.service.start_integration_service.StartIntegrationService
+          type: Create
+          uuid: dc8fff3a-34d9-4786-9282-55eff6abb9c8
         configure:
           enabled: true
           inputs:
@@ -389,7 +390,7 @@ namespace.tendrl.node_agent.gluster_integration:
         - tendrl.node_agent.objects.Package.atoms.install
         - tendrl.node_agent.gluster_integration.objects.Config.atoms.generate
         - tendrl.node_agent.objects.File.atoms.write
-        - tendrl.node_agent.objects.Node.atoms.cmd
+        - tendrl.node_agent.objects.Service.atoms.start_integration_service
       help: "Import existing Gluster Cluster"
       enabled: true
       inputs:
@@ -466,7 +467,7 @@ namespace.tendrl.node_agent.ceph_integration:
         - tendrl.node_agent.objects.Package.atoms.install
         - tendrl.node_agent.ceph_integration.objects.Config.atoms.generate
         - tendrl.node_agent.objects.File.atoms.write
-        - tendrl.node_agent.objects.Node.atoms.cmd
+        - tendrl.node_agent.objects.Service.atoms.start_integration_service
       help: "Import existing Ceph Cluster"
       enabled: true
       inputs:
