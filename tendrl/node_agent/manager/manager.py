@@ -100,17 +100,18 @@ class NodeAgentManager(Manager):
                     is None:
                 utils.delete_local_node_context()
 
+        node_id = utils.get_local_node_context()
         super(
             NodeAgentManager,
             self
         ).__init__(
             "node",
-            utils.get_local_node_context(),
-            utils.get_local_node_context(),
+            node_id,
             config,
             NodeAgentSyncStateThread(self),
             NodeAgentEtcdPersister(config),
-            "/tendrl_definitions_node-agent/data"
+            "/tendrl_definitions_node_agent/data",
+            node_id=node_id,
         )
         self.register_node(machine_id)
 
