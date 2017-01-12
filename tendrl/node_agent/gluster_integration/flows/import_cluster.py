@@ -48,6 +48,9 @@ class ImportCluster(BaseFlow):
             self.parameters['Package.pkg_type'] = installation_source_type
             self.parameters['Package.name'] = get_package_name(
                 installation_source_type)
+            self.parameters['Node.cmd_str'] = "tendrl-gluster-integration " \
+                                              "--cluster-id %s" % \
+                                              cluster_id
             tendrl_context = "nodes/%s/Tendrl_context/cluster_id" % \
                              curr_node_id
             self.etcd_client.write(tendrl_context, cluster_id)
