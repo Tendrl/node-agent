@@ -11,6 +11,7 @@ class NodeContext(EtcdObj):
     node_id = fields.StrField("node_id")
     machine_id = fields.StrField("machine_id")
     fqdn = fields.StrField("fqdn")
+    tags = fields.StrField("tags")
 
     def render(self):
         self.__name__ = self.__name__ % self.node_id

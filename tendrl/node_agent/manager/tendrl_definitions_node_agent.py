@@ -30,6 +30,16 @@ namespace.tendrl.node_agent:
           type: String
       enabled: true
       value: nodes/$Node_context.node_id/Memory
+    Service:
+      attrs:
+        running:
+          type: String
+        exists:
+          type: String
+        service:
+          type: String
+      enabled: true
+      list: nodes/$Node_context.node_id/Services
     Disk:
       attrs:
         disk_id:
@@ -359,6 +369,9 @@ namespace.tendrl.node_agent:
           type: String
         node_id:
           help: "Tendrl ID for the managed node"
+          type: String
+        tags:
+          help: "The tags associated with this node"
           type: String
       enabled: true
       value: nodes/$Node_context.node_id/Node_context

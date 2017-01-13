@@ -1,6 +1,7 @@
 from command import Command
 import logging
 import platform
+import pull_service_status
 import socket
 from tendrl.node_agent.manager import utils as mgr_utils
 
@@ -342,5 +343,6 @@ def get_node_inventory():
     node_inventory["memory"] = getNodeMemory()
     node_inventory["tendrl_context"] = getTendrlContext()
     node_inventory["disks"] = get_node_disks()
+    node_inventory["services"] = pull_service_status.node_service_details()
 
     return node_inventory
