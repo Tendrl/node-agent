@@ -15,8 +15,6 @@ from tendrl.commons.manager.manager import Manager
 from tendrl.commons.manager.manager import SyncStateThread
 from tendrl.node_agent.persistence.tendrl_definitions import TendrlDefinitions
 
-config = TendrlConfig("node-agent", "/etc/tendrl/tendrl.conf")
-
 from tendrl.node_agent.manager.tendrl_definitions_node_agent import data as \
     def_data
 from tendrl.node_agent.manager import utils
@@ -26,9 +24,13 @@ from tendrl.node_agent.persistence.memory import Memory
 from tendrl.node_agent.persistence.node import Node
 from tendrl.node_agent.persistence.node_context import NodeContext
 from tendrl.node_agent.persistence.os import Os
+from tendrl.node_agent.persistence.platform import Platform
 from tendrl.node_agent.persistence.persister import NodeAgentEtcdPersister
 from tendrl.node_agent.persistence.tendrl_context import TendrlContext
+from tendrl.node_agent.discovery.platform.manager import PlatformManager
+from tendrl.node_agent.discovery.platform.base import PlatformDiscoverPlugin
 
+config = TendrlConfig("node-agent", "/etc/tendrl/tendrl.conf")
 LOG = logging.getLogger(__name__)
 HARDWARE_INVENTORY_FILE = "/etc/tendrl/tendrl-node-inventory.json"
 
@@ -100,19 +102,21 @@ class NodeAgentManager(Manager):
                     is None:
                 utils.delete_local_node_context()
 
+        node_id = utils.get_local_node_context()
         super(
             NodeAgentManager,
             self
         ).__init__(
             "node",
-            utils.get_local_node_context(),
-            utils.get_local_node_context(),
+            node_id,
             config,
             NodeAgentSyncStateThread(self),
             NodeAgentEtcdPersister(config),
-            "/tendrl_definitions_node-agent/data"
-        )
+            "/tendrl_definitions_node_agent/data",
+            node_id=node_id,
+            )
         self.register_node(machine_id)
+        self.load_and_execute_platform_discovery_plugins()
 
     def register_node(self, machine_id):
         self.persister_thread.update_node_context(
@@ -238,6 +242,36 @@ class NodeAgentManager(Manager):
                 for disk in disks['free_disks_id']:
                     self.etcd_client.write(("nodes/%s/Disks/free/%s") % (
                         raw_data["node_id"], disk), "")
+
+    def load_and_execute_platform_discovery_plugins(self):
+        # platform plugins
+        LOG.info("load_and_execute_platform_discovery_plugins, platform \
+         plugins")
+        try:
+            pMgr = PlatformManager()
+        except ValueError as ex:
+            LOG.error(
+                'Failed to init PlatformManager. \Error %s' % str(ex))
+            return
+        # execute the platform plugins
+        for plugin in pMgr.get_available_plugins():
+            platform_details = plugin.discover_platform()
+            if len(platform_details.keys()) > 0:
+                # update etcd
+                try:
+                    self.persister_thread.update_platform(
+                        Platform(
+                            updated=str(time.time()),
+                            os=platform_details["Name"],
+                            os_version=platform_details["OSVersion"],
+                            kernel_version=platform_details["KernelVersion"],
+                            node_id=utils.get_local_node_context(),
+                        )
+                    )
+                except etcd.EtcdException as ex:
+                    LOG.error(
+                        'Failed to update etcd . \Error %s' % str(ex))
+                break
 
 
 def main():

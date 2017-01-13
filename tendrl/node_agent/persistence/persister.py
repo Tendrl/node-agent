@@ -26,3 +26,6 @@ class NodeAgentEtcdPersister(EtcdPersister):
 
     def update_tendrl_definitions(self, definition):
         self._store.save(definition)
+
+    def update_platform(self, platform):
+        self._store.save(platform)

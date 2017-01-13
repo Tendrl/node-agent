@@ -94,7 +94,7 @@ namespace.tendrl.node_agent:
           type: String
         bios_id:
           help: "Bios id"
-          type: String 
+          type: String
         state:
           help: "disk state"
           type: String
@@ -382,6 +382,16 @@ namespace.tendrl.node_agent:
           help: "configuration file path"
           type: String
       enabled: true
+    Platform:
+      attrs:
+        kernel_version:
+          type: String
+        os:
+          type: String
+        os_version:
+          type: String
+      enabled: true
+      value: nodes/$Node_context.node_id/Platform
 namespace.tendrl.node_agent.gluster_integration:
   flows:
     ImportCluster:
