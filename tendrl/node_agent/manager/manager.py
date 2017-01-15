@@ -114,7 +114,7 @@ class NodeAgentManager(Manager):
             NodeAgentEtcdPersister(config),
             "/tendrl_definitions_node_agent/data",
             node_id=node_id,
-            )
+        )
         self.register_node(machine_id)
         self.load_and_execute_platform_discovery_plugins()
 
