@@ -11,6 +11,7 @@ class NodeContext(EtcdObj):
     node_id = fields.StrField("node_id")
     machine_id = fields.StrField("machine_id")
     fqdn = fields.StrField("fqdn")
+    tags = fields.StrField("tags")
     cluster_id = fields.StrField("cluster_id")
     sds_pkg_name = fields.StrField("sds_pkg_name")
     sds_pkg_version = fields.StrField("sds_pkg_version")

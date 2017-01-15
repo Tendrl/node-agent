@@ -8,6 +8,7 @@ import time
 import gevent.event
 import gevent.greenlet
 import pull_hardware_inventory
+from pull_service_status import TENDRL_SERVICE_TAGS
 
 from tendrl.commons.config import TendrlConfig
 from tendrl.commons.log import setup_logging
@@ -27,6 +28,7 @@ from tendrl.node_agent.persistence.node_context import NodeContext
 from tendrl.node_agent.persistence.os import Os
 from tendrl.node_agent.persistence.platform import Platform
 from tendrl.node_agent.persistence.persister import NodeAgentEtcdPersister
+from tendrl.node_agent.persistence.service import Service
 from tendrl.node_agent.persistence.tendrl_context import TendrlContext
 from tendrl.node_agent.discovery.platform.manager import PlatformManager
 from tendrl.node_agent.discovery.platform.base import PlatformDiscoverPlugin
@@ -85,6 +87,18 @@ class NodeAgentSyncStateThread(SyncStateThread):
         LOG.info("%s complete" % self.__class__.__name__)
 
 
+def update_node_context(manager, machine_id, tags=""):
+    manager.persister_thread.update_node_context(
+        NodeContext(
+            updated=str(time.time()),
+            machine_id=machine_id,
+            node_id=utils.set_local_node_context(),
+            fqdn=socket.getfqdn(),
+            tags=tags
+        )
+    )
+
+
 class NodeAgentManager(Manager):
     """manage user request thread
 
@@ -121,14 +135,7 @@ class NodeAgentManager(Manager):
         self.load_and_execute_sds_discovery_plugins()
 
     def register_node(self, machine_id):
-        self.persister_thread.update_node_context(
-            NodeContext(
-                updated=str(time.time()),
-                machine_id=machine_id,
-                node_id=utils.set_local_node_context(),
-                fqdn=socket.getfqdn(),
-            )
-        )
+        update_node_context(self, machine_id)
         tendrl_context = pull_hardware_inventory.getTendrlContext()
         self.persister_thread.update_tendrl_context(
             TendrlContext(
@@ -151,14 +158,18 @@ class NodeAgentManager(Manager):
 
     def on_pull(self, raw_data):
         LOG.info("on_pull, Updating Node_context data")
-        self.persister_thread.update_node_context(
-            NodeContext(
-                updated=str(time.time()),
-                machine_id=raw_data["machine_id"],
-                node_id=raw_data["node_id"],
-                fqdn=raw_data["os"]["FQDN"],
-            )
-        )
+        # Updating the Tags of the node, tags are based on
+        # services running on the node
+        tags = [
+            TENDRL_SERVICE_TAGS[s] for s in raw_data[
+                "services"
+            ].iterkeys() if raw_data["services"][s]["running"]
+        ]
+
+        tag_set = set(tags)
+        tags = ",".join(tag_set)
+        update_node_context(self, utils.get_machine_id(), tags)
+        
         LOG.info("on_pull, Updating node data")
         self.persister_thread.update_node(
             Node(
@@ -244,6 +255,25 @@ class NodeAgentManager(Manager):
                 for disk in disks['free_disks_id']:
                     self.etcd_client.write(("nodes/%s/Disks/free/%s") % (
                         raw_data["node_id"], disk), "")
+        if "services" in raw_data:
+            LOG.info("on_pull, Updating services")
+            try:
+                self.etcd_client.delete(
+                    ("nodes/%s/Services") % raw_data["node_id"],
+                    recursive=True)
+            except etcd.EtcdKeyNotFound as ex:
+                LOG.debug("Given key is not present in etcd . %s", ex)
+
+            for service, value in raw_data["services"].iteritems():
+                self.persister_thread.update_service(
+                    Service(
+                        updated=str(time.time()),
+                        exists=value["exists"],
+                        running=value["running"],
+                        node_id=raw_data["node_id"],
+                        service=service
+                    )
+                )
 
     def load_and_execute_platform_discovery_plugins(self):
         # platform plugins

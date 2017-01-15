@@ -15,6 +15,9 @@ class NodeAgentEtcdPersister(EtcdPersister):
     def update_os(self, os):
         self._store.save(os)
 
+    def update_service(self, service):
+        self._store.save(service)
+
     def update_node(self, fqdn):
         self._store.save(fqdn)
 
