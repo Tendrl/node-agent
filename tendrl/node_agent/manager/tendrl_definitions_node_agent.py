@@ -104,7 +104,7 @@ namespace.tendrl.node_agent:
           type: String
         bios_id:
           help: "Bios id"
-          type: String 
+          type: String
         state:
           help: "disk state"
           type: String
@@ -373,6 +373,21 @@ namespace.tendrl.node_agent:
         tags:
           help: "The tags associated with this node"
           type: String
+        cluster_id:
+          help: Id of the cluster to which node belongs to
+          type: String
+        sds_pkg_name:
+          help: Storage system package name
+          type: String
+        sds_pkg_version:
+          help: Storage system package version
+          type: String
+        detected_cluster_id:
+          help: Detected cluster id
+          type: String
+        cluster_attrs:
+          help: Additional cluster specific attributes
+          type: json
       enabled: true
       value: nodes/$Node_context.node_id/Node_context
     File:
@@ -395,6 +410,16 @@ namespace.tendrl.node_agent:
           help: "configuration file path"
           type: String
       enabled: true
+    Platform:
+      attrs:
+        kernel_version:
+          type: String
+        os:
+          type: String
+        os_version:
+          type: String
+      enabled: true
+      value: nodes/$Node_context.node_id/Platform
 namespace.tendrl.node_agent.gluster_integration:
   flows:
     ImportCluster:
