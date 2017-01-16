@@ -9,7 +9,7 @@ class Compare(BaseAtom):
         sds_version = parameters.get("Tendrl_context.sds_version")
         return True
 
-        client = parameters['etcd_client']
+        client = parameters['etcd_server']
         # get the node-agent_key some how
         # for now reading it from the json file
 

@@ -32,13 +32,13 @@ class ImportCluster(BaseFlow):
                            "run": self.name, "status": "new", "parameters":
                                new_params, "parent": self.job['request_id'],
                            "type": "node"}
-                    if "etcd_client" in job['parameters']:
-                        del job['parameters']['etcd_client']
+                    if "etcd_server" in job['parameters']:
+                        del job['parameters']['etcd_server']
                     if "manager" in job['parameters']:
                         del job['parameters']['manager']
 
-                    self.etcd_client.write("/queue/%s" % uuid.uuid4(),
-                                           json.dumps(job))
+                    self.etcd_server.client.write("/queue/%s" % uuid.uuid4(),
+                                                  json.dumps(job))
         if curr_node_id in node_list:
             self.parameters['fqdn'] = socket.getfqdn()
             installation_source_type = self.config.get(
@@ -53,5 +53,5 @@ class ImportCluster(BaseFlow):
                                               cluster_id
             tendrl_context = "nodes/%s/Tendrl_context/cluster_id" % \
                              curr_node_id
-            self.etcd_client.write(tendrl_context, cluster_id)
+            self.etcd_server.client.write(tendrl_context, cluster_id)
             return super(ImportCluster, self).run()
