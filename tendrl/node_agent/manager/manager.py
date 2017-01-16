@@ -36,7 +36,6 @@ from tendrl.node_agent.discovery.platform.base import PlatformDiscoverPlugin
 config = config.load_config("node-agent",
                             "/etc/tendrl/node-agent/node-agent.conf.yaml")
 LOG = logging.getLogger(__name__)
-HARDWARE_INVENTORY_FILE = "/etc/tendrl/tendrl-node-inventory.json"
 
 
 class NodeAgentSyncStateThread(SyncStateThread):

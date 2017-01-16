@@ -6,12 +6,7 @@ import ansible.executor.module_common as module_common
 from ansible import modules
 import os
 import pytest
-from tendrl.node_agent.ansible_runner.ansible_module_runner \
-    import AnsibleExecutableGenerationFailed
-from tendrl.node_agent.ansible_runner.ansible_module_runner \
-    import AnsibleRunner
-from tendrl.node_agent.ansible_runner.ansible_module_runner \
-    import config as cnf
+from tendrl.commons.utils import ansible_module_runner
 del sys.modules['tendrl.commons.config']
 
 
@@ -23,7 +18,7 @@ class Test_ansible_runner_constructor(object):
 
         pytest.raises(
             ValueError,
-            AnsibleRunner,
+            ansible_module_runner.AnsibleRunner,
             "invalid/module/path",
             key1="value1",
             key2="value2"
@@ -37,7 +32,7 @@ class Test_ansible_runner_constructor(object):
 
         pytest.raises(
             ValueError,
-            AnsibleRunner,
+            ansible_module_runner.AnsibleRunner,
             "core/commands/command.py"
         )
 

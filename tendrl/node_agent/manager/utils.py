@@ -5,7 +5,7 @@ import uuid
 
 import etcd
 
-from tendrl.node_agent.manager.command import Command
+from tendrl.commons.utils import cmd_utils
 
 LOG = logging.getLogger(__name__)
 NODE_CONTEXT = "/etc/tendrl/node-agent/node_context"
@@ -41,7 +41,7 @@ def delete_local_node_context():
 
 
 def get_machine_id():
-    cmd = Command({"_raw_params": "cat /etc/machine-id"})
+    cmd = cmd_utils.Command({"_raw_params": "cat /etc/machine-id"})
     out, err = cmd.start()
     return out['stdout']
 

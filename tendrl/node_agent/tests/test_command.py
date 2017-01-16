@@ -5,8 +5,8 @@ from tendrl.node_agent.ansible_runner.ansible_module_runner \
     import AnsibleExecutableGenerationFailed
 from tendrl.node_agent.ansible_runner.ansible_module_runner \
     import AnsibleRunner
-from tendrl.node_agent.manager.command \
-    import Command
+from tendrl.commons.utils import cmd_utils
+
 del sys.modules['tendrl.commons.config']
 
 
@@ -17,7 +17,7 @@ class Test_command_atom(object):
             return {"message": "test message"}, ""
         monkeypatch.setattr(AnsibleRunner, 'run', mock_runner_run)
 
-        c = Command({"key1": "value1", "key2": "value2"})
+        c = cmd_utils.Command({"key1": "value1", "key2": "value2"})
         result, err = c.start()
 
         assert result == {"message": "test message"}
@@ -32,7 +32,7 @@ class Test_command_atom(object):
             )
         monkeypatch.setattr(AnsibleRunner, 'run', mock_runner_run)
 
-        c = Command({"key1": "value1", "key2": "value2"})
+        c = cmd_utils.Command({"key1": "value1", "key2": "value2"})
         result, err = c.start()
 
         assert result == {}

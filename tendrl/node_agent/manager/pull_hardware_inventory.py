@@ -1,4 +1,4 @@
-from command import Command
+from tendrl.commons.utils import cmd_utils
 import logging
 import platform
 import pull_service_status
@@ -28,7 +28,7 @@ def getNodeCpu():
                    "CoresPerSocket": "corespersocket"}, ...], ...}
 
     '''
-    cmd = Command({"_raw_params": "lscpu"})
+    cmd = cmd_utils.Command({"_raw_params": "lscpu"})
     out, err = cmd.start()
     out = out['stdout']
     cpuinfo = {}
@@ -66,7 +66,7 @@ def getNodeMemory():
 
     '''
 
-    cmd = Command({"_raw_params": "cat /proc/meminfo"})
+    cmd = cmd_utils.Command({"_raw_params": "cat /proc/meminfo"})
     out, err = cmd.start()
     out = out['stdout']
 
@@ -87,7 +87,7 @@ def getNodeMemory():
 
 
 def getNodeOs():
-    cmd = Command({"_raw_params": "getenforce"})
+    cmd = cmd_utils.Command({"_raw_params": "getenforce"})
     out, err = cmd.start()
     se_out = out['stdout']
 
@@ -107,7 +107,7 @@ def getNodeOs():
 
 def getTendrlContext():
     tendrl_context = {"sds_name": "", "sds_version": ""}
-    cmd = Command({"_raw_params": "gluster --version"})
+    cmd = cmd_utils.Command({"_raw_params": "gluster --version"})
     out, err = cmd.start()
     if out["rc"] == 0:
         nvr = out['stdout']
@@ -115,7 +115,7 @@ def getTendrlContext():
         tendrl_context["sds_version"] = nvr.split()[1]
         return tendrl_context
 
-    cmd = Command({"_raw_params": "ceph --version"})
+    cmd = cmd_utils.Command({"_raw_params": "ceph --version"})
     out, err = cmd.start()
     if out["rc"] == 0:
         nvr = out['stdout']
@@ -140,7 +140,7 @@ def get_node_disks():
         lsblk = (
             "lsblk --all --bytes --noheadings --output='%s' --path --raw" %
             columns)
-        cmd = Command({"_raw_params": lsblk})
+        cmd = cmd_utils.Command({"_raw_params": lsblk})
         out, err = cmd.start()
         if not err:
             if not out['stderr']:
@@ -203,7 +203,7 @@ def get_node_disks():
 def get_all_disks():
     disks = []
     # Block will give all disk and partitons and cdroms details
-    cmd = Command({"_raw_params": 'hwinfo --block'})
+    cmd = cmd_utils.Command({"_raw_params": 'hwinfo --block'})
     out, err = cmd.start()
     if not err:
         if not out['stderr']:
@@ -330,7 +330,7 @@ def is_ssd(rotational):
 
 def get_node_inventory():
     node_inventory = {}
-    cmd = Command({"_raw_params": "cat /etc/machine-id"})
+    cmd = cmd_utils.Command({"_raw_params": "cat /etc/machine-id"})
     out, err = cmd.start()
     out = out['stdout']
 
