@@ -10,7 +10,7 @@ import gevent.greenlet
 import pull_hardware_inventory
 from pull_service_status import TENDRL_SERVICE_TAGS
 
-from tendrl.commons.config import TendrlConfig
+from tendrl.commons import config
 from tendrl.commons.log import setup_logging
 from tendrl.commons.manager.manager import Manager
 from tendrl.commons.manager.manager import SyncStateThread
@@ -33,7 +33,8 @@ from tendrl.node_agent.persistence.tendrl_context import TendrlContext
 from tendrl.node_agent.discovery.platform.manager import PlatformManager
 from tendrl.node_agent.discovery.platform.base import PlatformDiscoverPlugin
 
-config = TendrlConfig("node-agent", "/etc/tendrl/tendrl.conf")
+config = config.load_config("node-agent",
+                            "/etc/tendrl/node-agent/node-agent.conf.yaml")
 LOG = logging.getLogger(__name__)
 HARDWARE_INVENTORY_FILE = "/etc/tendrl/tendrl-node-inventory.json"
 
@@ -45,6 +46,7 @@ class NodeAgentSyncStateThread(SyncStateThread):
 
         self._manager = manager
         self._complete = gevent.event.Event()
+        self.current_hw_data = None
 
     def _run(self):
         LOG.info("%s running" % self.__class__.__name__)
@@ -56,29 +58,21 @@ class NodeAgentSyncStateThread(SyncStateThread):
                 # try to check if the hardware inventory has changed from the
                 # previous check.
                 LOG.info("Hardware inventory pulled successfully")
-                try:
-                    with open(HARDWARE_INVENTORY_FILE) as f:
-                        raw_data = json.loads(f.read())
-                except IOError:
-                    raw_data = {}
-                    LOG.info("No earlier hardware inventory data found")
-                else:
-                    # if the node inventory has not changed, just end this
-                    # iteration
-                    if raw_data == node_inventory:
-                        LOG.debug("Hardware inventory not changed,"
-                                  " since the previous run")
-                        continue
+                # if the node inventory has not changed, just end this
+                # iteration
+                if self.current_hw_data == node_inventory:
+                    LOG.debug("Hardware inventory not changed,"
+                              " since the previous run")
+                    continue
 
                 # updating the latest node inventory to the file.
-                with open(HARDWARE_INVENTORY_FILE, 'w') as fp:
-                    json.dump(node_inventory, fp)
+                self.current_hw_data = node_inventory
 
                 LOG.info("change detected in node hardware inventory,"
                          " trying to update the latest changes")
 
                 LOG.debug("raw_data: %s\n\n hardware inventory: %s" % (
-                    raw_data, node_inventory))
+                    self.current_hw_data, node_inventory))
 
                 self._manager.on_pull(node_inventory)
             except Exception as ex:
@@ -341,10 +335,11 @@ class NodeAgentManager(Manager):
 
 def main():
     setup_logging(
-        config.get('node-agent', 'log_cfg_path'),
-        config.get('node-agent', 'log_level')
+        config['log_cfg_path'],
+        config['log_level']
     )
-
+# init definitions
+# init manager and object tree from etcd
     machine_id = utils.get_machine_id()
 
     m = NodeAgentManager(machine_id)
