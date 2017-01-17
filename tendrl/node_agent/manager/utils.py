@@ -5,10 +5,13 @@ import uuid
 
 import etcd
 
+from tendrl.commons.config import load_config
 from tendrl.commons.utils import cmd_utils
 
 LOG = logging.getLogger(__name__)
 NODE_CONTEXT = "/etc/tendrl/node-agent/node_context"
+config = load_config("node-agent",
+                     "/etc/tendrl/node-agent/node-agent.conf.yaml")
 
 
 def get_local_node_context():
@@ -42,7 +45,7 @@ def delete_local_node_context():
 
 def get_machine_id():
     cmd = cmd_utils.Command({"_raw_params": "cat /etc/machine-id"})
-    out, err = cmd.start()
+    out, err, rc = cmd.run(config['tendrl_ansible_exec_file'])
     return out['stdout']
 
 

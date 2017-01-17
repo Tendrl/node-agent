@@ -18,7 +18,7 @@ class Test_command_atom(object):
         monkeypatch.setattr(AnsibleRunner, 'run', mock_runner_run)
 
         c = cmd_utils.Command({"key1": "value1", "key2": "value2"})
-        result, err = c.start()
+        result, err, rc = c.run('/tmp/')
 
         assert result == {"message": "test message"}
         assert err == ""
@@ -33,7 +33,7 @@ class Test_command_atom(object):
         monkeypatch.setattr(AnsibleRunner, 'run', mock_runner_run)
 
         c = cmd_utils.Command({"key1": "value1", "key2": "value2"})
-        result, err = c.start()
+        result, err, rc = c.run('/tmp/')
 
         assert result == {}
         assert err == "Executabe could not be generated for module" \
