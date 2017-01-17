@@ -3,6 +3,9 @@ import socket
 import sys
 
 from mock import MagicMock
+
+from tendrl.node_agent.manager import pull_service_status
+
 sys.modules['tendrl.node_agent.ansible_runner.ansible_module_runner'] = \
     MagicMock()
 
@@ -323,6 +326,7 @@ class Test_pull_hardware_inventory(object):
             }
         monkeypatch.setattr(hi, 'get_node_disks',
                             mock_get_node_disks)
+        pull_service_status.node_service_details = MagicMock()
         node_inventory = hi.get_node_inventory()
         node_inventory_expected = {
             "machine_id": "5bb3458a09004b2d9bdadf0705889958",
