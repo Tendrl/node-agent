@@ -53,7 +53,7 @@ def get_node_context(etcd_orm, local_node_context):
     # ensure local node context matches central store node context
     try:
         node_context = etcd_orm.client.read('nodes/%s/Node_context/node_id' %
-                                        local_node_context)
+                                            local_node_context)
         LOG.info("Remote Node_context.node_id==%s found!" %
                  node_context.value)
         return node_context.value

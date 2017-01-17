@@ -32,7 +32,7 @@ class Test_command_atom(object):
             )
         monkeypatch.setattr(AnsibleRunner, 'run', mock_runner_run)
 
-        c = cmd_utils.Command('cmd')
+        c = cmd_utils.Command('hwinfo bad')
         result, err, rc = c.run('/tmp/')
 
         assert result == {}

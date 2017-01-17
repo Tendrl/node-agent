@@ -38,7 +38,7 @@ class ImportCluster(base_flow.BaseFlow):
                         del job['parameters']['manager']
 
                     self.etcd_orm.client.write("/queue/%s" % uuid.uuid4(),
-                                                  json.dumps(job))
+                                               json.dumps(job))
         if curr_node_id in node_list:
             self.parameters['fqdn'] = socket.getfqdn()
             installation_source_type = self.config.get(

@@ -15,7 +15,7 @@ del sys.modules['tendrl.node_agent.ansible_runner.ansible_module_runner']
 class Test_pull_hardware_inventory(object):
     def test_getNodeCpu(self, monkeypatch):
 
-        def mock_cmd_run(obj):
+        def mock_cmd_run(obj, exec_path):
             out = {
                 u'changed': True,
                 u'end': u'2016-11-07 16:56:37.674368',
@@ -75,7 +75,7 @@ class Test_pull_hardware_inventory(object):
         }
         assert cpu == cpu_expected
 
-        def mock_cmd_run(obj):
+        def mock_cmd_run(obj, exec_path):
             out = {
                 u'changed': True,
                 u'end': u'2016-11-07 16:56:37.674368',
@@ -110,7 +110,7 @@ class Test_pull_hardware_inventory(object):
 
     def test_getNodeMemory(self, monkeypatch):
 
-        def mock_cmd_run(obj):
+        def mock_cmd_run(obj, exec_path):
             out = {
                 u'changed': True, u'end': u'2016-11-07 17:17:39.647578',
                 u'stdout': u'MemTotal:       19965224 kB\nMemFree:    '
@@ -161,7 +161,7 @@ class Test_pull_hardware_inventory(object):
                            "SwapTotal": "10487804 kB"}
         assert memory == memory_expected
 
-        def mock_cmd_run(obj):
+        def mock_cmd_run(obj, exec_path):
             out = {
                 u'changed': True, u'end': u'2016-11-07 17:17:39.647578',
                 u'stdout': u'',
@@ -238,7 +238,7 @@ class Test_pull_hardware_inventory(object):
 
     def test_get_node_inventory(self, monkeypatch):
 
-        def mock_cmd_run(obj):
+        def mock_cmd_run(obj, exec_path):
             out = {
                 u'changed': True, u'end': u'2016-11-07 17:40:56.549754',
                 u'stdout': u'5bb3458a09004b2d9bdadf0705889958',
@@ -445,7 +445,7 @@ class Test_pull_hardware_inventory(object):
         }
         self.count = 0
 
-        def mock_cmd_run(value):
+        def mock_cmd_run(value, exec_path):
             if self.count <= 2:
                 self.count += 1
                 return out1, "", 0
@@ -568,7 +568,7 @@ class Test_pull_hardware_inventory(object):
     def test_get_node_disks_error(self, monkeypatch):
         out = {"stderr": "Error"}
 
-        def mock_cmd_run(value):
+        def mock_cmd_run(value, exec_path):
             return out, "", 0
         monkeypatch.setattr(cmd_utils.Command, 'run', mock_cmd_run)
         result = hi.get_node_disks()

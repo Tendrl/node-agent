@@ -25,11 +25,11 @@ from tendrl.node_agent.persistence.memory import Memory
 from tendrl.node_agent.persistence.node import Node
 from tendrl.node_agent.persistence.node_context import NodeContext
 from tendrl.node_agent.persistence.os import Os
-from tendrl.node_agent.persistence.platform import Platform
 from tendrl.node_agent.persistence.persister import NodeAgentEtcdPersister
+from tendrl.node_agent.discovery.platform.manager import PlatformManager
+from tendrl.node_agent.persistence.platform import Platform
 from tendrl.node_agent.persistence.service import Service
 from tendrl.node_agent.persistence.tendrl_context import TendrlContext
-from tendrl.node_agent.discovery.platform.manager import PlatformManager
 
 config = load_config("node-agent",
                      "/etc/tendrl/node-agent/node-agent.conf.yaml")
@@ -160,7 +160,6 @@ class NodeAgentManager(common_manager.Manager):
         tag_set = set(tags)
         tags = ",".join(tag_set)
         update_node_context(self, utils.get_machine_id(), tags)
-        
         LOG.info("on_pull, Updating node data")
         self.persister_thread.update_node(
             Node(
