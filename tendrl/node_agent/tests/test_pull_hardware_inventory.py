@@ -192,7 +192,7 @@ class Test_pull_hardware_inventory(object):
 
     def test_getNodeOs(self, monkeypatch):
 
-        def mock_cmd_start(obj):
+        def mock_cmd_run(obj):
             out = {
                 u'changed': True, u'end': u'2016-11-07 17:27:45.909621',
                 u'stdout': u'Enforcing',
@@ -208,7 +208,7 @@ class Test_pull_hardware_inventory(object):
             }
 
             return out, "", 0
-        monkeypatch.setattr(cmd_utils.Command, 'run', mock_cmd_start)
+        monkeypatch.setattr(cmd_utils.Command, 'run', mock_cmd_run)
 
         def mock_linux_distribution():
             return ["Fedora", "24"]

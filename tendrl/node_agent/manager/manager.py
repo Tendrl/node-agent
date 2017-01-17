@@ -13,8 +13,8 @@ from tendrl.commons.config import load_config
 from tendrl.commons.etcdobj import etcdobj
 from tendrl.commons.log import setup_logging
 from tendrl.commons.manager import manager as common_manager
-from tendrl.node_agent.discovery.sds.manager import SDSDiscoveryManager
 from tendrl.node_agent.discovery.platform.manager import PlatformManager
+from tendrl.node_agent.discovery.sds.manager import SDSDiscoveryManager
 from tendrl.node_agent.manager.tendrl_definitions_node_agent import data as \
     def_data
 from tendrl.node_agent.manager import utils
@@ -27,8 +27,8 @@ from tendrl.node_agent.persistence.os import Os
 from tendrl.node_agent.persistence.persister import NodeAgentEtcdPersister
 from tendrl.node_agent.persistence.platform import Platform
 from tendrl.node_agent.persistence.service import Service
-from tendrl.node_agent.persistence.tendrl_definitions import TendrlDefinitions
 from tendrl.node_agent.persistence.tendrl_context import TendrlContext
+from tendrl.node_agent.persistence.tendrl_definitions import TendrlDefinitions
 
 config = load_config("node-agent",
                      "/etc/tendrl/node-agent/node-agent.conf.yaml")

@@ -18,6 +18,10 @@ class TestNodeAgentManager(object):
     def setup_method(self, method):
         manager.pull_hardware_inventory = MagicMock()
         manager.utils = MagicMock()
+        manager.NodeAgentManager.load_and_execute_platform_discovery_plugins\
+            = MagicMock()
+        manager.NodeAgentManager.load_and_execute_sds_discovery_plugins = \
+            MagicMock()
         self.manager = manager.NodeAgentManager(
             'aa22a6fe-87f0-45cf-8b70-2d0ff4c02af6'
         )
