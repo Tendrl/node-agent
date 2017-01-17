@@ -18,6 +18,7 @@ from tendrl.node_agent.discovery.sds.manager import SDSDiscoveryManager
 from tendrl.node_agent.manager.tendrl_definitions_node_agent import data as \
     def_data
 from tendrl.node_agent.manager import utils
+from tendrl.node_agent.objects.config.Config import Config
 from tendrl.node_agent.persistence.cpu import Cpu
 from tendrl.node_agent.persistence.disk import Disk
 from tendrl.node_agent.persistence.memory import Memory
@@ -331,10 +332,14 @@ class NodeAgentManager(common_manager.Manager):
 
 
 def main():
+    # Register Config to tendrl.node_agent.objects namespace
+    Tendrl.add_object(Config(), 'Config')
+
     setup_logging(
-        config['log_cfg_path'],
-        config['log_level']
+        Tendrl.node_agent.objects.Config.data['log_cfg_path'],
+        Tendrl.node_agent.objects.Config.data['log_level']
     )
+
 # init definitions
 # init manager and object tree from etcd
     machine_id = utils.get_machine_id()
