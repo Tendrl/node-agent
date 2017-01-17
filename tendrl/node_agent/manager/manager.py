@@ -14,8 +14,7 @@ from tendrl.commons.etcdobj import etcdobj
 from tendrl.commons.log import setup_logging
 from tendrl.commons.manager import manager as common_manager
 from tendrl.node_agent.discovery.sds.manager import SDSDiscoveryManager
-from tendrl.node_agent.persistence.tendrl_definitions import TendrlDefinitions
-
+from tendrl.node_agent.discovery.platform.manager import PlatformManager
 from tendrl.node_agent.manager.tendrl_definitions_node_agent import data as \
     def_data
 from tendrl.node_agent.manager import utils
@@ -26,9 +25,9 @@ from tendrl.node_agent.persistence.node import Node
 from tendrl.node_agent.persistence.node_context import NodeContext
 from tendrl.node_agent.persistence.os import Os
 from tendrl.node_agent.persistence.persister import NodeAgentEtcdPersister
-from tendrl.node_agent.discovery.platform.manager import PlatformManager
 from tendrl.node_agent.persistence.platform import Platform
 from tendrl.node_agent.persistence.service import Service
+from tendrl.node_agent.persistence.tendrl_definitions import TendrlDefinitions
 from tendrl.node_agent.persistence.tendrl_context import TendrlContext
 
 config = load_config("node-agent",
@@ -307,26 +306,28 @@ class NodeAgentManager(common_manager.Manager):
         # Execute the SDS discovery plugins and tag the nodes with data
         for plugin in sds_discovery_manager.get_available_plugins():
             sds_details = plugin.discover_storage_system()
-            if len(sds_details.keys()) > 0:
-                dict = {}
-                for key in sds_details['cluster_attrs'].keys():
-                    dict[key] = sds_details['cluster_attrs'][key]
-                try:
-                    self.persister_thread.update_node_context(
-                        NodeContext(
-                            updated=str(time.time()),
-                            node_id=utils.get_local_node_context(),
-                            sds_pkg_name=sds_details['pkg_name'],
-                            sds_pkg_version=sds_details['pkg_version'],
-                            detected_cluster_id=sds_details[
-                                'detected_cluster_id'
-                            ],
-                            cluster_attrs=dict
+            if sds_details:
+                if len(sds_details.keys()) > 0:
+                    dict = {}
+                    for key in sds_details['cluster_attrs'].keys():
+                        dict[key] = sds_details['cluster_attrs'][key]
+                    try:
+                        self.persister_thread.update_node_context(
+                            NodeContext(
+                                updated=str(time.time()),
+                                node_id=utils.get_local_node_context(),
+                                sds_pkg_name=sds_details['pkg_name'],
+                                sds_pkg_version=sds_details['pkg_version'],
+                                detected_cluster_id=sds_details[
+                                    'detected_cluster_id'
+                                ],
+                                cluster_attrs=dict
+                            )
                         )
-                    )
-                except etcd.EtcdException as ex:
-                    LOG.error('Failed to update etcd . \Error %s' % str(ex))
-                break
+                    except etcd.EtcdException as ex:
+                        LOG.error('Failed to update etcd . \Error %s' % str(
+                            ex))
+                    break
 
 
 def main():
