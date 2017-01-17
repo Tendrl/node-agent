@@ -9,7 +9,6 @@ LOG = logging.getLogger(__name__)
 class RHELPlugin(base.PlatformDiscoverPlugin):
 
     def discover_platform(self):
-        osinfo = {}
         os_out = platform.linux_distribution()
 
         osinfo = {

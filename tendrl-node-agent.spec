@@ -46,9 +46,9 @@ install -m  0755  --directory $RPM_BUILD_ROOT%{_var}/log/tendrl/node-agent
 install -m  0755  --directory $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node-agent
 install -m  0755  --directory $RPM_BUILD_ROOT%{_datadir}/tendrl/node-agent
 install -Dm 0644 tendrl-node-agent.service $RPM_BUILD_ROOT%{_unitdir}/tendrl-node-agent.service
-install -Dm 0644 etc/tendrl/tendrl.conf.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/tendrl.conf
-install -Dm 0644 etc/logging.yaml.timedrotation.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node-agent_logging.yaml
-install -Dm 644 etc/*.sample $RPM_BUILD_ROOT%{_datadir}/tendrl/node-agent/.
+install -Dm 0644 etc/tendrl/node-agent/node-agent.conf.yaml.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node-agent/node-agent.conf.yaml
+install -Dm 0644 etc/tendrl/node-agent/logging.yaml.timedrotation.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node-agent/node-agent_logging.yaml
+install -Dm 644 etc/tendrl/node-agent/*.sample $RPM_BUILD_ROOT%{_datadir}/tendrl/node-agent/
 
 %post
 %systemd_post tendrl-node-agent.service
@@ -69,8 +69,8 @@ py.test -v tendrl/node-agent/tests || :
 %doc README.rst
 %license LICENSE
 %{_datadir}/tendrl/node-agent/
-%{_sysconfdir}/tendrl/tendrl.conf
-%{_sysconfdir}/tendrl/node-agent_logging.yaml
+%{_sysconfdir}/tendrl/node-agent/node-agent.conf.yaml
+%{_sysconfdir}/tendrl/node-agent/node-agent_logging.yaml
 %{_unitdir}/tendrl-node-agent.service
 
 %changelog

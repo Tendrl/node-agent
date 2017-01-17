@@ -1,6 +1,6 @@
-from tendrl.commons.atoms.base_atom import BaseAtom
+from tendrl.commons.atoms import base_atom
 
 
-class CheckClusterIdExists(BaseAtom):
+class CheckClusterIdExists(base_atom.BaseAtom):
     def run(self, parameters):
         return True

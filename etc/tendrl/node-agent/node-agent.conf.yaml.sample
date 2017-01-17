@@ -1,0 +1,6 @@
+---
+etcd_port: 2379
+etcd_connection: 0.0.0.0
+tendrl_ansible_exec_file: $HOME/.tendrl/node-agent/ansible_exec
+log_cfg_path: /etc/tendrl/node-agent/node-agent_logging.yaml
+log_level: DEBUG

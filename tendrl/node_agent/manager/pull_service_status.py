@@ -1,4 +1,5 @@
-from tendrl.commons.utils.service_status import ServiceStatus
+from tendrl.commons.config import load_config
+from tendrl.commons.utils import service_status
 
 TENDRL_SERVICE_TAGS = {
     "tendrl-node-agent": "TENDRL",
@@ -23,9 +24,13 @@ TENDRL_SERVICES = [
 
 ]
 
+config = load_config("node-agent",
+                     "/etc/tendrl/node-agent/node-agent.conf.yaml")
+
 
 def get_service_info(service_name):
-    service = ServiceStatus(service_name)
+    service = service_status.ServiceStatus(service_name,
+                                           config['tendrl_ansible_exec_file'])
     return {"exists": service.exists(), "running": service.status()}
 
 

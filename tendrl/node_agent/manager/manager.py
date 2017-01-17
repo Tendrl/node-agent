@@ -1,5 +1,4 @@
 import etcd
-import json
 import logging
 import signal
 import socket
@@ -10,13 +9,12 @@ import gevent.greenlet
 import pull_hardware_inventory
 from pull_service_status import TENDRL_SERVICE_TAGS
 
-from tendrl.commons.config import TendrlConfig
+from tendrl.commons.config import load_config
+from tendrl.commons.etcdobj import etcdobj
 from tendrl.commons.log import setup_logging
-from tendrl.commons.manager.manager import Manager
-from tendrl.commons.manager.manager import SyncStateThread
+from tendrl.commons.manager import manager as common_manager
+from tendrl.node_agent.discovery.platform.manager import PlatformManager
 from tendrl.node_agent.discovery.sds.manager import SDSDiscoveryManager
-from tendrl.node_agent.persistence.tendrl_definitions import TendrlDefinitions
-
 from tendrl.node_agent.manager.tendrl_definitions_node_agent import data as \
     def_data
 from tendrl.node_agent.manager import utils
@@ -26,25 +24,25 @@ from tendrl.node_agent.persistence.memory import Memory
 from tendrl.node_agent.persistence.node import Node
 from tendrl.node_agent.persistence.node_context import NodeContext
 from tendrl.node_agent.persistence.os import Os
-from tendrl.node_agent.persistence.platform import Platform
 from tendrl.node_agent.persistence.persister import NodeAgentEtcdPersister
+from tendrl.node_agent.persistence.platform import Platform
 from tendrl.node_agent.persistence.service import Service
 from tendrl.node_agent.persistence.tendrl_context import TendrlContext
-from tendrl.node_agent.discovery.platform.manager import PlatformManager
-from tendrl.node_agent.discovery.platform.base import PlatformDiscoverPlugin
+from tendrl.node_agent.persistence.tendrl_definitions import TendrlDefinitions
 
-config = TendrlConfig("node-agent", "/etc/tendrl/tendrl.conf")
+config = load_config("node-agent",
+                     "/etc/tendrl/node-agent/node-agent.conf.yaml")
 LOG = logging.getLogger(__name__)
-HARDWARE_INVENTORY_FILE = "/etc/tendrl/tendrl-node-inventory.json"
 
 
-class NodeAgentSyncStateThread(SyncStateThread):
+class NodeAgentSyncStateThread(common_manager.SyncStateThread):
 
     def __init__(self, manager):
         super(NodeAgentSyncStateThread, self).__init__(manager)
 
         self._manager = manager
         self._complete = gevent.event.Event()
+        self.current_hw_data = None
 
     def _run(self):
         LOG.info("%s running" % self.__class__.__name__)
@@ -56,29 +54,21 @@ class NodeAgentSyncStateThread(SyncStateThread):
                 # try to check if the hardware inventory has changed from the
                 # previous check.
                 LOG.info("Hardware inventory pulled successfully")
-                try:
-                    with open(HARDWARE_INVENTORY_FILE) as f:
-                        raw_data = json.loads(f.read())
-                except IOError:
-                    raw_data = {}
-                    LOG.info("No earlier hardware inventory data found")
-                else:
-                    # if the node inventory has not changed, just end this
-                    # iteration
-                    if raw_data == node_inventory:
-                        LOG.debug("Hardware inventory not changed,"
-                                  " since the previous run")
-                        continue
+                # if the node inventory has not changed, just end this
+                # iteration
+                if self.current_hw_data == node_inventory:
+                    LOG.debug("Hardware inventory not changed,"
+                              " since the previous run")
+                    continue
 
                 # updating the latest node inventory to the file.
-                with open(HARDWARE_INVENTORY_FILE, 'w') as fp:
-                    json.dump(node_inventory, fp)
+                self.current_hw_data = node_inventory
 
                 LOG.info("change detected in node hardware inventory,"
                          " trying to update the latest changes")
 
                 LOG.debug("raw_data: %s\n\n hardware inventory: %s" % (
-                    raw_data, node_inventory))
+                    self.current_hw_data, node_inventory))
 
                 self._manager.on_pull(node_inventory)
             except Exception as ex:
@@ -99,7 +89,7 @@ def update_node_context(manager, machine_id, tags=""):
     )
 
 
-class NodeAgentManager(Manager):
+class NodeAgentManager(common_manager.Manager):
     """manage user request thread
 
     """
@@ -108,12 +98,12 @@ class NodeAgentManager(Manager):
         self._complete = gevent.event.Event()
         # Initialize the state sync thread which gets the underlying
         # node details and pushes the same to etcd
-        etcd_kwargs = {'port': int(config.get("commons", "etcd_port")),
-                       'host': config.get("commons", "etcd_connection")}
-        self.etcd_client = etcd.Client(**etcd_kwargs)
+        etcd_kwargs = {'port': config['etcd_port'],
+                       'host': config["etcd_connection"]}
+        self.etcd_orm = etcdobj.Server(etcd_kwargs=etcd_kwargs)
         local_node_context = utils.set_local_node_context()
         if local_node_context:
-            if utils.get_node_context(self.etcd_client, local_node_context) \
+            if utils.get_node_context(self.etcd_orm, local_node_context) \
                     is None:
                 utils.delete_local_node_context()
 
@@ -169,7 +159,6 @@ class NodeAgentManager(Manager):
         tag_set = set(tags)
         tags = ",".join(tag_set)
         update_node_context(self, utils.get_machine_id(), tags)
-        
         LOG.info("on_pull, Updating node data")
         self.persister_thread.update_node(
             Node(
@@ -235,7 +224,7 @@ class NodeAgentManager(Manager):
         if "disks" in raw_data:
             LOG.info("on_pull, Updating disks")
             try:
-                self.etcd_client.delete(
+                self.etcd_orm.client.delete(
                     ("nodes/%s/Disks") % raw_data["node_id"], recursive=True)
             except etcd.EtcdKeyNotFound as ex:
                 LOG.debug("Given key is not present in etcd . %s", ex)
@@ -245,20 +234,20 @@ class NodeAgentManager(Manager):
                     disk['node_id'] = raw_data['node_id']
                     disk_obj = Disk(disk)
                     disk_json = disk_obj.to_json_string()
-                    self.etcd_client.write((disk_obj.__name__) % (
+                    self.etcd_orm.client.write((disk_obj.__name__) % (
                         raw_data["node_id"], disk['disk_id']), disk_json)
             if "used_disks_id" in disks:
                 for disk in disks['used_disks_id']:
-                    self.etcd_client.write(("nodes/%s/Disks/used/%s") % (
+                    self.etcd_orm.client.write(("nodes/%s/Disks/used/%s") % (
                         raw_data["node_id"], disk), "")
             if "free_disks_id" in disks:
                 for disk in disks['free_disks_id']:
-                    self.etcd_client.write(("nodes/%s/Disks/free/%s") % (
+                    self.etcd_orm.client.write(("nodes/%s/Disks/free/%s") % (
                         raw_data["node_id"], disk), "")
         if "services" in raw_data:
             LOG.info("on_pull, Updating services")
             try:
-                self.etcd_client.delete(
+                self.etcd_orm.client.delete(
                     ("nodes/%s/Services") % raw_data["node_id"],
                     recursive=True)
             except etcd.EtcdKeyNotFound as ex:
@@ -317,34 +306,37 @@ class NodeAgentManager(Manager):
         # Execute the SDS discovery plugins and tag the nodes with data
         for plugin in sds_discovery_manager.get_available_plugins():
             sds_details = plugin.discover_storage_system()
-            if len(sds_details.keys()) > 0:
-                dict = {}
-                for key in sds_details['cluster_attrs'].keys():
-                    dict[key] = sds_details['cluster_attrs'][key]
-                try:
-                    self.persister_thread.update_node_context(
-                        NodeContext(
-                            updated=str(time.time()),
-                            node_id=utils.get_local_node_context(),
-                            sds_pkg_name=sds_details['pkg_name'],
-                            sds_pkg_version=sds_details['pkg_version'],
-                            detected_cluster_id=sds_details[
-                                'detected_cluster_id'
-                            ],
-                            cluster_attrs=dict
+            if sds_details:
+                if len(sds_details.keys()) > 0:
+                    dict = {}
+                    for key in sds_details['cluster_attrs'].keys():
+                        dict[key] = sds_details['cluster_attrs'][key]
+                    try:
+                        self.persister_thread.update_node_context(
+                            NodeContext(
+                                updated=str(time.time()),
+                                node_id=utils.get_local_node_context(),
+                                sds_pkg_name=sds_details['pkg_name'],
+                                sds_pkg_version=sds_details['pkg_version'],
+                                detected_cluster_id=sds_details[
+                                    'detected_cluster_id'
+                                ],
+                                cluster_attrs=dict
+                            )
                         )
-                    )
-                except etcd.EtcdException as ex:
-                    LOG.error('Failed to update etcd . \Error %s' % str(ex))
-                break
+                    except etcd.EtcdException as ex:
+                        LOG.error('Failed to update etcd . \Error %s' % str(
+                            ex))
+                    break
 
 
 def main():
     setup_logging(
-        config.get('node-agent', 'log_cfg_path'),
-        config.get('node-agent', 'log_level')
+        config['log_cfg_path'],
+        config['log_level']
     )
-
+# init definitions
+# init manager and object tree from etcd
     machine_id = utils.get_machine_id()
 
     m = NodeAgentManager(machine_id)

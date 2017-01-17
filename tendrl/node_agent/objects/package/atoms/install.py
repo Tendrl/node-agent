@@ -1,15 +1,12 @@
-from tendrl.commons.atoms.base_atom import BaseAtom
-from tendrl.node_agent.ansible_runner.ansible_module_runner \
-    import AnsibleExecutableGenerationFailed
-from tendrl.node_agent.ansible_runner.ansible_module_runner \
-    import AnsibleRunner
+from tendrl.commons.atoms import base_atom
+from tendrl.commons.utils import ansible_module_runner
 
 
-class Install(BaseAtom):
-    def run(self, parameters):
-        name = parameters.get("Package.name")
-        package_type = parameters.get("Package.pkg_type", "pip")
-        version = parameters.get("Package.version", None)
+class Install(base_atom.BaseAtom):
+    def run(self):
+        name = self.parameters.get("Package.name")
+        package_type = self.parameters.get("Package.pkg_type", "pip")
+        version = self.parameters.get("Package.version", None)
         attributes = {}
         attributes["name"] = name
         if version:
@@ -24,13 +21,14 @@ class Install(BaseAtom):
             ansible_module_path = "core/packaging/os/apt.py"
 
         try:
-            runner = AnsibleRunner(
+            runner = ansible_module_runner.AnsibleRunner(
                 ansible_module_path,
+                self.config['tendrl_ansible_exec_file'],
                 **attributes
             )
             result, err = runner.run()
-        except AnsibleExecutableGenerationFailed:
-            parameters.update({"Package.state": "uninstalled"})
+        except ansible_module_runner.AnsibleExecutableGenerationFailed:
+            self.parameters.update({"Package.state": "uninstalled"})
             return False
-        parameters.update({"Package.state": "installed"})
+        self.parameters.update({"Package.state": "installed"})
         return True

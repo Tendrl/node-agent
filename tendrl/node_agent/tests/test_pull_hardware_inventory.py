@@ -3,10 +3,13 @@ import socket
 import sys
 
 from mock import MagicMock
+
+from tendrl.node_agent.manager import pull_service_status
+
 sys.modules['tendrl.node_agent.ansible_runner.ansible_module_runner'] = \
     MagicMock()
 
-from tendrl.node_agent.manager.command import Command
+from tendrl.commons.utils import cmd_utils
 import tendrl.node_agent.manager.pull_hardware_inventory as hi
 from tendrl.node_agent.manager import utils as mgr_utils
 del sys.modules['tendrl.node_agent.ansible_runner.ansible_module_runner']
@@ -15,7 +18,7 @@ del sys.modules['tendrl.node_agent.ansible_runner.ansible_module_runner']
 class Test_pull_hardware_inventory(object):
     def test_getNodeCpu(self, monkeypatch):
 
-        def mock_cmd_start(obj):
+        def mock_cmd_run(obj, exec_path):
             out = {
                 u'changed': True,
                 u'end': u'2016-11-07 16:56:37.674368',
@@ -63,8 +66,8 @@ class Test_pull_hardware_inventory(object):
                 }, u'warnings': []
             }
 
-            return out, ""
-        monkeypatch.setattr(Command, 'start', mock_cmd_start)
+            return out, "", 0
+        monkeypatch.setattr(cmd_utils.Command, 'run', mock_cmd_run)
 
         cpu = hi.getNodeCpu()
         cpu_expected = {
@@ -75,7 +78,7 @@ class Test_pull_hardware_inventory(object):
         }
         assert cpu == cpu_expected
 
-        def mock_cmd_start(obj):
+        def mock_cmd_run(obj, exec_path):
             out = {
                 u'changed': True,
                 u'end': u'2016-11-07 16:56:37.674368',
@@ -96,8 +99,8 @@ class Test_pull_hardware_inventory(object):
                         u'_uses_shell': False}
                 }, u'warnings': []
             }
-            return out, ""
-        monkeypatch.setattr(Command, 'start', mock_cmd_start)
+            return out, "", 0
+        monkeypatch.setattr(cmd_utils.Command, 'run', mock_cmd_run)
 
         cpu = hi.getNodeCpu()
         cpu_expected = {
@@ -110,7 +113,7 @@ class Test_pull_hardware_inventory(object):
 
     def test_getNodeMemory(self, monkeypatch):
 
-        def mock_cmd_start(obj):
+        def mock_cmd_run(obj, exec_path):
             out = {
                 u'changed': True, u'end': u'2016-11-07 17:17:39.647578',
                 u'stdout': u'MemTotal:       19965224 kB\nMemFree:    '
@@ -153,15 +156,15 @@ class Test_pull_hardware_inventory(object):
                 u'warnings': []
             }
 
-            return out, ""
-        monkeypatch.setattr(Command, 'start', mock_cmd_start)
+            return out, "", 0
+        monkeypatch.setattr(cmd_utils.Command, 'run', mock_cmd_run)
 
         memory = hi.getNodeMemory()
         memory_expected = {"TotalSize": "19965224 kB",
                            "SwapTotal": "10487804 kB"}
         assert memory == memory_expected
 
-        def mock_cmd_start(obj):
+        def mock_cmd_run(obj, exec_path):
             out = {
                 u'changed': True, u'end': u'2016-11-07 17:17:39.647578',
                 u'stdout': u'',
@@ -182,8 +185,8 @@ class Test_pull_hardware_inventory(object):
                 u'warnings': []
             }
 
-            return out, ""
-        monkeypatch.setattr(Command, 'start', mock_cmd_start)
+            return out, "", 0
+        monkeypatch.setattr(cmd_utils.Command, 'run', mock_cmd_run)
 
         memory = hi.getNodeMemory()
         memory_expected = {"TotalSize": "",
@@ -192,7 +195,7 @@ class Test_pull_hardware_inventory(object):
 
     def test_getNodeOs(self, monkeypatch):
 
-        def mock_cmd_start(obj):
+        def mock_cmd_run(obj, exec_path):
             out = {
                 u'changed': True, u'end': u'2016-11-07 17:27:45.909621',
                 u'stdout': u'Enforcing',
@@ -207,8 +210,8 @@ class Test_pull_hardware_inventory(object):
                         u'_uses_shell': False}}, u'warnings': []
             }
 
-            return out, ""
-        monkeypatch.setattr(Command, 'start', mock_cmd_start)
+            return out, "", 0
+        monkeypatch.setattr(cmd_utils.Command, 'run', mock_cmd_run)
 
         def mock_linux_distribution():
             return ["Fedora", "24"]
@@ -238,7 +241,7 @@ class Test_pull_hardware_inventory(object):
 
     def test_get_node_inventory(self, monkeypatch):
 
-        def mock_cmd_start(obj):
+        def mock_cmd_run(obj, exec_path):
             out = {
                 u'changed': True, u'end': u'2016-11-07 17:40:56.549754',
                 u'stdout': u'5bb3458a09004b2d9bdadf0705889958',
@@ -260,9 +263,9 @@ class Test_pull_hardware_inventory(object):
                 },
                 u'warnings': []
             }
-            return out, ""
+            return out, "", 0
 
-        monkeypatch.setattr(Command, 'start', mock_cmd_start)
+        monkeypatch.setattr(cmd_utils.Command, 'run', mock_cmd_run)
 
         def mock_get_local_node_context():
             return "e3bf35c1-31e6-421a-bd68-f22ce2274d96"
@@ -323,6 +326,8 @@ class Test_pull_hardware_inventory(object):
             }
         monkeypatch.setattr(hi, 'get_node_disks',
                             mock_get_node_disks)
+        node_service_details = MagicMock(return_value={})
+        pull_service_status.node_service_details = node_service_details
         node_inventory = hi.get_node_inventory()
         node_inventory_expected = {
             "machine_id": "5bb3458a09004b2d9bdadf0705889958",
@@ -361,7 +366,8 @@ class Test_pull_hardware_inventory(object):
                 "type": "disk",
                 "device_name": "/dev/vdc",
                 "size": 536870912000
-            }
+            },
+            "services": {}
         }
         assert node_inventory == node_inventory_expected
 
@@ -445,14 +451,14 @@ class Test_pull_hardware_inventory(object):
         }
         self.count = 0
 
-        def mock_cmd_start(value):
+        def mock_cmd_run(value, exec_path):
             if self.count <= 2:
-                self.count = self.count + 1
-                return out1, ""
+                self.count += 1
+                return out1, "", 0
             else:
-                return out2, ""
+                return out2, "", 0
 
-        monkeypatch.setattr(Command, 'start', mock_cmd_start)
+        monkeypatch.setattr(cmd_utils.Command, 'run', mock_cmd_run)
         expected = (
             {
                 'used_disks_id': [u'bdUI.SE1wIdpsiiC'],
@@ -568,9 +574,9 @@ class Test_pull_hardware_inventory(object):
     def test_get_node_disks_error(self, monkeypatch):
         out = {"stderr": "Error"}
 
-        def mock_cmd_start(value):
-            return out, ""
-        monkeypatch.setattr(Command, 'start', mock_cmd_start)
+        def mock_cmd_run(value, exec_path):
+            return out, "", 0
+        monkeypatch.setattr(cmd_utils.Command, 'run', mock_cmd_run)
         result = hi.get_node_disks()
         assert result == {"free_disks_id": [],
                           "used_disks_id": [],

@@ -1,7 +1,8 @@
-import logging
-import os
 import importlib
 import inspect
+import logging
+import os
+
 from tendrl.node_agent.discovery.platform import base
 
 
