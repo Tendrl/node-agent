@@ -7,8 +7,8 @@ import tempfile
 sys.modules['tendrl.commons.config'] = MagicMock()
 sys.modules['tendrl.commons.log'] = MagicMock()
 sys.modules['tendrl.node_agent.persistence.persister'] = MagicMock()
-from tendrl.commons.manager.rpc_job_process import RpcJobProcessThread
 from tendrl.commons.manager.manager import SyncStateThread
+from tendrl.commons.manager.rpc_job_process import RpcJobProcessThread
 from tendrl.node_agent.manager import manager
 del sys.modules['tendrl.commons.log']
 del sys.modules['tendrl.commons.config']
@@ -156,8 +156,6 @@ class TestNodeAgentSyncStateThread(object):
             manager.Disk, "to_json_string", mock_to_json_string)
         manager.pull_hardware_inventory.get_node_inventory = \
             MagicMock(return_value=node_inventory)
-        self.tempdir = tempfile.mkdtemp()
-        manager.HARDWARE_INVENTORY_FILE = os.path.join(self.tempdir, "temp")
         self.SyncStateThread._complete = self
         self.SyncStateThread._run()
         self.manager.persister_thread.update_node_context.assert_called()
@@ -171,6 +169,3 @@ class TestNodeAgentSyncStateThread(object):
     def is_set(self):
         self.ret = not self.ret
         return self.ret
-
-    def teardown_method(self, method):
-        shutil.rmtree(self.tempdir)

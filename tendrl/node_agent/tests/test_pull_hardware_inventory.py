@@ -326,7 +326,8 @@ class Test_pull_hardware_inventory(object):
             }
         monkeypatch.setattr(hi, 'get_node_disks',
                             mock_get_node_disks)
-        pull_service_status.node_service_details = MagicMock()
+        node_service_details = MagicMock(name='tmp')
+        pull_service_status.node_service_details = node_service_details
         node_inventory = hi.get_node_inventory()
         node_inventory_expected = {
             "machine_id": "5bb3458a09004b2d9bdadf0705889958",
@@ -366,7 +367,7 @@ class Test_pull_hardware_inventory(object):
                 "device_name": "/dev/vdc",
                 "size": 536870912000
             },
-            "services": pull_service_status.node_service_details
+            "services": node_service_details
         }
         assert node_inventory == node_inventory_expected
 
