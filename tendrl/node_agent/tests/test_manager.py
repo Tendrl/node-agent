@@ -8,6 +8,7 @@ sys.modules['tendrl.commons.config'] = MagicMock()
 sys.modules['tendrl.commons.log'] = MagicMock()
 sys.modules['tendrl.node_agent.persistence.persister'] = MagicMock()
 from tendrl.commons.manager.rpc_job_process import RpcJobProcessThread
+from tendrl.commons.manager.manager import SyncStateThread
 from tendrl.node_agent.manager import manager
 del sys.modules['tendrl.commons.log']
 del sys.modules['tendrl.commons.config']
@@ -37,7 +38,7 @@ class TestNodeAgentManager(object):
         )
         assert isinstance(
             self.manager._discovery_thread,
-            manager.SyncStateThread
+            SyncStateThread
         )
         assert self.manager.defs_dir == "/tendrl_definitions_node_agent/data"
 
@@ -145,8 +146,8 @@ class TestNodeAgentSyncStateThread(object):
                           "free_disks_id": ["sdssds"],
                           "used_disks_id": ["sadAS"]}
             })
-        self.manager.etcd_client.delete = MagicMock()
-        self.manager.etcd_client.write = MagicMock()
+        self.manager.etcd_orm.client.delete = MagicMock()
+        self.manager.etcd_orm.client.write = MagicMock()
         self.disk = False
 
         def mock_to_json_string(param):

@@ -195,7 +195,7 @@ class Test_pull_hardware_inventory(object):
 
     def test_getNodeOs(self, monkeypatch):
 
-        def mock_cmd_run(obj):
+        def mock_cmd_run(obj, exec_path):
             out = {
                 u'changed': True, u'end': u'2016-11-07 17:27:45.909621',
                 u'stdout': u'Enforcing',
@@ -365,7 +365,8 @@ class Test_pull_hardware_inventory(object):
                 "type": "disk",
                 "device_name": "/dev/vdc",
                 "size": 536870912000
-            }
+            },
+            "services": pull_service_status.node_service_details
         }
         assert node_inventory == node_inventory_expected
 
