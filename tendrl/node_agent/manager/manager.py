@@ -101,7 +101,7 @@ class NodeAgentManager(common_manager.Manager):
         # node details and pushes the same to etcd
         etcd_kwargs = {'port': config['etcd_port'],
                        'host': config["etcd_connection"]}
-        self.etcd_orm = etcdobj.Server(**etcd_kwargs)
+        self.etcd_orm = etcdobj.Server(etcd_kwargs=etcd_kwargs)
         local_node_context = utils.set_local_node_context()
         if local_node_context:
             if utils.get_node_context(self.etcd_orm, local_node_context) \

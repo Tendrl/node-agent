@@ -17,7 +17,7 @@ class Test_command_atom(object):
             return {"message": "test message"}, ""
         monkeypatch.setattr(AnsibleRunner, 'run', mock_runner_run)
 
-        c = cmd_utils.Command({"key1": "value1", "key2": "value2"})
+        c = cmd_utils.Command('cmd')
         result, err, rc = c.run('/tmp/')
 
         assert result == {"message": "test message"}
@@ -32,7 +32,7 @@ class Test_command_atom(object):
             )
         monkeypatch.setattr(AnsibleRunner, 'run', mock_runner_run)
 
-        c = cmd_utils.Command({"key1": "value1", "key2": "value2"})
+        c = cmd_utils.Command('cmd')
         result, err, rc = c.run('/tmp/')
 
         assert result == {}
