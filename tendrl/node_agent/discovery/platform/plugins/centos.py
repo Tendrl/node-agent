@@ -9,7 +9,6 @@ LOG = logging.getLogger(__name__)
 class CentosPlugin(base.PlatformDiscoverPlugin):
 
     def discover_platform(self):
-        osinfo = {}
         os_out = platform.linux_distribution()
 
         osinfo = {

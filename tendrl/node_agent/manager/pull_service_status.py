@@ -1,4 +1,4 @@
-from tendrl.commons.utils.service_status import ServiceStatus
+from tendrl.commons.utils import service_status
 
 TENDRL_SERVICE_TAGS = {
     "tendrl-node-agent": "TENDRL",
@@ -25,7 +25,7 @@ TENDRL_SERVICES = [
 
 
 def get_service_info(service_name):
-    service = ServiceStatus(service_name)
+    service = service_status.ServiceStatus(service_name)
     return {"exists": service.exists(), "running": service.status()}
 
 

@@ -1,15 +1,15 @@
 import json
 
-from tendrl.commons.atoms.base_atom import BaseAtom
+from tendrl.commons.atoms import base_atom
 
 
-class Compare(BaseAtom):
+class Compare(base_atom.BaseAtom):
     def run(self, parameters):
         sds_name = parameters.get("Tendrl_context.sds_name")
         sds_version = parameters.get("Tendrl_context.sds_version")
         return True
 
-        client = parameters['etcd_server']
+        etcd_orm = parameters['etcd_orm']
         # get the node-agent_key some how
         # for now reading it from the json file
 
@@ -18,7 +18,7 @@ class Compare(BaseAtom):
             node_uuid = j["node_uuid"]
 
         path = "/nodes/%s/tendrl_context" % node_uuid
-        tendrl_context = client.read(path)
+        tendrl_context = etcd_orm.client.read(path)
         etcd_sds_name = ""
         etcd_sds_version = ""
         for el in tendrl_context.children:

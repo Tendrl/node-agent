@@ -1,8 +1,9 @@
-from tendrl.commons.atoms.base_atom import BaseAtom
+from tendrl.commons.atoms import base_atom
 
 
-class Generate(BaseAtom):
+class Generate(base_atom.BaseAtom):
     def run(self, parameters):
+        # TODO(rohan) change ini to yaml config and new per component file
         data = "\n[ceph_integration]\n# Path to log file\n"\
                "log_level = DEBUG\n"\
                "log_cfg_path = /etc/tendrl/ceph_integration_logging.yaml\n" \

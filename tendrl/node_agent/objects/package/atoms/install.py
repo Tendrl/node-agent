@@ -1,8 +1,8 @@
-from tendrl.commons.atoms.base_atom import BaseAtom
+from tendrl.commons.atoms import base_atom
 from tendrl.commons.utils import ansible_module_runner
 
 
-class Install(BaseAtom):
+class Install(base_atom.BaseAtom):
     def run(self):
         name = self.parameters.get("Package.name")
         package_type = self.parameters.get("Package.pkg_type", "pip")

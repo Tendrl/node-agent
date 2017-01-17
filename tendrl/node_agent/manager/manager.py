@@ -1,5 +1,4 @@
 import etcd
-import json
 import logging
 import signal
 import socket
@@ -11,9 +10,9 @@ import pull_hardware_inventory
 from pull_service_status import TENDRL_SERVICE_TAGS
 
 from tendrl.commons import config
+from tendrl.commons.etcdobj import etcdobj
 from tendrl.commons.log import setup_logging
-from tendrl.commons.manager.manager import Manager
-from tendrl.commons.manager.manager import SyncStateThread
+from tendrl.commons.manager import manager as common_manager
 from tendrl.node_agent.discovery.sds.manager import SDSDiscoveryManager
 from tendrl.node_agent.persistence.tendrl_definitions import TendrlDefinitions
 
@@ -31,14 +30,13 @@ from tendrl.node_agent.persistence.persister import NodeAgentEtcdPersister
 from tendrl.node_agent.persistence.service import Service
 from tendrl.node_agent.persistence.tendrl_context import TendrlContext
 from tendrl.node_agent.discovery.platform.manager import PlatformManager
-from tendrl.node_agent.discovery.platform.base import PlatformDiscoverPlugin
 
 config = config.load_config("node-agent",
                             "/etc/tendrl/node-agent/node-agent.conf.yaml")
 LOG = logging.getLogger(__name__)
 
 
-class NodeAgentSyncStateThread(SyncStateThread):
+class NodeAgentSyncStateThread(common_manager.SyncStateThread):
 
     def __init__(self, manager):
         super(NodeAgentSyncStateThread, self).__init__(manager)
@@ -92,7 +90,7 @@ def update_node_context(manager, machine_id, tags=""):
     )
 
 
-class NodeAgentManager(Manager):
+class NodeAgentManager(common_manager.Manager):
     """manage user request thread
 
     """
@@ -101,12 +99,12 @@ class NodeAgentManager(Manager):
         self._complete = gevent.event.Event()
         # Initialize the state sync thread which gets the underlying
         # node details and pushes the same to etcd
-        etcd_kwargs = {'port': int(config.get("commons", "etcd_port")),
-                       'host': config.get("commons", "etcd_connection")}
-        self.etcd_client = etcd.Client(**etcd_kwargs)
+        etcd_kwargs = {'port': config['etcd_port'],
+                       'host': config["etcd_connection"]}
+        self.etcd_orm = etcdobj.Server(**etcd_kwargs)
         local_node_context = utils.set_local_node_context()
         if local_node_context:
-            if utils.get_node_context(self.etcd_client, local_node_context) \
+            if utils.get_node_context(self.etcd_orm, local_node_context) \
                     is None:
                 utils.delete_local_node_context()
 
@@ -228,7 +226,7 @@ class NodeAgentManager(Manager):
         if "disks" in raw_data:
             LOG.info("on_pull, Updating disks")
             try:
-                self.etcd_client.delete(
+                self.etcd_orm.client.delete(
                     ("nodes/%s/Disks") % raw_data["node_id"], recursive=True)
             except etcd.EtcdKeyNotFound as ex:
                 LOG.debug("Given key is not present in etcd . %s", ex)
@@ -238,20 +236,20 @@ class NodeAgentManager(Manager):
                     disk['node_id'] = raw_data['node_id']
                     disk_obj = Disk(disk)
                     disk_json = disk_obj.to_json_string()
-                    self.etcd_client.write((disk_obj.__name__) % (
+                    self.etcd_orm.client.write((disk_obj.__name__) % (
                         raw_data["node_id"], disk['disk_id']), disk_json)
             if "used_disks_id" in disks:
                 for disk in disks['used_disks_id']:
-                    self.etcd_client.write(("nodes/%s/Disks/used/%s") % (
+                    self.etcd_orm.client.write(("nodes/%s/Disks/used/%s") % (
                         raw_data["node_id"], disk), "")
             if "free_disks_id" in disks:
                 for disk in disks['free_disks_id']:
-                    self.etcd_client.write(("nodes/%s/Disks/free/%s") % (
+                    self.etcd_orm.client.write(("nodes/%s/Disks/free/%s") % (
                         raw_data["node_id"], disk), "")
         if "services" in raw_data:
             LOG.info("on_pull, Updating services")
             try:
-                self.etcd_client.delete(
+                self.etcd_orm.client.delete(
                     ("nodes/%s/Services") % raw_data["node_id"],
                     recursive=True)
             except etcd.EtcdKeyNotFound as ex:

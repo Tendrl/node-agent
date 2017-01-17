@@ -46,10 +46,10 @@ def get_machine_id():
     return out['stdout']
 
 
-def get_node_context(etcd_client, local_node_context):
+def get_node_context(etcd_orm, local_node_context):
     # ensure local node context matches central store node context
     try:
-        node_context = etcd_client.read('nodes/%s/Node_context/node_id' %
+        node_context = etcd_orm.client.read('nodes/%s/Node_context/node_id' %
                                         local_node_context)
         LOG.info("Remote Node_context.node_id==%s found!" %
                  node_context.value)

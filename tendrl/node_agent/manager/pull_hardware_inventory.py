@@ -31,7 +31,6 @@ def getNodeCpu():
     cmd = cmd_utils.Command({"_raw_params": "lscpu"})
     out, err = cmd.start()
     out = out['stdout']
-    cpuinfo = {}
     if out:
         info_list = out.split('\n')
         cpuinfo = {
@@ -70,7 +69,6 @@ def getNodeMemory():
     out, err = cmd.start()
     out = out['stdout']
 
-    memoinfo = {}
     if out:
         info_list = out.split('\n')
         memoinfo = {
@@ -91,7 +89,6 @@ def getNodeOs():
     out, err = cmd.start()
     se_out = out['stdout']
 
-    osinfo = {}
     os_out = platform.linux_distribution()
 
     osinfo = {
