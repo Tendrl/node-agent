@@ -1,9 +1,6 @@
 import gevent.event
 from mock import MagicMock
-import os
-import shutil
 import sys
-import tempfile
 sys.modules['tendrl.commons.config'] = MagicMock()
 sys.modules['tendrl.commons.log'] = MagicMock()
 sys.modules['tendrl.node_agent.persistence.persister'] = MagicMock()
