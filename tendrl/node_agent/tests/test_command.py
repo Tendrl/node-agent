@@ -1,9 +1,9 @@
 from mock import MagicMock
 import sys
 sys.modules['tendrl.commons.config'] = MagicMock()
-from tendrl.node_agent.ansible_runner.ansible_module_runner \
+from tendrl.commons.utils.ansible_module_runner \
     import AnsibleExecutableGenerationFailed
-from tendrl.node_agent.ansible_runner.ansible_module_runner \
+from tendrl.commons.utils.ansible_module_runner \
     import AnsibleRunner
 from tendrl.commons.utils import cmd_utils
 
