@@ -144,6 +144,8 @@ class NodeAgentManager(common_manager.Manager):
                 status="UP"
             )
         )
+
+        # TODO(rohan) use registered Definition object here
         self.persister_thread.update_tendrl_definitions(TendrlDefinitions(
             updated=str(time.time()), data=def_data))
 
@@ -333,7 +335,7 @@ class NodeAgentManager(common_manager.Manager):
 
 def main():
     # Register Config to tendrl.node_agent.objects namespace
-    Tendrl.add_object(Config(), 'Config')
+    Config()
 
     setup_logging(
         Tendrl.node_agent.objects.Config.data['log_cfg_path'],
