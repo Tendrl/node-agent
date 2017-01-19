@@ -6,26 +6,11 @@ import uuid
 import etcd
 
 from tendrl.commons.config import load_config
-from tendrl.commons.utils import cmd_utils
 
 LOG = logging.getLogger(__name__)
 NODE_CONTEXT = "/etc/tendrl/node-agent/node_context"
 config = load_config("node-agent",
                      "/etc/tendrl/node-agent/node-agent.conf.yaml")
-
-
-def get_local_node_context():
-    # check if valid uuid is already present in local node_context
-    # (/etc/tendrl/node-agent/node_context, if not present generate one and
-    # update the file
-    if os.path.isfile(NODE_CONTEXT):
-        with open(NODE_CONTEXT) as f:
-            node_id = f.read()
-            if node_id:
-                LOG.info("Local Node_context.node_id==%s found!" % node_id)
-                return node_id
-    else:
-        return None
 
 
 def set_local_node_context():
@@ -41,12 +26,6 @@ def set_local_node_context():
 
 def delete_local_node_context():
     os.remove(NODE_CONTEXT)
-
-
-def get_machine_id():
-    cmd = cmd_utils.Command({"_raw_params": "cat /etc/machine-id"})
-    out, err, rc = cmd.run(config['tendrl_ansible_exec_file'])
-    return out['stdout']
 
 
 def get_node_context(etcd_orm, local_node_context):

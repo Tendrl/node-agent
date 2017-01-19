@@ -1,8 +1,10 @@
 from tendrl.commons.etcdobj.etcdobj import EtcdObj
+from tendrl.commons.etcdobj import fields
 from tendrl.commons import config as cmn_config
 
 from tendrl.node_agent.objects import base_object
 from tendrl.node_agent.persistence import etcd_utils
+
 
 
 class Config(base_object.BaseObject):
@@ -17,9 +19,29 @@ class Config(base_object.BaseObject):
         cls_etcd = etcd_utils.to_etcdobj(_ConfigEtcd, self)
         persister.save_config(cls_etcd())
 
+    def load(self):
+        cls_etcd = etcd_utils.to_etcdobj(_ConfigEtcd, self)
+        result = Tendrl.etcd_orm.read(cls_etcd())
+        return result.to_tendrl_obj()
+
 
 class _ConfigEtcd(EtcdObj):
     """Config etcd object, lazily updated
 
     """
     __name__ = '_tendrl/condig/node-agent/'
+
+
+    def to_tendrl_obj(self):
+        cls = _ConfigEtcd
+        result = Config()
+        for key in dir(cls):
+            if not key.startswith('_'):
+                attr = getattr(cls, key)
+                if issubclass(attr.__class__, fields.Field):
+                    setattr(result, key, attr.value)
+        return result
+
+
+# Register Tendrl object in the current namespace (Tendrl.node_agent)
+Tendrl.add_object(Config, Config.__name__)

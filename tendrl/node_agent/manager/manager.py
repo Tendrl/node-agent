@@ -28,7 +28,6 @@ from tendrl.node_agent.persistence.os import Os
 from tendrl.node_agent.persistence.persister import NodeAgentEtcdPersister
 from tendrl.node_agent.persistence.platform import Platform
 from tendrl.node_agent.persistence.service import Service
-from tendrl.node_agent.persistence.tendrl_context import TendrlContext
 from tendrl.node_agent.persistence.tendrl_definitions import TendrlDefinitions
 
 config = load_config("node-agent",
@@ -78,73 +77,40 @@ class NodeAgentSyncStateThread(common_manager.SyncStateThread):
         LOG.info("%s complete" % self.__class__.__name__)
 
 
-def update_node_context(manager, machine_id, tags=""):
-    manager.persister_thread.update_node_context(
-        NodeContext(
-            updated=str(time.time()),
-            machine_id=machine_id,
-            node_id=utils.set_local_node_context(),
-            fqdn=socket.getfqdn(),
-            tags=tags
-        )
-    )
-
-
 class NodeAgentManager(common_manager.Manager):
     """manage user request thread
 
     """
 
-    def __init__(self, machine_id):
+    def __init__(self, node_context):
         self._complete = gevent.event.Event()
         # Initialize the state sync thread which gets the underlying
         # node details and pushes the same to etcd
-        local_node_context = utils.set_local_node_context()
-        if local_node_context:
-            if utils.get_node_context(self.etcd_orm, local_node_context) \
-                    is None:
-                utils.delete_local_node_context()
-
-        node_id = utils.get_local_node_context()
         super(
             NodeAgentManager,
             self
         ).__init__(
-            "node",
-            node_id,
-            config,
+            node_context.machine_id,
+            node_context.node_id,
+            Tendrl.config,
             NodeAgentSyncStateThread(self),
             NodeAgentEtcdPersister(config),
-            "/tendrl_definitions_node_agent/data",
-            node_id=node_id
+            node_id=node_context.node_id
         )
-        self.register_node(machine_id)
+        self.register_node(node_context)
         self.load_and_execute_platform_discovery_plugins()
         self.load_and_execute_sds_discovery_plugins()
 
-    def register_node(self, machine_id):
-        update_node_context(self, machine_id)
-        tendrl_context = pull_hardware_inventory.getTendrlContext()
-        self.persister_thread.update_tendrl_context(
-            TendrlContext(
-                updated=str(time.time()),
-                sds_version=tendrl_context['sds_version'],
-                node_id=utils.get_local_node_context(),
-                sds_name=tendrl_context['sds_name'],
-            )
-        )
+    def register_node(self, node_context):
+        tendrl_context = Tendrl.node_agent.objects.TendrlContext(
+            node_context.node_id)
+        tendrl_context.save(Tendrl.etcd_orm)
 
-        self.persister_thread.update_node(
-            Node(
-                node_id=utils.get_local_node_context(),
-                fqdn=socket.getfqdn(),
-                status="UP"
-            )
-        )
+        node_context.fqdn = socket.getfqdn()
+        node_context.status = "UP"
+        node_context.save(Tendrl.etcd_orm)
 
-        # TODO(rohan) use registered Definition object here
-        self.persister_thread.update_tendrl_definitions(TendrlDefinitions(
-            updated=str(time.time()), data=def_data))
+        # TODO(rohan) use registered Definition object here instead
 
     def on_pull(self, raw_data):
         LOG.info("on_pull, Updating Node_context data")
@@ -332,7 +298,7 @@ class NodeAgentManager(common_manager.Manager):
 
 def main():
     # Register Config to tendrl.node_agent.objects namespace
-    Config()
+    Tendrl.config = Config()
 
     setup_logging(
         Tendrl.node_agent.objects.Config.data['log_cfg_path'],
@@ -344,11 +310,10 @@ def main():
     Tendrl.etcd_orm = etcdobj.Server(etcd_kwargs=etcd_kwargs)
 
     # TODO(rohan) init Definition object
+    Tendrl.definitions = Tendrl.node_agent.objects.Definition()
+    node_context = Tendrl.node_agent.objects.NodeContext()
 
-    # TODO (rohan)
-    machine_id = utils.get_machine_id()
-
-    m = NodeAgentManager(machine_id)
+    m = NodeAgentManager(node_context)
     m.start()
 
     complete = gevent.event.Event()

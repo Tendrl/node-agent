@@ -29,8 +29,6 @@ class BaseObject(object):
         self.flows = flows
 
     def __new__(cls, *args, **kwargs):
-        # Register Tendrl object in the current namespace (Tendrl.node_agent)
-        Tendrl.add_object(cls, cls.__name__)
 
         super_new = super(BaseObject, cls).__new__
         if super_new is object.__new__:
