@@ -8,22 +8,26 @@ else:
 
 import namespaces as ns
 
-class Tendrl(object):
+
+class TendrlNS(object):
     def __init__(self, *args, **kwargs):
-        super(Tendrl, self).__init__()
+        super(TendrlNS, self).__init__()
+
+        # Create the "Tendrl.node_agent" namespace
         self.node_agent = ns.Namespace(objects=ns.Namespace(),
                                        flows=ns.Namespace())
 
-    def add_object(self, obj, name):
+        # Create the "Tendrl.node_agent.objects.$obj.{atoms, flows} NS
+    def add_object(self, obj_class, name):
         # obj is the actual instance of that Tendrl object
         # name of object as defined in Tendrl definitions
-        self.node_agent.objects[name] = obj
+        self.node_agent.objects[name] = obj_class
 
-    def add_flow(self, flow, name):
+    def add_flow(self, flow_class, name):
         # flow is the actual instance of that Tendrl flow
         # name of object as defined in Tendrl definitions
-        self.node_agent.flows[name] = flow
+        self.node_agent.flows[name] = flow_class
 
 
 import __builtin__
-__builtin__.Tendrl = Tendrl()
+__builtin__.Tendrl = TendrlNS()

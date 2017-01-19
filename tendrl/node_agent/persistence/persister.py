@@ -6,6 +6,9 @@ class NodeAgentEtcdPersister(EtcdPersister):
         super(NodeAgentEtcdPersister, self).__init__(config)
         self._store = self.get_store()
 
+    def update_config(self, config):
+        self._store.save(config)
+
     def update_cpu(self, cpu):
         self._store.save(cpu)
 

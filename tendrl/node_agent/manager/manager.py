@@ -99,9 +99,6 @@ class NodeAgentManager(common_manager.Manager):
         self._complete = gevent.event.Event()
         # Initialize the state sync thread which gets the underlying
         # node details and pushes the same to etcd
-        etcd_kwargs = {'port': config['etcd_port'],
-                       'host': config["etcd_connection"]}
-        self.etcd_orm = etcdobj.Server(etcd_kwargs=etcd_kwargs)
         local_node_context = utils.set_local_node_context()
         if local_node_context:
             if utils.get_node_context(self.etcd_orm, local_node_context) \
@@ -342,8 +339,13 @@ def main():
         Tendrl.node_agent.objects.Config.data['log_level']
     )
 
-# init definitions
-# init manager and object tree from etcd
+    etcd_kwargs = {'port': config['etcd_port'],
+                   'host': config["etcd_connection"]}
+    Tendrl.etcd_orm = etcdobj.Server(etcd_kwargs=etcd_kwargs)
+
+    # TODO(rohan) init Definition object
+
+    # TODO (rohan)
     machine_id = utils.get_machine_id()
 
     m = NodeAgentManager(machine_id)
