@@ -6,32 +6,26 @@ import time
 
 import gevent.event
 import gevent.greenlet
-import pull_hardware_inventory
-from pull_service_status import TENDRL_SERVICE_TAGS
+# import pull_hardware_inventory
+# from pull_service_status import TENDRL_SERVICE_TAGS
 
-from tendrl.commons.config import load_config
-from tendrl.commons.etcdobj import etcdobj
 from tendrl.commons.log import setup_logging
 from tendrl.commons.manager import manager as common_manager
 from tendrl.node_agent.discovery.platform.manager import PlatformManager
 from tendrl.node_agent.discovery.sds.manager import SDSDiscoveryManager
-from tendrl.node_agent.manager.tendrl_definitions_node_agent import data as \
-    def_data
 from tendrl.node_agent.manager import utils
 from tendrl.node_agent.objects.config.Config import Config
+from tendrl.node_agent.objects.definition.Definition import Definition
 from tendrl.node_agent.persistence.cpu import Cpu
 from tendrl.node_agent.persistence.disk import Disk
 from tendrl.node_agent.persistence.memory import Memory
 from tendrl.node_agent.persistence.node import Node
-from tendrl.node_agent.persistence.node_context import NodeContext
 from tendrl.node_agent.persistence.os import Os
 from tendrl.node_agent.persistence.persister import NodeAgentEtcdPersister
 from tendrl.node_agent.persistence.platform import Platform
 from tendrl.node_agent.persistence.service import Service
-from tendrl.node_agent.persistence.tendrl_definitions import TendrlDefinitions
 
-config = load_config("node-agent",
-                     "/etc/tendrl/node-agent/node-agent.conf.yaml")
+
 LOG = logging.getLogger(__name__)
 
 
@@ -92,7 +86,7 @@ class NodeAgentManager(common_manager.Manager):
         ).__init__(
             node_context.machine_id,
             node_context.node_id,
-            Tendrl.config,
+            tendrl_ns.config,
             NodeAgentSyncStateThread(self),
             NodeAgentEtcdPersister(config),
             node_id=node_context.node_id
@@ -102,13 +96,13 @@ class NodeAgentManager(common_manager.Manager):
         self.load_and_execute_sds_discovery_plugins()
 
     def register_node(self, node_context):
-        tendrl_context = Tendrl.node_agent.objects.TendrlContext(
+        tendrl_context = tendrl_ns.node_agent.objects.TendrlContext(
             node_context.node_id)
-        tendrl_context.save(Tendrl.etcd_orm)
+        tendrl_context.save(tendrl_ns.etcd_orm)
 
         node_context.fqdn = socket.getfqdn()
         node_context.status = "UP"
-        node_context.save(Tendrl.etcd_orm)
+        node_context.save(tendrl_ns.etcd_orm)
 
         # TODO(rohan) use registered Definition object here instead
 
@@ -298,21 +292,21 @@ class NodeAgentManager(common_manager.Manager):
 
 def main():
     # Definitions
-    Tendrl.definitions = Tendrl.node_agent.objects.Definition()
+    tendrl_ns.definitions = tendrl_ns.node_agent.objects.Definition()
 
     # Register Config to tendrl.node_agent.objects namespace
-    Tendrl.config = Config()
+    tendrl_ns.config = Config()
 
     setup_logging(
-        Tendrl.node_agent.objects.Config.data['log_cfg_path'],
-        Tendrl.node_agent.objects.Config.data['log_level']
+        tendrl_ns.node_agent.objects.Config.data['log_cfg_path'],
+        tendrl_ns.node_agent.objects.Config.data['log_level']
     )
 
     etcd_kwargs = {'port': config['etcd_port'],
                    'host': config["etcd_connection"]}
-    Tendrl.etcd_orm = etcdobj.Server(etcd_kwargs=etcd_kwargs)
+    tendrl_ns.etcd_orm = etcdobj.Server(etcd_kwargs=etcd_kwargs)
 
-    node_context = Tendrl.node_agent.objects.NodeContext()
+    node_context = tendrl_ns.node_agent.objects.NodeContext()
 
     m = NodeAgentManager(node_context)
     m.start()

@@ -7,7 +7,7 @@ from tendrl.node_agent.persistence import etcd_utils
 
 
 
-class Config(base_object.BaseObject):
+class Config(base_object.NodeAgentObject):
     def __init__(self, config=None, *args, **kwargs):
         super(Config, self).__init__(*args, **kwargs)
 
@@ -21,7 +21,7 @@ class Config(base_object.BaseObject):
 
     def load(self):
         cls_etcd = etcd_utils.to_etcdobj(_ConfigEtcd, self)
-        result = Tendrl.etcd_orm.read(cls_etcd())
+        result = tendrl_ns.etcd_orm.read(cls_etcd())
         return result.to_tendrl_obj()
 
 
@@ -43,5 +43,5 @@ class _ConfigEtcd(EtcdObj):
         return result
 
 
-# Register Tendrl object in the current namespace (Tendrl.node_agent)
-Tendrl.add_object(Config, Config.__name__)
+# Register Tendrl object in the current namespace (tendrl_ns.node_agent)
+tendrl_ns.add_object(Config, Config.__name__)

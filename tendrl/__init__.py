@@ -13,12 +13,12 @@ class TendrlNS(object):
     def __init__(self, *args, **kwargs):
         super(TendrlNS, self).__init__()
 
-        # Create the "Tendrl.node_agent" namespace
+        # Create the "tendrl_ns.node_agent" namespace
         self.to_str = "tendrl.node_agent"
         self.node_agent = ns.Namespace(objects=ns.Namespace(),
                                        flows=ns.Namespace())
 
-        # Create the "Tendrl.node_agent.objects.$obj.{atoms, flows} NS
+        # Create the "tendrl_ns.node_agent.objects.$obj.{atoms, flows} NS
     def add_object(self, obj_class, name):
         # obj is the actual instance of that Tendrl object
         # name of object as defined in Tendrl definitions
@@ -31,4 +31,4 @@ class TendrlNS(object):
 
 
 import __builtin__
-__builtin__.Tendrl = TendrlNS()
+__builtin__.tendrl_ns = TendrlNS()

@@ -44,5 +44,5 @@ class _DefinitionEtcd(EtcdObj):
                     setattr(result, key, attr.value)
         return result
 
-# Register Tendrl object in the current namespace (Tendrl.node_agent)
-Tendrl.add_object(Definition, Definition.__name__)
+# Register Tendrl object in the current namespace (tendrl_ns.node_agent)
+tendrl_ns.add_object(Definition, Definition.__name__)

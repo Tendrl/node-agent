@@ -6,7 +6,7 @@ import six
 class BaseObject(object):
     def __init__(
             self,
-            name,
+            name=None,
             attrs=None,
             enabled=None,
             obj_list=None,
@@ -45,7 +45,7 @@ class BaseObject(object):
 class NodeAgentObject(BaseObject):
     def __init__(
             self,
-            name,
+            name=None,
             attrs=None,
             enabled=None,
             obj_list=None,
@@ -53,7 +53,7 @@ class NodeAgentObject(BaseObject):
             atoms=None,
             flows=None
     ):
-        obj_def = Tendrl.definitions.get_obj(Tendrl.to_str,
+        obj_def = tendrl_ns.definitions.get_obj(tendrl_ns.to_str,
                                              self.__class__.__name__)
         self.name = name or obj_def.name
 

@@ -20,6 +20,37 @@ namespace.tendrl.node_agent:
         gluster: namespace.tendrl.gluster_integration
 
   objects:
+    Definition:
+      atoms:
+        generate:
+          enabled: true
+          inputs:
+            mandatory:
+              - Config.etcd_port
+              - Config.etcd_connection
+          name: "Generate Ceph Integration configuration based on provided inputs"
+          help: "Generates configuration content"
+          outputs:
+            - Config.data
+            - Config.file_path
+          run: tendrl.node_agent.ceph_integration.objects.Config.atoms.generate.Generate
+          uuid: 61959242-628f-4847-a5e2-2c8d8daac0cd
+      attrs:
+        data:
+          help: "Configuration data of Ceph Integration for this Tendrl deployment"
+          type: String
+        etcd_connection:
+          help: "Host/IP of the etcd central store for this Tendrl deployment"
+          type: String
+        etcd_port:
+          help: "Port of the etcd central store for this Tendrl deployment"
+          type: String
+        file_path:
+          default: /etc/tendrl/ceph_integration.conf
+          help: "Path to the Ceph integration tendrl configuration"
+          type: String
+      enabled: true
+
     Cpu:
       attrs:
         architecture:

@@ -31,12 +31,12 @@ class NodeContext(base_object.NodeAgentObject):
 
     def load(self):
         cls_etcd = etcd_utils.to_etcdobj(_NodeContextEtcd, self)
-        result = Tendrl.etcd_orm.read(cls_etcd())
+        result = tendrl_ns.etcd_orm.read(cls_etcd())
         return result.to_tendrl_obj()
 
     def _get_machine_id(self):
         cmd = cmd_utils.Command({"_raw_params": "cat /etc/machine-id"})
-        out, err, rc = cmd.run(Tendrl.config['tendrl_ansible_exec_file'])
+        out, err, rc = cmd.run(tendrl_ns.config['tendrl_ansible_exec_file'])
         return out['stdout']
 
     def _create_node_id(self, node_id=None):
@@ -46,7 +46,7 @@ class NodeContext(base_object.NodeAgentObject):
         with open(local_node_context, 'wb+') as f:
             f.write(node_id)
             LOG.info("SET_LOCAL: "
-                     "Tendrl.node_agent.objects.NodeContext.node_id==%s" %
+                     "tendrl_ns.node_agent.objects.NodeContext.node_id==%s" %
                      self.node_id)
 
     def _get_node_id(self):
@@ -58,7 +58,7 @@ class NodeContext(base_object.NodeAgentObject):
                     node_id = f.read()
                     if node_id:
                         LOG.info(
-                            "GET_LOCAL: Tendrl.node_agent.objects.NodeContext"
+                            "GET_LOCAL: tendrl_ns.node_agent.objects.NodeContext"
                             ".node_id==%s" % node_id)
                         return node_id
         except AttributeError:
@@ -85,5 +85,5 @@ class _NodeContextEtcd(EtcdObj):
                     setattr(result, key, attr.value)
         return result
 
-# Register Tendrl object in the current namespace (Tendrl.node_agent)
-Tendrl.add_object(NodeContext, NodeContext.__name__)
+# Register Tendrl object in the current namespace (tendrl_ns.node_agent)
+tendrl_ns.add_object(NodeContext, NodeContext.__name__)

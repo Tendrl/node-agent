@@ -6,10 +6,10 @@ class NodeAgentEtcdPersister(EtcdPersister):
         super(NodeAgentEtcdPersister, self).__init__(config)
 
     def save_node_context(self, node_context):
-        Tendrl.etcd_orm.save(node_context)
+        tendrl_ns.etcd_orm.save(node_context)
 
     def save_config(self, config):
-        Tendrl.etcd_orm.save(config)
+        tendrl_ns.etcd_orm.save(config)
 
     def update_cpu(self, cpu):
         self._store.save(cpu)

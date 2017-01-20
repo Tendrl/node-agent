@@ -27,7 +27,7 @@ class TendrlContext(base_object.NodeAgentObject):
 
     def load(self):
         cls_etcd = etcd_utils.to_etcdobj(_TendrlContextEtcd, self)
-        result = Tendrl.etcd_orm.read(cls_etcd())
+        result = tendrl_ns.etcd_orm.read(cls_etcd())
         return result.to_tendrl_obj()
 
     def _create_integration_id(self, integration_id=None):
@@ -36,7 +36,7 @@ class TendrlContext(base_object.NodeAgentObject):
         with open(integration_id, 'wb+') as f:
             f.write(integration_id)
             LOG.info("SET_LOCAL: "
-                     "Tendrl.node_agent.objects.TendrlContext.integration_id"
+                     "tendrl_ns.node_agent.objects.TendrlContext.integration_id"
                      "==%s" %
                      self.node_id)
 
@@ -50,7 +50,7 @@ class TendrlContext(base_object.NodeAgentObject):
                     if integration_id:
                         LOG.info(
                             "GET_LOCAL: "
-                            "Tendrl.node_agent.objects.TendrlContext"
+                            "tendrl_ns.node_agent.objects.TendrlContext"
                             ".integration_id==%s" % node_id)
                         return integration_id
         except AttributeError:
@@ -77,5 +77,5 @@ class _TendrlContextEtcd(EtcdObj):
                     setattr(result, key, attr.value)
         return result
 
-# Register Tendrl object in the current namespace (Tendrl.node_agent)
-Tendrl.add_object(TendrlContext, TendrlContext.__name__)
+# Register Tendrl object in the current namespace (tendrl_ns.node_agent)
+tendrl_ns.add_object(TendrlContext, TendrlContext.__name__)
