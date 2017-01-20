@@ -1,10 +1,8 @@
 import logging
 import os
-import uuid
 
 from tendrl.commons.etcdobj.etcdobj import EtcdObj
 from tendrl.commons.etcdobj import fields
-from tendrl.commons.utils import cmd_utils
 
 from tendrl.node_agent.objects import base_object
 from tendrl.node_agent.persistence import etcd_utils
@@ -13,7 +11,7 @@ from tendrl.node_agent.persistence import etcd_utils
 LOG = logging.getLogger(__name__)
 
 
-class TendrlContext(base_object.BaseObject):
+class TendrlContext(base_object.NodeAgentObject):
     def __init__(self, integration_id=None, node_id=None, *args, **kwargs):
         super(TendrlContext, self).__init__(*args, **kwargs)
 

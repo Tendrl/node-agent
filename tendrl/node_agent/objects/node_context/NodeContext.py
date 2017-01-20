@@ -13,7 +13,7 @@ from tendrl.node_agent.persistence import etcd_utils
 LOG = logging.getLogger(__name__)
 
 
-class NodeContext(base_object.BaseObject):
+class NodeContext(base_object.NodeAgentObject):
     def __init__(self, machine_id=None, node_id=None, fqdn=None,
                  tags=None, status=None, *args, **kwargs):
         super(NodeContext, self).__init__(*args, **kwargs)

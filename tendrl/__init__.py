@@ -14,6 +14,7 @@ class TendrlNS(object):
         super(TendrlNS, self).__init__()
 
         # Create the "Tendrl.node_agent" namespace
+        self.to_str = "tendrl.node_agent"
         self.node_agent = ns.Namespace(objects=ns.Namespace(),
                                        flows=ns.Namespace())
 

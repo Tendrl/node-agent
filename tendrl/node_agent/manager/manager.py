@@ -297,6 +297,9 @@ class NodeAgentManager(common_manager.Manager):
 
 
 def main():
+    # Definitions
+    Tendrl.definitions = Tendrl.node_agent.objects.Definition()
+
     # Register Config to tendrl.node_agent.objects namespace
     Tendrl.config = Config()
 
@@ -309,8 +312,6 @@ def main():
                    'host': config["etcd_connection"]}
     Tendrl.etcd_orm = etcdobj.Server(etcd_kwargs=etcd_kwargs)
 
-    # TODO(rohan) init Definition object
-    Tendrl.definitions = Tendrl.node_agent.objects.Definition()
     node_context = Tendrl.node_agent.objects.NodeContext()
 
     m = NodeAgentManager(node_context)
