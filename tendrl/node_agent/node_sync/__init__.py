@@ -9,6 +9,30 @@ from tendrl.node_agent.node_sync import disk_sync
 
 LOG = logging.getLogger(__name__)
 
+# TODO(darshan) this has to be moved to Definition file
+
+TENDRL_SERVICES = [
+    "tendrl-node-agent",
+    "etcd",
+    "tendrl-apid",
+    "tendrl-gluster-integration",
+    "tendrl-ceph-integration",
+    "glusterd",
+    "ceph-mon@*",
+    "ceph-osd@*"
+]
+
+TENDRL_SERVICE_TAGS = {
+    "tendrl-node-agent": "tendrl/node",
+    "etcd": "tendrl/central-store",
+    "tendrl-apid": "tendrl/server",
+    "tendrl-gluster-integration": "tendrl/integration/gluster",
+    "tendrl-ceph-integration": "tendrl/integration/gluster",
+    "glusterd": "gluster/server",
+    "ceph-mon": "ceph/mon",
+    "ceph-osd": "ceph/osd"
+}
+
 
 class NodeAgentSyncThread(sds_sync.StateSyncThread):
     def _run(self):
@@ -19,9 +43,23 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 gevent.sleep(3)
                 tendrl_ns.tendrl_context = tendrl_ns.node_agent.objects\
                     .TendrlContext(tendrl_ns.node_context.node_id)
+                # if sds version and name not passed, object will figure that
+                # detail
                 tendrl_ns.tendrl_context.save()
 
-                # TODO(team) update node agent service tags here
+                tags = []
+                # update node agent service details
+                LOG.info("node_sync, Updating Service data")
+                for service in TENDRL_SERVICES:
+                    s = tendrl_ns.node_agent.objects.Service(service=service)
+                    if s.running:
+                        tags.append(TENDRL_SERVICE_TAGS[service])
+                    s.save()
+
+                # updating node context with latest tags
+                LOG.info("node_sync, updating node context data with tags")
+                tendrl_ns.node_agent.objects.NodeContext(tags=tags).save()
+
                 LOG.info("node_sync, Updating OS data")
                 tendrl_ns.node_agent.objects.Os().save()
 
@@ -30,8 +68,6 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
 
                 LOG.info("node_sync, Updating memory")
                 tendrl_ns.node_agent.objects.Memory().save()
-
-                # TODO(team) update tendrl_context for sds_name and version?
 
                 LOG.info("node_sync, Updating disks")
                 try:
