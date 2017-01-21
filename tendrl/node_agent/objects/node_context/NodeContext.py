@@ -6,14 +6,14 @@ from tendrl.commons.etcdobj.etcdobj import EtcdObj
 from tendrl.commons.etcdobj import fields
 from tendrl.commons.utils import cmd_utils
 
-from tendrl.node_agent.objects import base_object
+from tendrl.node_agent.objects import node_agent_base_object
 from tendrl.node_agent.persistence import etcd_utils
 
 
 LOG = logging.getLogger(__name__)
 
 
-class NodeContext(base_object.NodeAgentObject):
+class NodeContext(node_agent_base_object.NodeAgentObject):
     def __init__(self, machine_id=None, node_id=None, fqdn=None,
                  tags=None, status=None, *args, **kwargs):
         super(NodeContext, self).__init__(*args, **kwargs)
@@ -86,4 +86,4 @@ class _NodeContextEtcd(EtcdObj):
         return result
 
 # Register Tendrl object in the current namespace (tendrl_ns.node_agent)
-tendrl_ns.add_object(NodeContext, NodeContext.__name__)
+tendrl_ns.add_object(NodeContext.__name__, NodeContext)

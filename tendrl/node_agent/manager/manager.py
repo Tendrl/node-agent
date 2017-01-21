@@ -291,9 +291,9 @@ class NodeAgentManager(common_manager.Manager):
 
 
 def main():
+    tendrl_ns.type = "node"
     # Definitions
     tendrl_ns.definitions = tendrl_ns.node_agent.objects.Definition()
-
     # Register Config to tendrl.node_agent.objects namespace
     tendrl_ns.config = Config()
 
@@ -307,6 +307,7 @@ def main():
     tendrl_ns.etcd_orm = etcdobj.Server(etcd_kwargs=etcd_kwargs)
 
     node_context = tendrl_ns.node_agent.objects.NodeContext()
+    tendrl_ns.node_context = node_context
 
     m = NodeAgentManager(node_context)
     m.start()

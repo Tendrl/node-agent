@@ -2,12 +2,12 @@ from tendrl.commons.etcdobj.etcdobj import EtcdObj
 from tendrl.commons.etcdobj import fields
 from tendrl.commons import config as cmn_config
 
-from tendrl.node_agent.objects import base_object
+from tendrl.node_agent.objects import node_agent_base_object
 from tendrl.node_agent.persistence import etcd_utils
 
 
 
-class Config(base_object.NodeAgentObject):
+class Config(node_agent_base_object.NodeAgentObject):
     def __init__(self, config=None, *args, **kwargs):
         super(Config, self).__init__(*args, **kwargs)
 
@@ -44,4 +44,4 @@ class _ConfigEtcd(EtcdObj):
 
 
 # Register Tendrl object in the current namespace (tendrl_ns.node_agent)
-tendrl_ns.add_object(Config, Config.__name__)
+tendrl_ns.add_object(Config.__name__, Config)

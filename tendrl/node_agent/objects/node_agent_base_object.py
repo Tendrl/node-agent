@@ -1,12 +1,8 @@
-import abc
-import six
+from tendrl.commons.objects import base_object
 
-
-@six.add_metaclass(abc.ABCMeta)
-class BaseObject(object):
+class NodeAgentObject(base_object.BaseObject):
     def __init__(
             self,
-            name=None,
             attrs=None,
             enabled=None,
             obj_list=None,
@@ -14,49 +10,17 @@ class BaseObject(object):
             atoms=None,
             flows=None
     ):
-        self.name = name
-
-        self.attrs = attrs
-        self.enabled = enabled
-
-        # path to LIST of all instance of the object
-        self.obj_list = obj_list
-
-        # path to GET an instance of the object
-        self.obj_value = obj_value
-
-        self.atoms = atoms
-
-        # List of flows under this object
-        self.flows = flows
-
-    def __new__(cls, *args, **kwargs):
-
-        super_new = super(BaseObject, cls).__new__
-        if super_new is object.__new__:
-            instance = super_new(cls)
-        else:
-            instance = super_new(cls, *args, **kwargs)
-
-        return instance
-
-
-@six.add_metaclass(abc.ABCMeta)
-class NodeAgentObject(BaseObject):
-    def __init__(
-            self,
-            name=None,
+        super(NodeAgentObject, self).__init__(name=None,
             attrs=None,
             enabled=None,
             obj_list=None,
             obj_value=None,
             atoms=None,
             flows=None
-    ):
-        obj_def = tendrl_ns.definitions.get_obj(tendrl_ns.to_str,
+                                              )
+
+        obj_def = tendrl_ns.definitions.get_obj_definition(tendrl_ns.to_str,
                                              self.__class__.__name__)
-        self.name = name or obj_def.name
-
         # list of attr tuple of (attr_name, type)
         # eg: {'status': {'type': 'Boolean'}, 'fqdn': {'type': 'String'},
         # 'cmd_str': {'type': 'String'}}
@@ -82,13 +46,3 @@ class NodeAgentObject(BaseObject):
 
         # List of flows under this object
         self.flows = flows or obj_def.flows
-
-    def __new__(cls, *args, **kwargs):
-
-        super_new = super(NodeAgentObject, cls).__new__
-        if super_new is object.__new__:
-            instance = super_new(cls)
-        else:
-            instance = super_new(cls, *args, **kwargs)
-
-        return instance

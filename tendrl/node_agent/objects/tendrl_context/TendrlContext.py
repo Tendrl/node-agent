@@ -4,14 +4,14 @@ import os
 from tendrl.commons.etcdobj.etcdobj import EtcdObj
 from tendrl.commons.etcdobj import fields
 
-from tendrl.node_agent.objects import base_object
+from tendrl.node_agent.objects import node_agent_base_object
 from tendrl.node_agent.persistence import etcd_utils
 
 
 LOG = logging.getLogger(__name__)
 
 
-class TendrlContext(base_object.NodeAgentObject):
+class TendrlContext(node_agent_base_object.NodeAgentObject):
     def __init__(self, integration_id=None, node_id=None, *args, **kwargs):
         super(TendrlContext, self).__init__(*args, **kwargs)
 
@@ -30,28 +30,28 @@ class TendrlContext(base_object.NodeAgentObject):
         result = tendrl_ns.etcd_orm.read(cls_etcd())
         return result.to_tendrl_obj()
 
-    def _create_integration_id(self, integration_id=None):
-        integration_id = "~/.tendrl/" + self.value % self.node_id + \
+    def create_local_integration_id(self):
+        tendrl_context_path = "~/.tendrl/" + self.value % self.node_id + \
                              "integration_id"
-        with open(integration_id, 'wb+') as f:
-            f.write(integration_id)
+        with open(tendrl_context_path, 'wb+') as f:
+            f.write(self.integration_id)
             LOG.info("SET_LOCAL: "
                      "tendrl_ns.node_agent.objects.TendrlContext.integration_id"
                      "==%s" %
-                     self.node_id)
+                     self.integration_id)
 
-    def _get_integration_id(self):
+    def _get_local_integration_id(self):
         try:
-            integration_id = "~/.tendrl/" + self.value % self.node_id + \
+            tendrl_context_path = "~/.tendrl/" + self.value % self.node_id + \
                                  "integration_id"
-            if os.path.isfile(integration_id):
-                with open(integration_id) as f:
-                    node_id = f.read()
+            if os.path.isfile(tendrl_context_path):
+                with open(tendrl_context_path) as f:
+                    integration_id = f.read()
                     if integration_id:
                         LOG.info(
                             "GET_LOCAL: "
                             "tendrl_ns.node_agent.objects.TendrlContext"
-                            ".integration_id==%s" % node_id)
+                            ".integration_id==%s" % integration_id)
                         return integration_id
         except AttributeError:
             return None
@@ -78,4 +78,4 @@ class _TendrlContextEtcd(EtcdObj):
         return result
 
 # Register Tendrl object in the current namespace (tendrl_ns.node_agent)
-tendrl_ns.add_object(TendrlContext, TendrlContext.__name__)
+tendrl_ns.add_object(TendrlContext.__name__, TendrlContext)
