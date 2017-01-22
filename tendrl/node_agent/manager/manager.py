@@ -6,16 +6,13 @@ import time
 
 import gevent.event
 import gevent.greenlet
-# import pull_hardware_inventory
-# from pull_service_status import TENDRL_SERVICE_TAGS
+import pull_hardware_inventory
+from pull_service_status import TENDRL_SERVICE_TAGS
 
-from tendrl.commons.log import setup_logging
 from tendrl.commons.manager import manager as common_manager
 from tendrl.node_agent.discovery.platform.manager import PlatformManager
 from tendrl.node_agent.discovery.sds.manager import SDSDiscoveryManager
 from tendrl.node_agent.manager import utils
-from tendrl.node_agent.objects.config.Config import Config
-from tendrl.node_agent.objects.definition.Definition import Definition
 from tendrl.node_agent.persistence.cpu import Cpu
 from tendrl.node_agent.persistence.disk import Disk
 from tendrl.node_agent.persistence.memory import Memory
@@ -291,25 +288,10 @@ class NodeAgentManager(common_manager.Manager):
 
 
 def main():
-    tendrl_ns.type = "node"
-    # Definitions
-    tendrl_ns.definitions = tendrl_ns.node_agent.objects.Definition()
-    # Register Config to tendrl.node_agent.objects namespace
-    tendrl_ns.config = Config()
+    tendrl_ns.register_subclasses_to_ns()
+    tendrl_ns.setup_initial_objects()
 
-    setup_logging(
-        tendrl_ns.node_agent.objects.Config.data['log_cfg_path'],
-        tendrl_ns.node_agent.objects.Config.data['log_level']
-    )
-
-    etcd_kwargs = {'port': config['etcd_port'],
-                   'host': config["etcd_connection"]}
-    tendrl_ns.etcd_orm = etcdobj.Server(etcd_kwargs=etcd_kwargs)
-
-    node_context = tendrl_ns.node_agent.objects.NodeContext()
-    tendrl_ns.node_context = node_context
-
-    m = NodeAgentManager(node_context)
+    m = NodeAgentManager()
     m.start()
 
     complete = gevent.event.Event()

@@ -1,6 +1,6 @@
-from tendrl.commons.objects import base_object
+from tendrl.commons import objects
 
-class NodeAgentObject(base_object.BaseObject):
+class NodeAgentBaseObject(objects.BaseObject):
     def __init__(
             self,
             attrs=None,
@@ -10,7 +10,7 @@ class NodeAgentObject(base_object.BaseObject):
             atoms=None,
             flows=None
     ):
-        super(NodeAgentObject, self).__init__(name=None,
+        super(NodeAgentBaseObject, self).__init__(name=None,
             attrs=None,
             enabled=None,
             obj_list=None,
