@@ -4,7 +4,12 @@ from tendrl.commons.persistence.etcd_persister import EtcdPersister
 class NodeAgentEtcdPersister(EtcdPersister):
     def __init__(self, config):
         super(NodeAgentEtcdPersister, self).__init__(config)
-        self._store = self.get_store()
+
+    def save_node_context(self, node_context):
+        tendrl_ns.etcd_orm.save(node_context)
+
+    def save_config(self, config):
+        tendrl_ns.etcd_orm.save(config)
 
     def update_cpu(self, cpu):
         self._store.save(cpu)

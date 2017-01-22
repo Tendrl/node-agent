@@ -1,7 +1,56 @@
 # flake8: noqa
 data = """---
 namespace.tendrl.node_agent:
+  _meta:
+    platforms:
+        # platform_type supported by tendrl. One of these platforms and their
+        # corresponding versions must be reused in any of the definition files.
+        centos:
+          # platform_version
+          # Supported versions, in ascending order of release. This list, being
+          # ordered, enables the comparators used later in the file to function.
+          - 6.x
+          - 7.x
+        ubuntu:
+          - 15.04.x
+          - 15.10.x
+          - 16.04.x
+    storage_system_types:
+        ceph: namespace.tendrl.ceph_integration
+        gluster: namespace.tendrl.gluster_integration
+
   objects:
+    Definition:
+      atoms:
+        generate:
+          enabled: true
+          inputs:
+            mandatory:
+              - Config.etcd_port
+              - Config.etcd_connection
+          name: "Generate Ceph Integration configuration based on provided inputs"
+          help: "Generates configuration content"
+          outputs:
+            - Config.data
+            - Config.file_path
+          run: tendrl.node_agent.ceph_integration.objects.Config.atoms.generate.Generate
+          uuid: 61959242-628f-4847-a5e2-2c8d8daac0cd
+      attrs:
+        data:
+          help: "Configuration data of Ceph Integration for this Tendrl deployment"
+          type: String
+        etcd_connection:
+          help: "Host/IP of the etcd central store for this Tendrl deployment"
+          type: String
+        etcd_port:
+          help: "Port of the etcd central store for this Tendrl deployment"
+          type: String
+        file_path:
+          default: /etc/tendrl/ceph_integration.conf
+          help: "Path to the Ceph integration tendrl configuration"
+          type: String
+      enabled: true
+
     Cpu:
       attrs:
         architecture:
