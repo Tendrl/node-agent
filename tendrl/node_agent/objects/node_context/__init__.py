@@ -3,7 +3,7 @@ import os
 import socket
 import uuid
 
-from tendrl.commons.etcdobj.etcdobj import EtcdObj
+from tendrl.commons.etcdobj import EtcdObj
 from tendrl.commons.utils import cmd_utils
 
 from tendrl.node_agent import objects
@@ -21,7 +21,7 @@ class NodeContext(objects.NodeAgentBaseObject):
         self.machine_id = machine_id or self._get_machine_id()
         self.node_id = node_id or self._get_node_id() or self.create_node_id()
         self.fqdn = fqdn or socket.getfqdn()
-        self.tags = tags
+        self.tags = tags or []
         self.status = status or "UP"
         self._etcd_cls = _NodeContextEtcd
 

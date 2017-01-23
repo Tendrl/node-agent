@@ -57,8 +57,6 @@ namespace.tendrl.node_agent:
           type: String
         cores_per_socket:
           type: String
-        cpu_count:
-          type: String
         cpu_family:
           type: String
         cpu_op_mode:
@@ -294,7 +292,7 @@ namespace.tendrl.node_agent:
           type: String
         os:
           type: String
-        os_varsion:
+        os_version:
           type: String
         selinux_mode:
           type: String

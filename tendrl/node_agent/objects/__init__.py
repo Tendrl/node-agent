@@ -53,5 +53,5 @@ class NodeAgentBaseObject(objects.BaseObject):
 class NodeAgentBaseAtom(atoms.BaseAtom):
     def __init__(
             self, *args, **kwargs):
-        
+
         super(NodeAgentBaseAtom, self).__init__(*args, **kwargs)
