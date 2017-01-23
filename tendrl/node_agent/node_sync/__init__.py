@@ -54,7 +54,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 for service in TENDRL_SERVICES:
                     s = tendrl_ns.node_agent.objects.Service(service=service)
                     if s.running:
-                        tags.append(TENDRL_SERVICE_TAGS[service])
+                        tags.append(TENDRL_SERVICE_TAGS[service.strip("@*")])
                     s.save()
 
                 # updating node context with latest tags
