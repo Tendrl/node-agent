@@ -13,6 +13,7 @@ LOG = logging.getLogger(__name__)
 
 
 class NodeContext(objects.NodeAgentBaseObject):
+
     def __init__(self, machine_id=None, node_id=None, fqdn=None,
                  tags=None, status=None, *args, **kwargs):
         super(NodeContext, self).__init__(*args, **kwargs)
@@ -21,7 +22,7 @@ class NodeContext(objects.NodeAgentBaseObject):
         self.machine_id = machine_id or self._get_machine_id()
         self.node_id = node_id or self._get_node_id() or self._create_node_id()
         self.fqdn = fqdn or socket.getfqdn()
-        self.tags = tags or []
+        self.tags = tags or ""
         self.status = status or "UP"
         self._etcd_cls = _NodeContextEtcd
 
@@ -29,7 +30,7 @@ class NodeContext(objects.NodeAgentBaseObject):
         cmd = cmd_utils.Command("cat /etc/machine-id")
         out, err, rc = cmd.run(
             tendrl_ns.config.data['tendrl_ansible_exec_file'])
-        return out
+        return str(out)
 
     def _create_node_id(self, node_id=None):
         node_id = node_id or str(uuid.uuid4())
@@ -42,6 +43,7 @@ class NodeContext(objects.NodeAgentBaseObject):
             LOG.info("SET_LOCAL: "
                      "tendrl_ns.node_agent.objects.NodeContext.node_id==%s" %
                      node_id)
+        return node_id
 
     def _get_node_id(self):
         try:

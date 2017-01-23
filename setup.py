@@ -121,7 +121,7 @@ setup(
     install_requires=install_requires,
     entry_points={
         'console_scripts': [
-            'tendrl-node-agent = tendrl.node_agent.manager.manager:main'
+            'tendrl-node-agent = tendrl.node_agent.manager:main'
         ]
     },
     cmdclass={'bumpversion': BumpVersionCommand, 'release': ReleaseCommand},

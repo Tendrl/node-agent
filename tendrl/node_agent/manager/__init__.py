@@ -75,9 +75,11 @@ def main():
     tendrl_ns.register_subclasses_to_ns()
     tendrl_ns.setup_initial_objects()
 
-    tendrl_ns.node_context.save()
+
     tendrl_ns.central_store_thread = central_store.NodeAgentEtcdCentralStore()
     tendrl_ns.state_sync_thread = node_sync.NodeAgentSyncThread()
+
+    tendrl_ns.node_context.save()
 
     m = NodeAgentManager()
     m.start()
