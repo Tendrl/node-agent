@@ -467,7 +467,9 @@ namespace.tendrl.node_agent:
         os_version:
           type: String
       enabled: true
+      help: "Platform of the Node"
       value: nodes/$Node_context.node_id/Platform
+      list: nodes/$Node_context.node_id/Platform
 namespace.tendrl.node_agent.gluster_integration:
   flows:
     ImportCluster:

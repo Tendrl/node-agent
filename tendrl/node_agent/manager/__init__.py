@@ -75,7 +75,6 @@ def main():
     tendrl_ns.register_subclasses_to_ns()
     tendrl_ns.setup_initial_objects()
 
-
     tendrl_ns.central_store_thread = central_store.NodeAgentEtcdCentralStore()
     tendrl_ns.state_sync_thread = node_sync.NodeAgentSyncThread()
 
@@ -90,8 +89,8 @@ def main():
         LOG.info("Signal handler: stopping")
         complete.set()
 
-    gevent.signal(signal.SIGTERM, shutdown)
-    gevent.signal(signal.SIGINT, shutdown)
+    gevent.signal(gevent.signal.SIGTERM, shutdown)
+    gevent.signal(gevent.signal.SIGINT, shutdown)
 
     while not complete.is_set():
         complete.wait(timeout=1)
