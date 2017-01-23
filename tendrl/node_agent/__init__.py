@@ -25,21 +25,18 @@ class NodeAgentNS(CommonNS):
         # Config
         tendrl_ns.config = tendrl_ns.node_agent.objects.Config()
 
-        # NodeContext
-        tendrl_ns.node_context = tendrl_ns.node_agent.objects.NodeContext()
-
         # etcd_orm
         etcd_kwargs = {'port': tendrl_ns.config['etcd_port'],
                        'host': tendrl_ns.config["etcd_connection"]}
         tendrl_ns.etcd_orm = etcdobj.Server(etcd_kwargs=etcd_kwargs)
 
+        # NodeContext
+        tendrl_ns.node_context = tendrl_ns.node_agent.objects.NodeContext()
+
+
         log.setup_logging(
             tendrl_ns.config['log_cfg_path'],
         )
 
-
 import __builtin__
 __builtin__.tendrl_ns = NodeAgentNS()
-
-
-

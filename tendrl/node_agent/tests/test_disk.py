@@ -1,4 +1,4 @@
-from tendrl.node_agent.persistence.disk import Disk
+from tendrl.node_agent.central_store.disk import Disk
 
 
 class TestDisk(object):
