@@ -64,5 +64,5 @@ class _NodeContextEtcd(EtcdObj):
     _tendrl_cls = NodeContext
 
     def render(self):
-        self.__name__ = self.__name__ % self.node_id
+        self.__name__ = self.__name__ % tendrl_ns.node_context.node_id
         return super(_NodeContextEtcd, self).render()
