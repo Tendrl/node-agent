@@ -1,130 +1,8 @@
 import logging
-import platform
-import pull_service_status
-import socket
 
-from tendrl.commons.config import load_config
 from tendrl.commons.utils import cmd_utils
-from tendrl.node_agent.manager import utils as mgr_utils
-
 
 LOG = logging.getLogger(__name__)
-config = load_config("node-agent",
-                     "/etc/tendrl/node-agent/node-agent.conf.yaml")
-
-
-def getNodeCpu():
-    '''returns structure
-
-    {"nodename": [{"Architecture":   "architecture",
-
-                   "CpuOpMode":      "cpuopmode",
-
-                   "CPUs":           "cpus",
-
-                   "VendorId":       "vendorid",
-
-                   "ModelName":      "modelname",
-
-                   "CPUFamily":      "cpufamily",
-
-                   "Model":          "Model",
-
-                   "CoresPerSocket": "corespersocket"}, ...], ...}
-
-    '''
-    cmd = cmd_utils.Command("lscpu")
-    out, err, rc = cmd.run(config['tendrl_ansible_exec_file'])
-    out = out['stdout']
-    if out:
-        info_list = out.split('\n')
-        cpuinfo = {
-            'Architecture': info_list[0].split(':')[1].strip(),
-            'CpuOpMode': info_list[1].split(':')[1].strip(),
-            'CPUs': info_list[3].split(':')[1].strip(),
-            'VendorId': info_list[9].split(':')[1].strip(),
-            'ModelName': info_list[12].split(':')[1].strip(),
-            'CPUFamily': info_list[10].split(':')[1].strip(),
-            'Model': info_list[11].split(':')[1].strip(),
-            'CoresPerSocket': info_list[6].split(':')[1].strip()
-        }
-    else:
-            cpuinfo = {
-                'Architecture': '', 'CpuOpMode': '',
-                'CPUs': '', 'VendorId': '',
-                'ModelName': '', 'CPUFamily': '',
-                'Model': '', 'CoresPerSocket': ''
-            }
-
-    return cpuinfo
-
-
-def getNodeMemory():
-    '''returns structure
-
-    {"nodename": [{"TotalSize": "totalsize",
-
-                   "SwapTotal": "swaptotal",
-
-                   "Type":      "type"}, ...], ...}
-
-    '''
-
-    cmd = cmd_utils.Command("cat /proc/meminfo")
-    out, err, rc = cmd.run(config['tendrl_ansible_exec_file'])
-    out = out['stdout']
-
-    if out:
-        info_list = out.split('\n')
-        memoinfo = {
-            'TotalSize': info_list[0].split(':')[1].strip(),
-            'SwapTotal': info_list[14].split(':')[1].strip()
-        }
-    else:
-        memoinfo = {
-            'TotalSize': '',
-            'SwapTotal': ''
-        }
-
-    return memoinfo
-
-
-def getNodeOs():
-    cmd = cmd_utils.Command("getenforce")
-    out, err, rc = cmd.run(config['tendrl_ansible_exec_file'])
-    se_out = out['stdout']
-
-    os_out = platform.linux_distribution()
-
-    osinfo = {
-        'Name': os_out[0],
-        'OSVersion': os_out[1],
-        'KernelVersion': platform.release(),
-        'SELinuxMode': se_out,
-        'FQDN': socket.getfqdn()
-    }
-
-    return osinfo
-
-
-def getTendrlContext():
-    tendrl_context = {"sds_name": "", "sds_version": ""}
-    cmd = cmd_utils.Command("gluster --version")
-    out, err, rc = cmd.run(config['tendrl_ansible_exec_file'])
-    if out["rc"] == 0:
-        nvr = out['stdout']
-        tendrl_context["sds_name"] = nvr.split()[0]
-        tendrl_context["sds_version"] = nvr.split()[1]
-        return tendrl_context
-
-    cmd = cmd_utils.Command("ceph --version")
-    out, err, rc = cmd.run(config['tendrl_ansible_exec_file'])
-    if out["rc"] == 0:
-        nvr = out['stdout']
-        tendrl_context["sds_name"] = nvr.split()[0]
-        tendrl_context["sds_version"] = nvr.split()[2].split("-")[0]
-
-    return tendrl_context
 
 
 def get_node_disks():
@@ -134,20 +12,25 @@ def get_node_disks():
     rv["used_disks_id"] = []
     disks, err = get_all_disks()
     if err == "":
-        columns = 'NAME,KNAME,PKNAME,MAJ:MIN,FSTYPE,MOUNTPOINT,LABEL,UUID,' \
-            'RA,RO,RM,SIZE,STATE,OWNER,GROUP,MODE,ALIGNMENT,MIN-IO,OPT-IO,' \
-            'PHY-SEC,LOG-SEC,ROTA,SCHED,RQ-SIZE,DISC-ALN,DISC-GRAN,DISC-MAX,' \
-            'DISC-ZERO'
+        columns = 'NAME,KNAME,PKNAME,MAJ:MIN,FSTYPE,MOUNTPOINT,LABEL,' \
+                  'UUID,' \
+                  'RA,RO,RM,SIZE,STATE,OWNER,GROUP,MODE,ALIGNMENT,' \
+                  'MIN-IO,OPT-IO,' \
+                  'PHY-SEC,LOG-SEC,ROTA,SCHED,RQ-SIZE,DISC-ALN,' \
+                  'DISC-GRAN,DISC-MAX,' \
+                  'DISC-ZERO'
         keys = columns.split(',')
         lsblk = (
             "lsblk --all --bytes --noheadings --output='%s' --path --raw" %
             columns)
         cmd = cmd_utils.Command(lsblk)
-        out, err, rc = cmd.run(config['tendrl_ansible_exec_file'])
+        out, err, rc = cmd.run(tendrl_ns.config[
+                                   'tendrl_ansible_exec_file'])
         if not err:
             if not out['stderr']:
-                devlist = map(lambda line: dict(zip(keys, line.split(' '))),
-                              out['stdout'].splitlines())
+                devlist = map(
+                    lambda line: dict(zip(keys, line.split(' '))),
+                    out['stdout'].splitlines())
                 for disk in disks:
                     for dev_info in devlist:
                         if dev_info['NAME'] == disk['device_name']:
@@ -183,10 +66,14 @@ def get_node_disks():
                                 disk['ssd'] = False
                             disk['scheduler_name'] = dev_info['SCHED']
                             disk['req_queue_size'] = dev_info['RQ-SIZE']
-                            disk['discard_align_offset'] = dev_info['DISC-ALN']
-                            disk['discard_granularity'] = dev_info['DISC-GRAN']
-                            disk['discard_max_bytes'] = dev_info['DISC-MAX']
-                            disk['discard_zeroes_data'] = dev_info['DISC-ZERO']
+                            disk['discard_align_offset'] = dev_info[
+                                'DISC-ALN']
+                            disk['discard_granularity'] = dev_info[
+                                'DISC-GRAN']
+                            disk['discard_max_bytes'] = dev_info[
+                                'DISC-MAX']
+                            disk['discard_zeroes_data'] = dev_info[
+                                'DISC-ZERO']
                             rv['disks'].append(disk)
                             if disk['disk_type'] == "disk":
                                 rv['free_disks_id'].append(disk['disk_id'])
@@ -205,7 +92,7 @@ def get_all_disks():
     disks = []
     # Block will give all disk and partitons and cdroms details
     cmd = cmd_utils.Command('hwinfo --block')
-    out, err, rc = cmd.run(config['tendrl_ansible_exec_file'])
+    out, err, rc = cmd.run(tendrl_ns.config['tendrl_ansible_exec_file'])
     if not err:
         if not out['stderr']:
             out = out['stdout']
@@ -327,23 +214,3 @@ def is_ssd(rotational):
     this device which is not either SSD or HD
     """
     return False
-
-
-def get_node_inventory():
-    node_inventory = {}
-    cmd = cmd_utils.Command("cat /etc/machine-id")
-    out, err, rc = cmd.run(config['tendrl_ansible_exec_file'])
-    out = out['stdout']
-
-    node_inventory["machine_id"] = out
-
-    node_inventory["node_id"] = mgr_utils.get_local_node_context()
-
-    node_inventory["os"] = getNodeOs()
-    node_inventory["cpu"] = getNodeCpu()
-    node_inventory["memory"] = getNodeMemory()
-    node_inventory["tendrl_context"] = getTendrlContext()
-    node_inventory["disks"] = get_node_disks()
-    node_inventory["services"] = pull_service_status.node_service_details()
-
-    return node_inventory
