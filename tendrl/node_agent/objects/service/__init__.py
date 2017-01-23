@@ -7,7 +7,7 @@ class Service(objects.NodeAgentBaseObject):
     def __init__(self, service, running=None, exists=None,
                  *args, **kwargs):
         super(Service, self).__init__(*args, **kwargs)
-        service_detail = _get_service_info(service)
+        service_detail = self.get_service_info(service)
         self.value = 'nodes/%s/Services/%s'
         self.list = 'nodes/%s/Services/'
         self.running = running or service_detail['running']

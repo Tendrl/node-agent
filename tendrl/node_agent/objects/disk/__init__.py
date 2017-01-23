@@ -18,7 +18,7 @@ class Disk(objects.NodeAgentBaseObject):
                  geo_bios_legacy=None, geo_logical=None, phy_sector_size=None,
                  discard_granularity=None, discard_align_offset=None,
                  discard_max_bytes=None, discard_zeros_data=None,
-                 optimal_io_size=None, log_sector_size=None
+                 optimal_io_size=None, log_sector_size=None,
                  *args, **kwargs):
         super(Disk, self).__init__(*args, **kwargs)
         self.value = 'nodes/%s/Disks/%s'
@@ -70,6 +70,7 @@ class Disk(objects.NodeAgentBaseObject):
         self.discard_max_bytes = discard_max_bytes
         self.discard_zeros_data = discard_zeros_data
         self.optimal_io_size = optimal_io_size
+        self.log_sector_size = log_sector_size
         self._etcd_cls = _DiskEtcd
 
 class _DiskEtcd(EtcdObj):

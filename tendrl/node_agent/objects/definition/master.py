@@ -79,6 +79,7 @@ namespace.tendrl.node_agent:
           type: String
       enabled: true
       value: nodes/$Node_context.node_id/Cpu
+      help: "CPU"
     Memory:
       attrs:
         total_size:
@@ -87,6 +88,7 @@ namespace.tendrl.node_agent:
           type: String
       enabled: true
       value: nodes/$Node_context.node_id/Memory
+      help: "Node Memory"
     Service:
       attrs:
         running:
@@ -97,6 +99,8 @@ namespace.tendrl.node_agent:
           type: String
       enabled: true
       list: nodes/$Node_context.node_id/Services
+      help: "Service"
+      value: nodes/$Node_context.node_id/Services
     Disk:
       attrs:
         disk_id:
@@ -249,6 +253,8 @@ namespace.tendrl.node_agent:
 
       enabled: true
       list: nodes/$Node_context.node_id/Disks
+      value: nodes/$Node_context.node_id/Disks
+      help: "Disk"
     UsedDisk:
       attrs:
         disk_id:
@@ -288,15 +294,14 @@ namespace.tendrl.node_agent:
           type: Create
           uuid: eda0b13a-7362-48d5-b5ca-4b6d6533a5ab
       attrs:
-        cmd_str:
-          type: String
         fqdn:
           type: String
         status:
           type: Boolean
       enabled: true
       value: nodes/$Node_context.node_id/Node
-    OS:
+      help: "Node"
+    Os:
       attrs:
         kernel_version:
           type: String
@@ -308,6 +313,7 @@ namespace.tendrl.node_agent:
           type: String
       enabled: true
       value: nodes/$Node_context.node_id/Os
+      help: "OS"
     Package:
       atoms:
         install:
@@ -337,6 +343,8 @@ namespace.tendrl.node_agent:
           help: "Version of the rpm/deb/pypi package"
           type: String
       enabled: true
+      help: "package"
+      value: ""
     Process:
       atoms:
         start:
@@ -389,21 +397,10 @@ namespace.tendrl.node_agent:
           help: "Service state can be started|stopped|restarted|reloaded"
           type: String
       enabled: true
-    Tendrl_context:
-      atoms:
-        compare:
-          enabled: true
-          inputs:
-            mandatory:
-              - Tendrl_context.sds_name
-              - Tendrl_context.sds_version
-          name: "Compare SDS details"
-          help: "Compares the SDS details in context"
-          run: tendrl.node_agent.objects.tendrl_context.atoms.compare.Compare
-          uuid: b90a0d97-8c9f-4ab1-8f64-dbb5638159a9
+    TendrlContext:
       enabled: True
       attrs:
-        cluster_id:
+        integration_id:
           help: "Tendrl managed/generated cluster id for the sds being managed by Tendrl"
           type: String
         sds_name:
@@ -415,7 +412,8 @@ namespace.tendrl.node_agent:
         node_id:
           help: "Tendrl ID for the managed node"
           type: String
-      value: nodes/$Node_context.node_id/Tendrl_context
+      value: nodes/$Node_context.node_id/TendrlContext
+      help: "Tendrl context"
     NodeContext:
       attrs:
         machine_id:
@@ -458,6 +456,8 @@ namespace.tendrl.node_agent:
           help: "configuration file path"
           type: String
       enabled: true
+      help: "File"
+      value: ""
     Platform:
       attrs:
         kernel_version:

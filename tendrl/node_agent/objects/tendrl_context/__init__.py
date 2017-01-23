@@ -9,8 +9,7 @@ LOG = logging.getLogger(__name__)
 
 
 class TendrlContext(objects.NodeAgentBaseObject):
-    def __init__(self, integration_id=None, node_id=None, sds_name=None,
-                 sds_version=None, *args, **kwargs):
+    def __init__(self, integration_id=None, node_id=None, *args, **kwargs):
         super(TendrlContext, self).__init__(*args, **kwargs)
 
         self.value = 'nodes/%s/TendrlContext'

@@ -10,7 +10,7 @@ class Os(objects.NodeAgentBaseObject):
                  os_version=None, selinux_mode=None,
                  *args, **kwargs):
         super(Os, self).__init__(*args, **kwargs)
-        os_details = _getNodeOs()
+        os_details = self._getNodeOs()
         self.value = 'nodes/%s/Os'
         self.kernel_version = kernel_version or os_details["KernelVersoion"]
         self.os = os or os_details["Name"]
@@ -18,9 +18,10 @@ class Os(objects.NodeAgentBaseObject):
         self.selinux_mode = selinux_mode or os_details["SELinuxMode"]
         self._etcd_cls = _OsEtcd
 
-    def _getNodeOs():
+    def _getNodeOs(self):
         cmd = cmd_utils.Command("getenforce")
-        out, err, rc = cmd.run(config['tendrl_ansible_exec_file'])
+        out, err, rc = cmd.run(tendrl_ns.config.data[
+                                   'tendrl_ansible_exec_file'])
         se_out = out['stdout']
 
         os_out = platform.linux_distribution()
