@@ -30,7 +30,8 @@ config = load_config("node-agent",
 
 def get_service_info(service_name):
     service = service_status.ServiceStatus(service_name,
-                                           config['tendrl_ansible_exec_file'])
+                                           tendrl_ns.config.data[
+                                               'tendrl_ansible_exec_file'])
     return {"exists": service.exists(), "running": service.status()}
 
 

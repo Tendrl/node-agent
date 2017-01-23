@@ -22,7 +22,7 @@ class Os(objects.NodeAgentBaseObject):
         cmd = cmd_utils.Command("getenforce")
         out, err, rc = cmd.run(tendrl_ns.config.data[
                                    'tendrl_ansible_exec_file'])
-        se_out = out['stdout']
+        se_out = str(out)
 
         os_out = platform.linux_distribution()
 

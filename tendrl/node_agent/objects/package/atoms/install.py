@@ -23,7 +23,7 @@ class Install(base_atom.BaseAtom):
         try:
             runner = ansible_module_runner.AnsibleRunner(
                 ansible_module_path,
-                self.config['tendrl_ansible_exec_file'],
+                tendrl_ns.config.data['tendrl_ansible_exec_file'],
                 **attributes
             )
             result, err = runner.run()
