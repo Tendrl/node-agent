@@ -8,13 +8,13 @@ class Memory(objects.NodeAgentBaseObject):
     def __init__(self, total_size=None, swap_total=None,
                  *args, **kwargs):
         super(Memory, self).__init__(*args, **kwargs)
-        memory = _getNodeMemory()
+        memory = self._getNodeMemory()
         self.value = 'nodes/%s/Memory'
         self.total_size = total_size or memory["TotalSize"]
         self.swap_total = swap_total or memory["SwapTotal"]
         self._etcd_cls = _MemoryEtcd
 
-    def _getNodeMemory():
+    def _getNodeMemory(self):
         '''returns structure
 
         {"nodename": [{"TotalSize": "totalsize",
@@ -26,7 +26,8 @@ class Memory(objects.NodeAgentBaseObject):
         '''
 
         cmd = cmd_utils.Command("cat /proc/meminfo")
-        out, err, rc = cmd.run(config['tendrl_ansible_exec_file'])
+        out, err, rc = cmd.run(tendrl_ns.config.data[
+                                   'tendrl_ansible_exec_file'])
         out = out['stdout']
 
         if out:

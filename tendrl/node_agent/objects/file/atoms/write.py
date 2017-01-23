@@ -1,8 +1,9 @@
-from tendrl.commons.atoms import base_atom
+from tendrl.commons.objects import atoms
 
 
-class Write(base_atom.BaseAtom):
-    def run(self, parameters):
+class Write(atoms.BaseAtom):
+    def run(self, parameters=None, *args, **kwargs):
+        super(Write, self).run(*args, **kwargs)
         data = parameters.get("Config.data")
         file_path = parameters.get("Config.file_path")
         attributes = {}

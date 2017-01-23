@@ -19,3 +19,32 @@ class NodeAgentEtcdCentralStore(central_store.EtcdCentralStore):
 
     def save_platform(self, platform):
         tendrl_ns.etcd_orm.save(platform)
+
+    def save_tendrlcontext(self, tendrl_context):
+        tendrl_ns.etcd_orm.save(tendrl_context)
+
+    def save_service(self, service):
+        tendrl_ns.etcd_orm.save(service)
+
+    def save_cpu(self, cpu):
+        tendrl_ns.etcd_orm.save(cpu)
+
+    def save_disk(self, disk):
+        tendrl_ns.etcd_orm.save(disk)
+
+    def save_file(self, file):
+        tendrl_ns.etcd_orm.save(file)
+
+    def save_memory(self, memory):
+        tendrl_ns.etcd_orm.save(memory)
+
+    def save_node(self, node):
+        tendrl_ns.etcd_orm.save(node)
+
+    def save_os(self, os):
+        tendrl_ns.etcd_orm.save(os)
+
+    def save_package(self, package):
+        tendrl_ns.etcd_orm.save(package)
+
+

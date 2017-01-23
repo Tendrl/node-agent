@@ -9,7 +9,7 @@ class Cpu(objects.NodeAgentBaseObject):
                  model=None, model_name=None, vendor_id=None,
                  *args, **kwargs):
         super(Cpu, self).__init__(*args, **kwargs)
-        cpu = _getNodeCpu()
+        cpu = self._getNodeCpu()
         self.value = 'nodes/%s/Cpu'
         self.architecture = architecture or cpu['Architecture']
         self.cores_per_socket = cores_per_socket or cpu["CoresPerSocket"]
@@ -20,7 +20,7 @@ class Cpu(objects.NodeAgentBaseObject):
         self.vendor_id = vendor_id or cpu["VendroId"]
         self._etcd_cls = _CpuEtcd
 
-    def _getNodeCpu():
+    def _getNodeCpu(self):
         '''returns structure
 
         {"nodename": [{"Architecture":   "architecture",
@@ -41,8 +41,9 @@ class Cpu(objects.NodeAgentBaseObject):
 
         '''
         cmd = cmd_utils.Command("lscpu")
-        out, err, rc = cmd.run(tendrl_ns.config['tendrl_ansible_exec_file'])
-        out = out['stdout']
+        out, err, rc = cmd.run(tendrl_ns.config.data[
+                                   'tendrl_ansible_exec_file'])
+        out = str(out['stdout'])
         if out:
             info_list = out.split('\n')
             cpuinfo = {
