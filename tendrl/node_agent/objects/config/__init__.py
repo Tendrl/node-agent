@@ -11,7 +11,7 @@ class Config(objects.NodeAgentBaseObject):
         self.value = '_tendrl/config/node-agent/data'
         self.data = config or cmn_config.load_config(
             'node-agent',"/etc/tendrl/node-agent/node-agent.conf.yaml")
-        self.etcd_cls = _ConfigEtcd
+        self._etcd_cls = _ConfigEtcd
 
 
 class _ConfigEtcd(EtcdObj):
