@@ -8,7 +8,7 @@ else:
 
 from tendrl.commons import etcdobj
 from tendrl.commons import log
-from tendrl.commons import CommonNS
+from tendrl import CommonNS
 
 class NodeAgentNS(CommonNS):
     def __init__(self):
