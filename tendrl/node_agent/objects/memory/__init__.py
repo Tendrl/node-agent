@@ -28,7 +28,7 @@ class Memory(objects.NodeAgentBaseObject):
         cmd = cmd_utils.Command("cat /proc/meminfo")
         out, err, rc = cmd.run(tendrl_ns.config.data[
                                    'tendrl_ansible_exec_file'])
-        out = out['stdout']
+        out = str(out)
 
         if out:
             info_list = out.split('\n')

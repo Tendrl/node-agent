@@ -59,6 +59,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
 
                 # updating node context with latest tags
                 LOG.info("node_sync, updating node context data with tags")
+                tags = "\n".join(tags)
                 tendrl_ns.node_agent.objects.NodeContext(tags=tags).save()
 
                 LOG.info("node_sync, Updating OS data")

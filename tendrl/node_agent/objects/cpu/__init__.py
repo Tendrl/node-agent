@@ -43,7 +43,7 @@ class Cpu(objects.NodeAgentBaseObject):
         cmd = cmd_utils.Command("lscpu")
         out, err, rc = cmd.run(tendrl_ns.config.data[
                                    'tendrl_ansible_exec_file'])
-        out = str(out['stdout'])
+        out = str(out)
         if out:
             info_list = out.split('\n')
             cpuinfo = {
