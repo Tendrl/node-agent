@@ -1,4 +1,4 @@
-from tendrl.commons.etcdobj.etcdobj import EtcdObj
+from tendrl.commons.etcdobj import EtcdObj
 from tendrl.commons import config as cmn_config
 
 from tendrl.node_agent import objects

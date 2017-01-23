@@ -12,6 +12,8 @@ from tendrl.commons import CommonNS
 
 from tendrl.node_agent.objects.definition import Definition
 from tendrl.node_agent.objects.config import Config
+from tendrl.node_agent.objects.node_context import NodeContext
+
 
 class NodeAgentNS(CommonNS):
     def __init__(self):
@@ -29,8 +31,8 @@ class NodeAgentNS(CommonNS):
         tendrl_ns.config = tendrl_ns.node_agent.objects.Config()
 
         # etcd_orm
-        etcd_kwargs = {'port': tendrl_ns.config['etcd_port'],
-                       'host': tendrl_ns.config["etcd_connection"]}
+        etcd_kwargs = {'port': tendrl_ns.config.data['etcd_port'],
+                       'host': tendrl_ns.config.data["etcd_connection"]}
         tendrl_ns.etcd_orm = etcdobj.Server(etcd_kwargs=etcd_kwargs)
 
         # NodeContext
@@ -38,7 +40,7 @@ class NodeAgentNS(CommonNS):
 
 
         log.setup_logging(
-            tendrl_ns.config['log_cfg_path'],
+            tendrl_ns.config.data['log_cfg_path'],
         )
 
 import __builtin__

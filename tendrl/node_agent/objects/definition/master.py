@@ -20,6 +20,16 @@ namespace.tendrl.node_agent:
         gluster: namespace.tendrl.gluster_integration
 
   objects:
+    Config:
+        enabled: True
+        help: "Config"
+        value: _tendrl/definitions/master
+        list: _tendrl/definitions/master
+        attrs:
+            master:
+                help: master definitions
+                type: String
+
     Definition:
       atoms:
         generate:
@@ -406,7 +416,7 @@ namespace.tendrl.node_agent:
           help: "Tendrl ID for the managed node"
           type: String
       value: nodes/$Node_context.node_id/Tendrl_context
-    Node_context:
+    NodeContext:
       attrs:
         machine_id:
           help: "Unique /etc/machine-id"
@@ -420,23 +430,14 @@ namespace.tendrl.node_agent:
         tags:
           help: "The tags associated with this node"
           type: String
-        cluster_id:
-          help: Id of the cluster to which node belongs to
+        status:
+          help: "Node status"
           type: String
-        sds_pkg_name:
-          help: Storage system package name
-          type: String
-        sds_pkg_version:
-          help: Storage system package version
-          type: String
-        detected_cluster_id:
-          help: Detected cluster id
-          type: String
-        cluster_attrs:
-          help: Additional cluster specific attributes
-          type: json
+
       enabled: true
+      list: nodes/$Node_context.node_id/Node_context
       value: nodes/$Node_context.node_id/Node_context
+      help: Node Context
     File:
       atoms:
         write:
