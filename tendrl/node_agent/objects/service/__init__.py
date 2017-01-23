@@ -4,7 +4,7 @@ from tendrl.commons.utils import service_status
 
 
 class Service(objects.NodeAgentBaseObject):
-    def __init__(self, service, running=None, exists=None,
+    def __init__(self, service=None, running=None, exists=None,
                  *args, **kwargs):
         super(Service, self).__init__(*args, **kwargs)
         service_detail = self.get_service_info(service)
