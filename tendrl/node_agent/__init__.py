@@ -10,6 +10,9 @@ from tendrl.commons import etcdobj
 from tendrl.commons import log
 from tendrl.commons import CommonNS
 
+from tendrl.node_agent.objects.definition import Definition
+from tendrl.node_agent.objects.config import Config
+
 class NodeAgentNS(CommonNS):
     def __init__(self):
 
