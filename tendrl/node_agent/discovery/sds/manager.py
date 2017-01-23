@@ -21,9 +21,10 @@ class SDSDiscoveryManager(object):
         try:
             # Find the path from where to load the plugins
             # The path would be tendrl/node_agent/discovery/sds/plugins
+            # TODO(team) Needs re-factoring
             path = os.path.dirname(
                 os.path.abspath(
-                    sys.modules['tendrl.node_agent.manager.manager'].__file__
+                    sys.modules['tendrl.node_agent.manager'].__file__
                 )
             ) + '/../discovery/sds/plugins'
             pkg = 'tendrl.node_agent.discovery.sds.plugins'

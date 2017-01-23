@@ -16,3 +16,6 @@ class NodeAgentEtcdCentralStore(central_store.EtcdCentralStore):
 
     def save_detectedcluster(self, detected_cluster):
         tendrl_ns.etcd_orm.save(detected_cluster)
+
+    def save_platform(self, platform):
+        tendrl_ns.etcd_orm.save(platform)

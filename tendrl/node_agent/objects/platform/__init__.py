@@ -1,6 +1,5 @@
 from tendrl.commons.etcdobj import EtcdObj
 from tendrl.node_agent import objects
-from tendrl.node_agent.persistence import etcd_utils
 
 
 class Platform(objects.NodeAgentBaseObject):

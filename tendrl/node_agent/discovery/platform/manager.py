@@ -19,6 +19,7 @@ class PlatformManager(object):
 
     def load_plugins(self):
         try:
+
             path = os.path.dirname(os.path.abspath(__file__)) + '/plugins'
             pkg = 'tendrl.node_agent.discovery.platform.plugins'
             for py in [f[:-3] for f in os.listdir(path)
