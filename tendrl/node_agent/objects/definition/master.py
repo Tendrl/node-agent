@@ -368,35 +368,6 @@ namespace.tendrl.node_agent:
           help: "Service state can be started|stopped|restarted|reloaded"
           type: String
       enabled: true
-    Service:
-      atoms:
-        configure:
-          enabled: true
-          inputs:
-            mandatory:
-              - Service.config_path
-              - Service.config_data
-          name: "Configure Service"
-          help: "Checks if a service is running"
-          post_run:
-            - tendrl.node_agent.atoms.service.validations.check_service_running
-          run: tendrl.node_agent.atoms.service.configure.Configure
-          type: Update
-          uuid: b90a0d97-8c9f-4ab1-8f64-dbb5638159a3
-      attrs:
-        config_data:
-          help: "Configuration data for the service"
-          type: String
-        config_path:
-          help: "configuration file path for the service eg:/etc/tendrl/tendrl.conf"
-          type: String
-        name:
-          help: "Name of the service"
-          type: String
-        state:
-          help: "Service state can be started|stopped|restarted|reloaded"
-          type: String
-      enabled: true
     TendrlContext:
       enabled: True
       attrs:
