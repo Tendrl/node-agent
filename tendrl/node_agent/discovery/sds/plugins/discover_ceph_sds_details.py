@@ -39,7 +39,7 @@ class DiscoverCephStorageSystem(DiscoverSDSPlugin):
             )
             out, err = cmd.communicate()
             if err:
-                LOG.error("Erro getting cluster details")
+                LOG.error("Error getting cluster details")
                 return ret_val
             if out:
                 details = json.loads(out)

@@ -91,7 +91,6 @@ def get_all_disks():
     cmd = cmd_utils.Command('hwinfo --block')
     out, err, rc = cmd.run(tendrl_ns.config.data['tendrl_ansible_exec_file'])
     if not err:
-        out = out
         all_disks = []
         parents = []
         for blocks in out.split('\n\n'):

@@ -33,6 +33,6 @@ class _ServiceEtcd(EtcdObj):
     def render(self):
         self.__name__ = self.__name__ % (
             tendrl_ns.node_context.node_id,
-            self.service
+            self.service.strip("@*")
         )
         return super(_ServiceEtcd, self).render()
