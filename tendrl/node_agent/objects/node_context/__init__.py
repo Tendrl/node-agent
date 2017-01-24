@@ -61,7 +61,7 @@ class _NodeContextEtcd(EtcdObj):
     """A table of the node context, lazily updated
 
     """
-    __name__ = 'nodes/%s/Node_context'
+    __name__ = 'nodes/%s/NodeContext'
     _tendrl_cls = NodeContext
 
     def render(self):
