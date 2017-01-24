@@ -25,13 +25,19 @@ class Definition(objects.BaseObject):
     def get_obj_definition(self, namespace, obj_name):
         raw_ns = "namespace.%s" % namespace
         raw_obj = self._get_parsed_defs()[raw_ns]['objects'][obj_name]
-        for atom_name in raw_obj.get('atoms', {}).keys():
-            atom_fqdn = "%s.objects.%s.atoms" % (namespace, obj_name.lower())
+        for atom_name, atom in raw_obj.get('atoms', {}).iteritems():
+            atom_mod = atom['run'].split(".atoms.")[-1].split(".")[0]
+            atom_fqdn = "%s.objects.%s.atoms.%s" % (namespace,
+                                                    obj_name.lower(),
+                                                    atom_mod)
             atom_cls = getattr(importlib.import_module(atom_fqdn), atom_name)
             tendrl_ns.add_atom(obj_name, atom_name, atom_cls)
 
-        for flow_name in raw_obj.get('flows', {}).keys():
-            flow_fqdn = "%s.objects.%s.flows" % (namespace, obj_name.lower())
+        for flow_name, flow in raw_obj.get('flows', {}).iteritems():
+            flow_mod = flow['run'].split(".flows.")[-1].split(".")[0]
+            flow_fqdn = "%s.objects.%s.flows.%s" % (namespace,
+                                                    obj_name.lower(),
+                                                    flow_mod)
             flow_cls = getattr(importlib.import_module(flow_fqdn), flow_name)
             tendrl_ns.add_obj_flow(obj_name, flow_name, flow_cls)
 
