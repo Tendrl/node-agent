@@ -53,7 +53,8 @@ class Definition(objects.BaseObject):
         raw_ns = "namespace.%s" % namespace
 
         raw_flow = self._get_parsed_defs()[raw_ns]['flows'][flow_name]
-        flow_fqdn = "%s.flows" % namespace
+        flow_mod = raw_flow['run'].split(".flows.")[-1].split(".")[0]
+        flow_fqdn = "%s.flows.%s" % (namespace, flow_mod)
         flow_cls = getattr(importlib.import_module(flow_fqdn), flow_name)
         tendrl_ns.add_flow(flow_name, flow_cls)
 
