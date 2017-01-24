@@ -73,6 +73,7 @@ class Definition(objects.BaseObject):
         self._parsed_defs = yaml.safe_load(self.master)
         return self._parsed_defs
 
+
 class _DefinitionEtcd(etcdobj.EtcdObj):
     """A table of the Definitions, lazily updated
 

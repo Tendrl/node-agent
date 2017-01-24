@@ -79,6 +79,8 @@ def main():
     tendrl_ns.state_sync_thread = node_sync.NodeAgentSyncThread()
 
     tendrl_ns.node_context.save()
+    tendrl_ns.definitions.save()
+    tendrl_ns.config.save()
 
     m = NodeAgentManager()
     m.start()
