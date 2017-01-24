@@ -5,11 +5,11 @@ from tendrl.node_agent import objects
 class Disk(objects.NodeAgentBaseObject):
     def __init__(self, disk_id=None, device_name=None, disk_kernel_name=None,
                  parent_id=None, parent_name=None, disk_type=None, fsuuid=None,
-                 mount_point=None, model=None, vendror=None, used=None,
+                 mount_point=None, model=None, vendor=None, used=None,
                  serial_no=None, rmversion=None, fstype=None, ssd=None,
                  size=None, device_number=None, driver=None, group=None,
                  device=None, bios_id=None, state=None, driver_status=None,
-                 label=None, req_queue_size=None, driver_mosules=None,
+                 label=None, req_queue_size=None,
                  mode=None, owner=None, min_io_size=None,
                  major_to_minor_no=None, device_files=None, sysfs_busid=None,
                  alignment=None, read_only=None, read_ahead=None,
@@ -19,7 +19,7 @@ class Disk(objects.NodeAgentBaseObject):
                  discard_granularity=None, discard_align_offset=None,
                  discard_max_bytes=None, discard_zeros_data=None,
                  optimal_io_size=None, log_sector_size=None, drive_status=None,
-                 *args, **kwargs):
+                 driver_modules=None, *args, **kwargs):
         super(Disk, self).__init__(*args, **kwargs)
         self.value = 'nodes/%s/Disks/%s'
         self.disk_id = disk_id
@@ -31,7 +31,7 @@ class Disk(objects.NodeAgentBaseObject):
         self.fsuuid = fsuuid
         self.mount_point = mount_point
         self.model = model
-        self.vendror = vendror
+        self.vendor = vendor
         self.used = used
         self.serial_no = serial_no
         self.rmversion = rmversion
@@ -48,7 +48,6 @@ class Disk(objects.NodeAgentBaseObject):
         self.driver_status = driver_status
         self.label = label
         self.req_queue_size = req_queue_size
-        self.driver_mosules = driver_mosules
         self.mode = mode
         self.owner = owner
         self.min_io_size = min_io_size
@@ -72,6 +71,7 @@ class Disk(objects.NodeAgentBaseObject):
         self.discard_zeros_data = discard_zeros_data
         self.optimal_io_size = optimal_io_size
         self.log_sector_size = log_sector_size
+        self.driver_modules = driver_modules
         self._etcd_cls = _DiskEtcd
 
 class _DiskEtcd(EtcdObj):
