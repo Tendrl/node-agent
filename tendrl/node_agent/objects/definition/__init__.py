@@ -18,7 +18,7 @@ class Definition(objects.BaseObject):
         super(Definition, self).__init__(*args, **kwargs)
 
         self.value = '_tendrl/definitions'
-        self.master = master.read
+        self.master = master.data
         self._parsed_defs = yaml.safe_load(self.master)
         self._etcd_cls = _DefinitionEtcd
 
