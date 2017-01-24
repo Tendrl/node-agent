@@ -1,11 +1,5 @@
-import logging
-
-
-from tendrl.commons.etcdobj.etcdobj import EtcdObj
+from tendrl.commons.etcdobj import EtcdObj
 from tendrl.node_agent import objects
-
-
-LOG = logging.getLogger(__name__)
 
 
 class DetectedCluster(objects.NodeAgentBaseObject):
@@ -23,7 +17,7 @@ class DetectedCluster(objects.NodeAgentBaseObject):
 class _DetectedClusterEtcd(EtcdObj):
     """A table of the Detected cluster, lazily updated
     """
-    __name__ = 'nodes/%s/Detected_cluster'
+    __name__ = 'nodes/%s/DetectedCluster'
     _tendrl_cls = DetectedCluster
 
     def render(self):
