@@ -20,47 +20,39 @@ namespace.tendrl.node_agent:
         gluster: namespace.tendrl.gluster_integration
 
   objects:
-    Config:
+    Definition:
         enabled: True
-        help: "Config"
+        help: "Definition"
         value: _tendrl/definitions/master
         list: _tendrl/definitions/master
         attrs:
             master:
                 help: master definitions
                 type: String
-
-    Definition:
-      atoms:
-        generate:
-          enabled: true
-          inputs:
-            mandatory:
-              - Config.etcd_port
-              - Config.etcd_connection
-          name: "Generate Ceph Integration configuration based on provided inputs"
-          help: "Generates configuration content"
-          outputs:
-            - Config.data
-            - Config.file_path
-          run: tendrl.node_agent.ceph_integration.objects.Config.atoms.generate.Generate
-          uuid: 61959242-628f-4847-a5e2-2c8d8daac0cd
+    Config:
+        enabled: True
+        help: "Config"
+        value: _tendrl/config/node-agent/data
+        list: _tendrl/config/node-agent
+        attrs:
+            data:
+                help: config
+                type: String
+    DetectedCluster:
+      enabled: True
+      help: "DetectedCluster"
+      list: nodes/$Node_context.node_id/DetectedCluster
       attrs:
-        data:
-          help: "Configuration data of Ceph Integration for this Tendrl deployment"
+        detected_cluster_id:
+          help: "Temporary id for the sds which is detected in Tendrl"
           type: String
-        etcd_connection:
-          help: "Host/IP of the etcd central store for this Tendrl deployment"
+        sds_pkg_name:
+          help: Storage system package name
           type: String
-        etcd_port:
-          help: "Port of the etcd central store for this Tendrl deployment"
+        sds_pkg_version:
+          help: Storage system package version
           type: String
-        file_path:
-          default: /etc/tendrl/ceph_integration.conf
-          help: "Path to the Ceph integration tendrl configuration"
-          type: String
-      enabled: true
-
+      value: nodes/$Node_context.node_id/DetectedCluster
     Cpu:
       attrs:
         architecture:
