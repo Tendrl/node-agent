@@ -93,10 +93,6 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                             ("nodes/%s/Disks/free/%s") % (
                                 tendrl_ns.node_context.node_id, disk), "")
 
-                LOG.info("node_sync, Updating Services")
-                tendrl_ns.node_agent.objects.Service().save()
-
-
             except Exception as ex:
                 LOG.error(ex)
 

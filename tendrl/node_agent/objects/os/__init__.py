@@ -12,7 +12,7 @@ class Os(objects.NodeAgentBaseObject):
         super(Os, self).__init__(*args, **kwargs)
         os_details = self._getNodeOs()
         self.value = 'nodes/%s/Os'
-        self.kernel_version = kernel_version or os_details["KernelVersoion"]
+        self.kernel_version = kernel_version or os_details["KernelVersion"]
         self.os = os or os_details["Name"]
         self.os_version = os_version or os_details["OSVersion"]
         self.selinux_mode = selinux_mode or os_details["SELinuxMode"]

@@ -17,7 +17,7 @@ class Cpu(objects.NodeAgentBaseObject):
         self.cpu_op_mode = cpu_op_mode or cpu["CpuOpMode"]
         self.model = model or cpu["Model"]
         self.model_name = model_name or cpu["ModelName"]
-        self.vendor_id = vendor_id or cpu["VendroId"]
+        self.vendor_id = vendor_id or cpu["VendorId"]
         self._etcd_cls = _CpuEtcd
 
     def _getNodeCpu(self):
