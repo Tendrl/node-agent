@@ -35,8 +35,6 @@ class NodeContext(objects.NodeAgentBaseObject):
     def _create_node_id(self, node_id=None):
         node_id = node_id or str(uuid.uuid4())
         local_node_context = "/etc/tendrl/node-agent/NodeContext"
-        if not os.path.exists(local_node_context):
-            os.makedirs(local_node_context)
         with open(local_node_context, 'wb+') as f:
             f.write(node_id)
             LOG.info("SET_LOCAL: "
