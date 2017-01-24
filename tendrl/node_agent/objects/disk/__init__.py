@@ -18,7 +18,7 @@ class Disk(objects.NodeAgentBaseObject):
                  geo_bios_legacy=None, geo_logical=None, phy_sector_size=None,
                  discard_granularity=None, discard_align_offset=None,
                  discard_max_bytes=None, discard_zeros_data=None,
-                 optimal_io_size=None, log_sector_size=None,
+                 optimal_io_size=None, log_sector_size=None, drive_status=None,
                  *args, **kwargs):
         super(Disk, self).__init__(*args, **kwargs)
         self.value = 'nodes/%s/Disks/%s'
@@ -40,6 +40,7 @@ class Disk(objects.NodeAgentBaseObject):
         self.size = size
         self.device_number = device_number
         self.driver = driver
+        self.drive_status = drive_status
         self.group = group
         self.device = device
         self.bios_id = bios_id
