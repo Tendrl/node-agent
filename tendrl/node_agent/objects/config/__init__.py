@@ -18,5 +18,5 @@ class _ConfigEtcd(EtcdObj):
     """Config etcd object, lazily updated
 
     """
-    __name__ = '_tendrl/condig/node-agent/'
+    __name__ = '_tendrl/config/node-agent/'
     _tendrl_cls = Config
