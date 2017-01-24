@@ -54,7 +54,7 @@ def get_node_disks():
                         disk['owner'] = dev_info['OWNER']
                         disk['group'] = dev_info['GROUP']
                         disk['mode'] = dev_info['MODE']
-                        disk['alignement'] = dev_info['ALIGNMENT']
+                        disk['alignment'] = dev_info['ALIGNMENT']
                         disk['min_io_size'] = dev_info['MIN-IO']
                         disk['optimal_io_size'] = dev_info['OPT-IO']
                         disk['phy_sector_size'] = dev_info['PHY-SEC']
@@ -71,7 +71,7 @@ def get_node_disks():
                             'DISC-GRAN']
                         disk['discard_max_bytes'] = dev_info[
                             'DISC-MAX']
-                        disk['discard_zeroes_data'] = dev_info[
+                        disk['discard_zeros_data'] = dev_info[
                             'DISC-ZERO']
                         rv['disks'].append(disk)
                         if disk['disk_type'] == "disk":
