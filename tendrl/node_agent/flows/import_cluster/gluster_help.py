@@ -24,7 +24,7 @@ def import_gluster(integration_id):
                        ".yaml", 'w+') as f:
         f.write(logging_file)
 
-    config_data = {"etcd_port": 2379, "etcd_connection": "0.0.0.0",
+    config_data = {"etcd_port": 2379, "etcd_connection": "tendrl-etcd",
                    "tendrl_ansible_exec_file": "$HOME/.tendrl/gluster-integration/ansible_exec",
                    "log_cfg_path":"/etc/tendrl/gluster-integration/gluster-integration_logging"
                        ".yaml", "log_level": "DEBUG"}
