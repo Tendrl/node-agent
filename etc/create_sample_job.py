@@ -6,7 +6,7 @@ import etcd
 job_id1 = str(uuid.uuid4())
 
 job = {
-    "cluster_id": "49fa2adde8a6e98591f0f5cb4bc5f44d",
+    "integration_id": "49fa2adde8a6e98591f0f5cb4bc5f44d",
     "sds_type": "generic",
     "flow": "ExecuteCommand",
     "object_type": "generic",
