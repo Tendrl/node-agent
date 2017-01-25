@@ -18,7 +18,7 @@ def get_package_name(installation_source_type):
 class ImportCluster(base_flow.BaseFlow):
     def run(self):
         curr_node_id = manager_utils.get_local_node_context()
-        cluster_id = self.parameters['Tendrl_context.cluster_id']
+        cluster_id = self.parameters['TendrlContext.integration_id']
         node_list = self.parameters['Node[]']
         if len(node_list) > 1:
             # This is the master node for this flow
@@ -27,7 +27,7 @@ class ImportCluster(base_flow.BaseFlow):
                     new_params = self.parameters.copy()
                     new_params['Node[]'] = [node]
                 # create same flow for each node in node list except $this
-                    job = {"cluster_id": cluster_id,
+                    job = {"integration_id": cluster_id,
                            "node_id": node,
                            "run": "tendrl.node_agent.flows.ImportCluster",
                            "status": "new",
@@ -56,7 +56,7 @@ class ImportCluster(base_flow.BaseFlow):
             self.parameters['Node.cmd_str'] = "tendrl-ceph-integration " \
                                               "--cluster-id %s" % \
                                               cluster_id
-            tendrl_context = "nodes/%s/Tendrl_context/cluster_id" % \
+            tendrl_context = "nodes/%s/TendrlContext/cluster_id" % \
                              curr_node_id
             self.etcd_orm.client.write(tendrl_context, cluster_id)
             return super(ImportCluster, self).run()

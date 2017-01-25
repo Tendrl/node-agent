@@ -24,7 +24,7 @@ class ImportCluster(flows.NodeAgentBaseFlow):
                     new_params = self.parameters.copy()
                     new_params['Node[]'] = [node]
                 # create same flow for each node in node list except $this
-                    job = {"cluster_id": integration_id,
+                    job = {"integration_id": integration_id,
                            "node_ids": [node],
                            "run": "tendrl.node_agent.flows.ImportCluster",
                            "status": "new",

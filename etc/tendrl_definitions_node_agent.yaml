@@ -150,7 +150,7 @@ namespace.tendrl.node_agent:
           help: "Service state can be started|stopped|restarted|reloaded"
           type: String
       enabled: true
-    Tendrl_context:
+    TendrlContext:
       enabled: True
       attrs:
         cluster_id:
@@ -191,14 +191,14 @@ namespace.tendrl.node_agent.gluster_integration:
       inputs:
         mandatory:
           - "Node[]"
-          - Tendrl_context.sds_name
-          - Tendrl_context.sds_version
-          - Tendrl_context.cluster_id
+          - TendrlContext.sds_name
+          - TendrlContext.sds_version
+          - TendrlContext.integration_id
       post_run:
-        - tendrl.node_agent.gluster_integration.objects.Tendrl_context.atoms.check_cluster_id_exists
+        - tendrl.node_agent.gluster_integration.objects.TendrlContext.atoms.check_cluster_id_exists
       pre_run:
         - tendrl.node_agent.objects.Node.atoms.check_node_up
-        - tendrl.node_agent.objects.Tendrl_context.atoms.compare
+        - tendrl.node_agent.objects.TendrlContext.atoms.compare
       run: tendrl.node_agent.gluster_integration.flows.import_cluster.ImportCluster
       type: Create
       uuid: 2f94a48a-05d7-408c-b400-e27827f4edef
