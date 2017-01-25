@@ -51,6 +51,8 @@ class NodeAgentNS(CommonNS):
         # NodeContext
         tendrl_ns.node_context = tendrl_ns.node_agent.objects.NodeContext()
 
+        tendrl_ns.tendrl_context = tendrl_ns.node_agent.objects.TendrlContext()
+
 
         log.setup_logging(
             tendrl_ns.config.data['log_cfg_path'],
