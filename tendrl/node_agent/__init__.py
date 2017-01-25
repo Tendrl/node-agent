@@ -50,7 +50,7 @@ class NodeAgentNS(CommonNS):
         # NodeContext
         tendrl_ns.node_context = tendrl_ns.node_agent.objects.NodeContext()
 
-        tendrl_ns.tendrl_context = tendrl_ns.node_agent.objects.TendrlContext()
+        tendrl_ns.tendrl_context = tendrl_ns.node_agent.objects.TendrlContext(node_id=tendrl_ns.node_context.node_id)
 
 
         log.setup_logging(
