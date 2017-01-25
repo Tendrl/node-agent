@@ -29,10 +29,10 @@ class ImportCluster(base_flow.BaseFlow):
                 # create same flow for each node in node list except $this
                     job = {"cluster_id": cluster_id,
                            "node_id": node,
-                           "run": self.name,
+                           "run": "tendrl.node_agent.flows.ImportCluster",
                            "status": "new",
                            "parameters": new_params,
-                           "parent": self.job['request_id'],
+                           "parent": self.parameters['request_id'],
                            "type": "node"
                            }
                     if "etcd_orm" in job['parameters']:

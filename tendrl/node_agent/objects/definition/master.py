@@ -18,6 +18,30 @@ namespace.tendrl.node_agent:
     storage_system_types:
         ceph: namespace.tendrl.ceph_integration
         gluster: namespace.tendrl.gluster_integration
+  flows:
+    ImportCluster:
+      atoms:
+        - tendrl.node_agent.objects.Package.atoms.Install
+        - tendrl.node_agent.objects.SDS.atoms.GenerateConfig
+        - tendrl.node_agent.objects.File.atoms.Write
+        - tendrl.node_agent.objects.Node.atoms.Cmd
+      help: "Import existing Gluster Cluster"
+      enabled: true
+      inputs:
+        mandatory:
+          - "Node[]"
+          - DetectedCluster.sds_pkg_name
+          - DetectedCluster.sds_pkg_version
+          - TendrlContext.integration_id
+      post_run:
+        - tendrl.node_agent.objects.TendrlContext.atoms.CheckClusterIdExists
+      pre_run:
+        - tendrl.node_agent.objects.Node.atoms.CheckNodeUp
+        - tendrl.node_agent.objects.Tendrl_context.atoms.Compare
+      run: tendrl.node_agent.flows.ImportCluster
+      type: Create
+      uuid: 2f94a48a-05d7-408c-b400-e27827f4edef
+      version: 1
 
   objects:
     Definition:
