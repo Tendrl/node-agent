@@ -38,7 +38,7 @@ namespace.tendrl.node_agent:
       pre_run:
         - tendrl.node_agent.objects.Node.atoms.CheckNodeUp
         - tendrl.node_agent.objects.TendrlContext.atoms.Compare
-      run: tendrl.node_agent.flows.ImportCluster
+      run: tendrl.node_agent.flows.import_cluster.ImportCluster
       type: Create
       uuid: 2f94a48a-05d7-408c-b400-e27827f4edef
       version: 1
