@@ -21,7 +21,7 @@ install_requires = extract_requirements('requirements.txt')
 
 
 def read_module_contents():
-    with open('tendrl/node_agent/__init__.py') as app_init:
+    with open('version.py') as app_init:
         return app_init.read()
 
 
@@ -59,7 +59,7 @@ class BumpVersionCommand(Command):
         old = "__version__ = '%s'" % metadata['version']
         new = "__version__ = '%s'" % self.version
         module_file = read_module_contents()
-        with open('tendrl/node_agent/__init__.py', 'w') as fileh:
+        with open('version.py', 'w') as fileh:
             fileh.write(module_file.replace(old, new))
 
         old = 'Version: %s' % metadata['version']

@@ -1,6 +1,6 @@
 NAME=tendrl-node-agent
 VERSION := $(shell PYTHONPATH=. python -c \
-             'import tendrl.node_agent; print tendrl.node_agent.__version__' \
+             'import version; print version.__version__' \
              | sed 's/\.dev[0-9]*//')
 RELEASE=1
 COMMIT := $(shell git rev-parse HEAD)
