@@ -26,6 +26,7 @@ from tendrl.node_agent.objects.os import Os
 from tendrl.node_agent.objects.package import Package
 from tendrl.node_agent.objects.platform import Platform
 
+from tendrl.node_agent.flows.import_cluster import ImportCluster
 
 class NodeAgentNS(CommonNS):
     def __init__(self):
@@ -49,6 +50,8 @@ class NodeAgentNS(CommonNS):
 
         # NodeContext
         tendrl_ns.node_context = tendrl_ns.node_agent.objects.NodeContext()
+
+        tendrl_ns.tendrl_context = tendrl_ns.node_agent.objects.TendrlContext()
 
 
         log.setup_logging(

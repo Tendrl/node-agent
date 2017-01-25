@@ -18,6 +18,30 @@ namespace.tendrl.node_agent:
     storage_system_types:
         ceph: namespace.tendrl.ceph_integration
         gluster: namespace.tendrl.gluster_integration
+  flows:
+    ImportCluster:
+      atoms:
+        - tendrl.node_agent.objects.Package.atoms.Install
+        - tendrl.node_agent.objects.SDS.atoms.GenerateConfig
+        - tendrl.node_agent.objects.File.atoms.Write
+        - tendrl.node_agent.objects.Node.atoms.Cmd
+      help: "Import existing Gluster Cluster"
+      enabled: true
+      inputs:
+        mandatory:
+          - "Node[]"
+          - DetectedCluster.sds_pkg_name
+          - DetectedCluster.sds_pkg_version
+          - TendrlContext.integration_id
+      post_run:
+        - tendrl.node_agent.objects.TendrlContext.atoms.CheckClusterIdExists
+      pre_run:
+        - tendrl.node_agent.objects.Node.atoms.CheckNodeUp
+        - tendrl.node_agent.objects.TendrlContext.atoms.Compare
+      run: tendrl.node_agent.flows.import_cluster.ImportCluster
+      type: Create
+      uuid: 2f94a48a-05d7-408c-b400-e27827f4edef
+      version: 1
 
   objects:
     Definition:
@@ -446,26 +470,26 @@ namespace.tendrl.node_agent.gluster_integration:
       inputs:
         mandatory:
           - "Node[]"
-          - Tendrl_context.sds_name
-          - Tendrl_context.sds_version
-          - Tendrl_context.cluster_id
+          - TendrlContext.sds_name
+          - TendrlContext.sds_version
+          - TendrlContext.integration_id
       post_run:
-        - tendrl.node_agent.gluster_integration.objects.Tendrl_context.atoms.check_cluster_id_exists
+        - tendrl.node_agent.gluster_integration.objects.TendrlContext.atoms.check_cluster_id_exists
       pre_run:
         - tendrl.node_agent.objects.Node.atoms.check_node_up
-        - tendrl.node_agent.objects.Tendrl_context.atoms.compare
+        - tendrl.node_agent.objects.TendrlContext.atoms.compare
       run: tendrl.node_agent.gluster_integration.flows.import_cluster.ImportCluster
       type: Create
       uuid: 2f94a48a-05d7-408c-b400-e27827f4edef
       version: 1
   objects:
-    Tendrl_context:
+    TendrlContext:
       atoms:
         check_cluster_id_exists:
           enabled: true
           name: "Check cluster id existence"
           help: "Checks if a cluster id exists"
-          run: tendrl.node_agent.gluster_integration.objects.Tendrl_context.atoms.check_cluster_id_exists.CheckClusterIdExists
+          run: tendrl.node_agent.gluster_integration.objects.TendrlContext.atoms.check_cluster_id_exists.CheckClusterIdExists
           uuid: b90a0d97-8c9f-4ab1-8f64-dbb5638159a4
       enabled: True
       attrs:
@@ -478,7 +502,7 @@ namespace.tendrl.node_agent.gluster_integration:
         sds_version:
           help: "Version of the Tendrl managed sds, eg: '3.2.1'"
           type: String
-      value: clusters/$Tendrl_context.cluster_id/Tendrl_context
+      value: clusters/$TendrlContext.integration_id/TendrlContext
     Config:
       atoms:
         generate:
@@ -523,26 +547,26 @@ namespace.tendrl.node_agent.ceph_integration:
       inputs:
         mandatory:
           - "Node[]"
-          - Tendrl_context.sds_name
-          - Tendrl_context.sds_version
-          - Tendrl_context.cluster_id
+          - TendrlContext.sds_name
+          - TendrlContext.sds_version
+          - TendrlContext.integration_id
       post_run:
-        - tendrl.node_agent.ceph_integration.objects.Tendrl_context.atoms.check_cluster_id_exists
+        - tendrl.node_agent.ceph_integration.objects.TendrlContext.atoms.check_cluster_id_exists
       pre_run:
         - tendrl.node_agent.objects.Node.atoms.check_node_up
-        - tendrl.node_agent.objects.Tendrl_context.atoms.compare
+        - tendrl.node_agent.objects.TendrlContext.atoms.compare
       run: tendrl.node_agent.ceph_integration.flows.import_cluster.ImportCluster
       type: Create
       uuid: 5a48d43b-a163-496c-b01d-9c600ea0a5db
       version: 1
   objects:
-    Tendrl_context:
+    TendrlContext:
       atoms:
         check_cluster_id_exists:
           enabled: true
           name: "Check cluster id existence"
           help: "Checks if a cluster id exists"
-          run: tendrl.node_agent.ceph_integration.objects.Tendrl_context.atoms.check_cluster_id_exists.CheckClusterIdExists
+          run: tendrl.node_agent.ceph_integration.objects.TendrlContext.atoms.check_cluster_id_exists.CheckClusterIdExists
           uuid: b90a0d97-8c9f-4ab1-8f64-dbb5638159a1
       enabled: True
       attrs:
@@ -555,7 +579,7 @@ namespace.tendrl.node_agent.ceph_integration:
         sds_version:
           help: "Version of the Tendrl managed sds, eg: '2.1'"
           type: String
-      value: clusters/$Tendrl_context.cluster_id/Tendrl_context
+      value: clusters/$TendrlContext.integration_id/TendrlContext
     Config:
       atoms:
         generate:

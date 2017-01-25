@@ -1,8 +1,4 @@
-import logging
-
 from tendrl.commons import flows
-
-LOG = logging.getLogger(__name__)
 
 
 class NodeAgentBaseFlow(flows.BaseFlow):
