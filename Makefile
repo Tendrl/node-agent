@@ -31,7 +31,7 @@ gitversion:
 	# Set version and release to the latest values from Git
 	$(eval VERSION := $(VERSION).dev$(GIT_RELEASE))
 	$(eval RELEASE := $(GIT_RELEASE).$(SHORTCOMMIT))
-	sed -i tendrl/node_agent/__init__.py \
+	sed -i version.py \
 	  -e "s/^__version__ = .*/__version__ = '$(VERSION)'/"
 	sed -i tendrl-node-agent.spec \
 	  -e "s/^Version: .*/Version: $(VERSION)/"
