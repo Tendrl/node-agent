@@ -1,6 +1,6 @@
 NAME=tendrl-node-agent
 VERSION := $(shell PYTHONPATH=. python -c \
-             'import tendrl.node_agent; print tendrl.node_agent.__version__' \
+             'import version; print version.__version__' \
              | sed 's/\.dev[0-9]*//')
 RELEASE=1
 COMMIT := $(shell git rev-parse HEAD)
@@ -31,7 +31,7 @@ gitversion:
 	# Set version and release to the latest values from Git
 	$(eval VERSION := $(VERSION).dev$(GIT_RELEASE))
 	$(eval RELEASE := $(GIT_RELEASE).$(SHORTCOMMIT))
-	sed -i tendrl/node_agent/__init__.py \
+	sed -i version.py \
 	  -e "s/^__version__ = .*/__version__ = '$(VERSION)'/"
 	sed -i tendrl-node-agent.spec \
 	  -e "s/^Version: .*/Version: $(VERSION)/"
