@@ -41,13 +41,6 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
         while not self._complete.is_set():
             try:
                 gevent.sleep(3)
-                tendrl_ns.tendrl_context = \
-                    tendrl_ns.node_agent.objects.TendrlContext(
-                        node_id=tendrl_ns.node_context.node_id)
-                # if sds version and name not passed, object will figure that
-                # detail
-                tendrl_ns.tendrl_context.save()
-
                 tags = []
                 # update node agent service details
                 LOG.info("node_sync, Updating Service data")
