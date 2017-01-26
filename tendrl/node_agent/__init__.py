@@ -33,5 +33,4 @@ class NodeAgentNS(CommonNS):
         self.type = 'node'
         super(NodeAgentNS, self).__init__()
 
-import __builtin__
-__builtin__.tendrl_ns = NodeAgentNS()
+NodeAgentNS()
