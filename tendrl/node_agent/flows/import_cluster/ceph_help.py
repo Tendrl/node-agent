@@ -24,7 +24,8 @@ def import_ceph(integration_id):
                        ".yaml", 'w+') as f:
         f.write(logging_file)
 
-    config_data = {"etcd_port": 2379, "etcd_connection": "tendrl-etcd",
+    config_data = {"etcd_port": tendrl_ns.config.data['etcd_port'],
+                   "etcd_connection": tendrl_ns.config.data['etcd_connection'],
                    "tendrl_ansible_exec_file": "$HOME/.tendrl/ceph-integration/ansible_exec",
                    "log_cfg_path":"/etc/tendrl/ceph-integration/ceph-integration_logging"
                        ".yaml", "log_level": "DEBUG"}
@@ -36,7 +37,7 @@ def import_ceph(integration_id):
     with open(ceph_integration_context, 'wb+') as f:
         f.write(integration_id)
 
-    subprocess.Popen(["nohup", "tendrl-ceph-integration"])
+    subprocess.Popen(["nohup", "tendrl-ceph-integration", "&"])
 
 
 
