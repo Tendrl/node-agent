@@ -6,7 +6,7 @@ import etcd
 job_id1 = str(uuid.uuid4())
 
 job = {
-    "integration_id": "rohan_create_job_script_test",
+    "integration_id": "some_uuid",
     "run": "tendrl.node_agent.flows.import_cluster.ImportCluster",
     "status": "new",
     "parameters": {
