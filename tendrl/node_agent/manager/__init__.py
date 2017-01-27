@@ -2,6 +2,7 @@ import logging
 
 import etcd
 import gevent
+import signal
 from tendrl.commons import manager as commons_manager
 
 from tendrl.node_agent import node_sync
@@ -90,8 +91,8 @@ def main():
         complete.set()
         m.stop()
 
-    gevent.signal(gevent.signal.SIGTERM, shutdown)
-    gevent.signal(gevent.signal.SIGINT, shutdown)
+    gevent.signal(signal.SIGTERM, shutdown)
+    gevent.signal(signal.SIGINT, shutdown)
 
     while not complete.is_set():
         complete.wait(timeout=1)
