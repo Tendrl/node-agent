@@ -8,4 +8,4 @@ python-etcd
 gevent>=1.0
 greenlet>=0.3.2
 # This is a sub-dependency of ansible, Its not automatically pulled. So explictly pulling this.
-setuptools>=11.3
+setuptools

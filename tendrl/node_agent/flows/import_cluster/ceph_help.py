@@ -5,10 +5,18 @@ import yaml
 
 
 def import_ceph(integration_id):
-    name = "git+https://github.com/Tendrl/ceph_integration.git@v1.2"
-    attributes = {"name": name}
-    attributes["editable"] = "false"
-    ansible_module_path = "core/packaging/language/pip.py"
+    attributes = {}
+    if tendrl_ns.config.data['package_source_type'] == 'pip':
+        name = "git+https://github.com/Tendrl/ceph-integration.git@v1.2"
+        attributes["name"] = name
+        attributes["editable"] = "false"
+        ansible_module_path = "core/packaging/language/pip.py"
+    elif tendrl_ns.config.data['package_source_type'] == 'rpm':
+        name = "tendrl-ceph-integration"
+        ansible_module_path = "core/packaging/os/yum.py"
+        attributes["name"] = name
+    else:
+        return False
 
     try:
         runner = ansible_module_runner.AnsibleRunner(
