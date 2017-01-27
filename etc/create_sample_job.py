@@ -6,19 +6,18 @@ import etcd
 job_id1 = str(uuid.uuid4())
 
 job = {
-    "integration_id": "49fa2adde8a6e98591f0f5cb4bc5f44d",
-    "sds_type": "generic",
-    "flow": "ExecuteCommand",
-    "object_type": "generic",
-    "status": 'new',
-    "message": 'Executing command',
-    "attributes": {
-        "_raw_input": "ls"
+    "integration_id": "some_uuid",
+    "run": "tendrl.node_agent.flows.import_cluster.ImportCluster",
+    "status": "new",
+    "parameters": {
+        "TendrlContext.integration_id": "some_uuid",
+        "Node[]": ["9eced8a0-fd46-4144-9578-5b35c2ae2006"],
+        "DetectedCluster.sds_pkg_name": "gluster"
     },
-    "errors": {}
-
+    "type": "node",
+    "node_ids": ["9eced8a0-fd46-4144-9578-5b35c2ae2006"]
 }
 
-
-client = etcd.Client()
-client.write("/api_job_queue/job_%s" % job_id1, json.dumps(job))
+print "/queue/%s" % job_id1 
+client = etcd.Client(host="your_etcd_api_ip", port=2379)
+client.write("/queue/%s" % job_id1, json.dumps(job))
