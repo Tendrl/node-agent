@@ -45,6 +45,7 @@ rm -rf html/.{doctrees,buildinfo}
 install -m  0755  --directory $RPM_BUILD_ROOT%{_var}/log/tendrl/node-agent
 install -m  0755  --directory $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node-agent
 install -m  0755  --directory $RPM_BUILD_ROOT%{_datadir}/tendrl/node-agent
+install -m  0755  --directory $RPM_BUILD_ROOT%{_sharedstatedir}/tendrl
 install -Dm 0644 tendrl-node-agent.service $RPM_BUILD_ROOT%{_unitdir}/tendrl-node-agent.service
 install -Dm 0644 etc/tendrl/node-agent/node-agent.conf.yaml.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node-agent/node-agent.conf.yaml
 install -Dm 0644 etc/tendrl/node-agent/logging.yaml.timedrotation.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node-agent/node-agent_logging.yaml
@@ -66,6 +67,7 @@ py.test -v tendrl/node-agent/tests || :
 %dir %{_var}/log/tendrl/node-agent
 %dir %{_sysconfdir}/tendrl/node-agent
 %dir %{_datadir}/tendrl/node-agent
+%dir %{_sharedstatedir}/tendrl
 %doc README.rst
 %license LICENSE
 %{_datadir}/tendrl/node-agent/
