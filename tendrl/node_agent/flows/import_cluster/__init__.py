@@ -20,7 +20,7 @@ class ImportCluster(flows.NodeAgentBaseFlow):
         if len(node_list) > 1:
             # This is the master node for this flow
             for node in node_list:
-                if tendrl_ns.node_contex.node_id != node:
+                if tendrl_ns.node_context.node_id != node:
                     new_params = self.parameters.copy()
                     new_params['Node[]'] = [node]
                 # create same flow for each node in node list except $this
