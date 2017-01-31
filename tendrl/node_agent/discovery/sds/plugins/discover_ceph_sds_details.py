@@ -32,10 +32,28 @@ class DiscoverCephStorageSystem(DiscoverSDSPlugin):
             ret_val['pkg_name'] = details[0]
 
             # get the cluster_id details
-            raw_data = ini2json.ini_to_dict("/etc/ceph/ceph.conf")
-            if "global" in raw_data:
-                ret_val['detected_cluster_id'] = raw_data['global']['fsid']
-                ret_val['cluster_attrs'] = {'fsid': raw_data['global']['fsid'],
-                                            'name': 'ceph'}
+            os_name = tendrl_ns.platform.os
+            cfg_file = ""
+            if os_name in ['CentOS Linux', 'Red Hat Enterprise Linux Server']:
+                cfg_file = '/etc/sysconfig/ceph'
+            #TODO(shtripat) handle the case of ubuntu
+
+            if cfg_file != "":
+                with open(cfg_file) as f:
+                    for line in f:
+                        if line.startswith("CLUSTER="):
+                            cluster_name = line.split('\n')[0].split('=')[1]
+
+            if cluster_name:
+                raw_data = ini2json.ini_to_dict(
+                    "/etc/ceph/%s.conf" % cluster_name
+                )
+                if "global" in raw_data:
+                    ret_val['detected_cluster_id'] = raw_data['global']\
+                        ['fsid']
+                    ret_val['cluster_attrs'] = {
+                        'fsid': raw_data['global']['fsid'],
+                        'name': 'ceph'
+                    }
 
             return ret_val

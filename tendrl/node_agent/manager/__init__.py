@@ -41,11 +41,12 @@ class NodeAgentManager(commons_manager.Manager):
             if len(platform_details.keys()) > 0:
                 # update etcd
                 try:
-                    tendrl_ns.node_agent.objects.Platform(
+                    tendrl_ns.platform = tendrl_ns.node_agent.objects.Platform(
                         os=platform_details["Name"],
                         os_version=platform_details["OSVersion"],
                         kernel_version=platform_details["KernelVersion"],
-                        ).save()
+                        )
+                    tendrl_ns.platform.save()
 
                 except etcd.EtcdException as ex:
                     LOG.error(
