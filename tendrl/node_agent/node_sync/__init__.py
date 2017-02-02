@@ -40,7 +40,12 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
 
         while not self._complete.is_set():
             try:
-                gevent.sleep(3)
+                interval = 10
+                if tendrl_ns.first_node_inventory_sync:
+                    interval = 2
+                    tendrl_ns.first_node_inventory_sync = False
+                    
+                gevent.sleep(interval)
                 tags = []
                 # update node agent service details
                 LOG.info("node_sync, Updating Service data")
@@ -49,20 +54,25 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                     if s.running:
                         tags.append(TENDRL_SERVICE_TAGS[service.strip("@*")])
                     s.save()
+                gevent.sleep(interval)
 
                 # updating node context with latest tags
                 LOG.info("node_sync, updating node context data with tags")
                 tags = "\n".join(tags)
                 tendrl_ns.node_agent.objects.NodeContext(tags=tags).save()
+                gevent.sleep(interval)
 
                 LOG.info("node_sync, Updating OS data")
                 tendrl_ns.node_agent.objects.Os().save()
+                gevent.sleep(interval)
 
                 LOG.info("node_sync, Updating cpu")
                 tendrl_ns.node_agent.objects.Cpu().save()
+                gevent.sleep(interval)
 
                 LOG.info("node_sync, Updating memory")
                 tendrl_ns.node_agent.objects.Memory().save()
+                gevent.sleep(interval)
 
                 LOG.info("node_sync, Updating disks")
                 try:

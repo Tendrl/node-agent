@@ -79,6 +79,7 @@ class NodeAgentManager(commons_manager.Manager):
 
 def main():
     tendrl_ns.central_store_thread = central_store.NodeAgentEtcdCentralStore()
+    tendrl_ns.first_node_inventory_sync = True
     tendrl_ns.state_sync_thread = node_sync.NodeAgentSyncThread()
 
     tendrl_ns.node_context.save()
