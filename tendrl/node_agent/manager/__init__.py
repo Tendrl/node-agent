@@ -66,11 +66,15 @@ class NodeAgentManager(commons_manager.Manager):
         for plugin in sds_discovery_manager.get_available_plugins():
             sds_details = plugin.discover_storage_system()
             if sds_details:
-                tendrl_ns.node_agent.objects.DetectedCluster(
-                    detected_cluster_id=sds_details['detected_cluster_id'],
-                    sds_pkg_name=sds_details['pkg_name'],
-                    sds_pkg_version=sds_details['pkg_version'],
-                ).save()
+                try:
+                    tendrl_ns.node_agent.objects.DetectedCluster(
+                        detected_cluster_id=sds_details.get('detected_cluster_id'),
+                        sds_pkg_name=sds_details.get('pkg_name'),
+                        sds_pkg_version=sds_details.get('pkg_version'),
+                    ).save()
+                except etcd.EtcdException as ex:
+                    LOG.error('Failed to update etcd . Error %s' % str(ex))
+                break
 
 
 def main():
