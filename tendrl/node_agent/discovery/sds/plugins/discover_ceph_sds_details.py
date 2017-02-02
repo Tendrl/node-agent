@@ -1,5 +1,6 @@
 import json
 import logging
+import os.path
 import subprocess
 
 from tendrl.node_agent.discovery.sds.discover_sds_plugin \
@@ -39,6 +40,9 @@ class DiscoverCephStorageSystem(DiscoverSDSPlugin):
             #TODO(shtripat) handle the case of ubuntu
 
             if cfg_file != "":
+                if not os.path.exists(cfg_file):
+                    LOG.info("config file: %s not found" % cfg_file)
+                    return ret_val
                 with open(cfg_file) as f:
                     for line in f:
                         if line.startswith("CLUSTER="):
