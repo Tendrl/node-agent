@@ -1,7 +1,11 @@
 from tendrl.commons.objects import atoms
 
+from tendrl.node_agent.objects import file
+
 
 class Write(atoms.BaseAtom):
+    obj = file.File
+
     def run(self, parameters=None, *args, **kwargs):
         super(Write, self).run(*args, **kwargs)
         data = parameters.get("Config.data")

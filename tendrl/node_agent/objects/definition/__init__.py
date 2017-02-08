@@ -4,8 +4,9 @@ import namespaces as ns
 import yaml
 
 
-from tendrl.commons import objects
 from tendrl.commons import etcdobj
+from tendrl.commons import objects
+
 from tendrl.node_agent.objects.definition import master
 
 
@@ -67,7 +68,6 @@ class Definition(objects.BaseObject):
                             type=raw_flow['type'],
                             uuid=raw_flow['uuid']
                             )
-
 
     def _get_parsed_defs(self):
         self._parsed_defs = yaml.safe_load(self.master)

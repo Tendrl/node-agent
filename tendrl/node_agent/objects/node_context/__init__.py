@@ -49,9 +49,9 @@ class NodeContext(objects.NodeAgentBaseObject):
                 with open(local_node_context) as f:
                     node_id = f.read()
                     if node_id:
-                        LOG.info(
-                            "GET_LOCAL: tendrl_ns.node_agent.objects.NodeContext"
-                            ".node_id==%s" % node_id)
+                        LOG.info("GET_LOCAL: "
+                                 "tendrl_ns.node_agent.objects.NodeContext"
+                                 ".node_id==%s" % node_id)
                         return node_id
         except AttributeError:
             return None

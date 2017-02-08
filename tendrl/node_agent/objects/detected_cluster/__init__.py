@@ -1,4 +1,4 @@
-from tendrl.commons.etcdobj import EtcdObj
+from tendrl.commons import etcdobj
 from tendrl.node_agent import objects
 
 
@@ -14,9 +14,8 @@ class DetectedCluster(objects.NodeAgentBaseObject):
         self._etcd_cls = _DetectedClusterEtcd
 
 
-class _DetectedClusterEtcd(EtcdObj):
-    """A table of the Detected cluster, lazily updated
-    """
+class _DetectedClusterEtcd(etcdobj.EtcdObj):
+    """A table of the Detected cluster, lazily updated"""
     __name__ = 'nodes/%s/DetectedCluster'
     _tendrl_cls = DetectedCluster
 

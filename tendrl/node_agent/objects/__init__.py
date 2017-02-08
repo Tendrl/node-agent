@@ -1,5 +1,5 @@
-from tendrl.commons import objects
 from tendrl.commons import atoms
+from tendrl.commons import objects
 
 
 class NodeAgentBaseObject(objects.BaseObject):
@@ -19,10 +19,10 @@ class NodeAgentBaseObject(objects.BaseObject):
             obj_value=None,
             atoms=None,
             flows=None
-                                              )
+        )
 
-        obj_def = tendrl_ns.definitions.get_obj_definition(tendrl_ns.to_str,
-                                             self.__class__.__name__)
+        obj_def = tendrl_ns.definitions.get_obj_definition(
+            tendrl_ns.to_str, self.__class__.__name__)
         # list of attr tuple of (attr_name, type)
         # eg: {'status': {'type': 'Boolean'}, 'fqdn': {'type': 'String'},
         # 'cmd_str': {'type': 'String'}}
@@ -52,6 +52,7 @@ class NodeAgentBaseObject(objects.BaseObject):
 
 class NodeAgentBaseAtom(atoms.BaseAtom):
     obj = NodeAgentBaseObject
+
     def __init__(
             self, *args, **kwargs):
 
