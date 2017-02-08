@@ -1,6 +1,6 @@
 import importlib
 
-import namespaces as ns
+import maps
 import yaml
 
 
@@ -42,7 +42,7 @@ class Definition(objects.BaseObject):
             flow_cls = getattr(importlib.import_module(flow_fqdn), flow_name)
             tendrl_ns.add_obj_flow(obj_name, flow_name, flow_cls)
 
-        return ns.Namespace(attrs=raw_obj['attrs'],
+        return maps.NamedDict(attrs=raw_obj['attrs'],
                             enabled=raw_obj['enabled'],
                             obj_list=raw_obj.get('list', ""),
                             obj_value=raw_obj['value'],
@@ -59,7 +59,7 @@ class Definition(objects.BaseObject):
         flow_cls = getattr(importlib.import_module(flow_fqdn), flow_name)
         tendrl_ns.add_flow(flow_name, flow_cls)
 
-        return ns.Namespace(atoms=raw_flow['atoms'],
+        return maps.NamedDict(atoms=raw_flow['atoms'],
                             help=raw_flow['help'],
                             enabled=raw_flow['enabled'],
                             inputs=raw_flow['inputs'],
