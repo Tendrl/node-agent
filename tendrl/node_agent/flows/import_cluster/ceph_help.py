@@ -1,3 +1,5 @@
+# flake8: noqa
+
 import subprocess
 
 from tendrl.commons.utils import ansible_module_runner

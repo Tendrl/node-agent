@@ -6,12 +6,12 @@ class Package(objects.NodeAgentBaseObject):
     def __init__(self, name=None, pkg_type=None,
                  state=None, version=None,
                  *args, **kwargs):
-       super(Package, self).__init__(*args, **kwargs)
-       self.name = name
-       self.pkg_type = pkg_type
-       self.state = state
-       self.version = version
-       self._etcd_cls = _PackageEtcd
+        super(Package, self).__init__(*args, **kwargs)
+        self.name = name
+        self.pkg_type = pkg_type
+        self.state = state
+        self.version = version
+        self._etcd_cls = _PackageEtcd
 
 
 class _PackageEtcd(EtcdObj):

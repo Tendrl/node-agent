@@ -1,5 +1,5 @@
+from tendrl.commons import etcdobj
 from tendrl.commons.utils import cmd_utils
-from tendrl.commons.etcdobj import EtcdObj
 from tendrl.node_agent import objects
 
 
@@ -42,7 +42,7 @@ class Cpu(objects.NodeAgentBaseObject):
         '''
         cmd = cmd_utils.Command("lscpu")
         out, err, rc = cmd.run(tendrl_ns.config.data[
-                                   'tendrl_ansible_exec_file'])
+                               'tendrl_ansible_exec_file'])
         out = str(out)
         if out:
             info_list = out.split('\n')
@@ -66,7 +66,8 @@ class Cpu(objects.NodeAgentBaseObject):
 
         return cpuinfo
 
-class _CpuEtcd(EtcdObj):
+
+class _CpuEtcd(etcdobj.EtcdObj):
     """A table of the CPU, lazily updated
 
     """

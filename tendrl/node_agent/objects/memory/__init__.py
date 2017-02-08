@@ -1,5 +1,5 @@
+from tendrl.commons import etcdobj
 from tendrl.commons.utils import cmd_utils
-from tendrl.commons.etcdobj import EtcdObj
 
 from tendrl.node_agent import objects
 
@@ -27,7 +27,7 @@ class Memory(objects.NodeAgentBaseObject):
 
         cmd = cmd_utils.Command("cat /proc/meminfo")
         out, err, rc = cmd.run(tendrl_ns.config.data[
-                                   'tendrl_ansible_exec_file'])
+                               'tendrl_ansible_exec_file'])
         out = str(out)
 
         if out:
@@ -45,7 +45,7 @@ class Memory(objects.NodeAgentBaseObject):
         return memoinfo
 
 
-class _MemoryEtcd(EtcdObj):
+class _MemoryEtcd(etcdobj.EtcdObj):
     """A table of the memory, lazily updated
 
     """

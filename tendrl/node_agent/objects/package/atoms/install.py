@@ -1,8 +1,12 @@
-from tendrl.commons.atoms import base_atom
 from tendrl.commons.utils import ansible_module_runner
 
+from tendrl.node_agent import objects
+from tendrl.node_agent.objects import package
 
-class Install(base_atom.BaseAtom):
+
+class Install(objects.NodeAgentBaseAtom):
+    obj = package.Package
+
     def run(self):
         name = self.parameters.get("Package.name")
         package_type = self.parameters.get("Package.pkg_type", "pip")
