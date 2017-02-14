@@ -1,3 +1,5 @@
+import etcd
+import gevent
 import json
 import uuid
 
@@ -42,3 +44,16 @@ class ImportCluster(flows.NodeAgentBaseFlow):
             import_ceph(tendrl_ns.tendrl_context.integration_id)
         else:
             import_gluster(tendrl_ns.tendrl_context.integration_id)
+
+        # import cluster's run() should not return unless the new cluster entry
+        # is updated in etcd, as the job is marked as finished if this
+        # function is returned. This might lead to inconsistancy in the API
+        # functionality. The below loop waits for the cluster details
+        # to be updated in etcd.
+        while True:
+            gevent.sleep(2)
+            try:
+                tendrl_ns.etcd_orm.client.read("/clusters/%s" % integration_id)
+                break
+            except etcd.EtcdKeyNotFound:
+                continue
