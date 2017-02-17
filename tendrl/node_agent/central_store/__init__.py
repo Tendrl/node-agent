@@ -47,4 +47,11 @@ class NodeAgentEtcdCentralStore(central_store.EtcdCentralStore):
     def save_package(self, package):
         tendrl_ns.etcd_orm.save(package)
 
+    def save_message(self, message):
+        tendrl_ns.etcd_orm.save(message)
 
+    def save_nodemessage(self, message):
+        tendrl_ns.etcd_orm.save(message)
+
+    def save_clustermessage(self, message):
+        tendrl_ns.etcd_orm.save(message)
