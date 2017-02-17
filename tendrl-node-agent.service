@@ -9,6 +9,7 @@ ExecReload=/bin/kill -HUP $MAINPID
 KillMode=process
 Restart=on-failure
 PrivateTmp=true
+RuntimeDirectory=tendrl
 
 [Install]
 WantedBy=multi-user.target
