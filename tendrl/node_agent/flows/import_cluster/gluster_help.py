@@ -1,10 +1,12 @@
 import subprocess
 
+from tendrl.commons.event import Event
+from tendrl.commons.message import Message
 from tendrl.commons.utils import ansible_module_runner
 import yaml
 
 
-def import_gluster(integration_id):
+def import_gluster(integration_id, request_id, flow_id):
     attributes = {}
     if tendrl_ns.config.data['package_source_type'] == 'pip':
         name = "git+https://github.com/Tendrl/gluster-integration.git@v1.2"
@@ -27,7 +29,21 @@ def import_gluster(integration_id):
         result, err = runner.run()
     except ansible_module_runner.AnsibleExecutableGenerationFailed:
         return False
-    
+
+    Event(
+        Message(
+            priority="info",
+            publisher=tendrl_ns.publisher_id,
+            payload={
+                "message": "Installed storage binaries on node %s" %
+                tendrl_ns.node_context.fqdn
+            },
+            request_id=request_id,
+            flow_id=flow_id,
+            cluster_id=integration_id,
+        )
+    )
+
     with open("/etc/tendrl/gluster-integration/gluster-integration_logging"
                        ".yaml", 'w+') as f:
         f.write(logging_file)
@@ -36,7 +52,8 @@ def import_gluster(integration_id):
                    "etcd_connection": tendrl_ns.config.data['etcd_connection'],
                    "tendrl_ansible_exec_file": "$HOME/.tendrl/gluster-integration/ansible_exec",
                    "log_cfg_path":"/etc/tendrl/gluster-integration/gluster-integration_logging"
-                       ".yaml", "log_level": "DEBUG"}
+                       ".yaml", "log_level": "DEBUG",
+                   "logging_socket_path": "/var/run/.tendrl.message.sock"}
     with open("/etc/tendrl/gluster-integration/gluster-integration"
               ".conf.yaml", 'w') as outfile:
         yaml.dump(config_data, outfile, default_flow_style=False)
@@ -47,6 +64,19 @@ def import_gluster(integration_id):
 
     subprocess.Popen(["nohup", "tendrl-gluster-integration", "&"])
 
+    Event(
+        Message(
+            priority="info",
+            publisher=tendrl_ns.publisher_id,
+            payload={
+                "message": "Started gluster integration daemon on node %s" %
+                tendrl_ns.node_context.fqdn
+            },
+            request_id=request_id,
+            flow_id=flow_id,
+            cluster_id=integration_id,
+        )
+    )
 
 
 

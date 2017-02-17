@@ -89,6 +89,7 @@ def main():
     tendrl_ns.tendrl_context.save()
     tendrl_ns.definitions.save()
     tendrl_ns.config.save()
+    tendrl_ns.publisher_id = "node_agent"
 
     m = NodeAgentManager()
     m.start()

@@ -8,6 +8,8 @@ from tendrl.node_agent import flows
 from tendrl.node_agent.flows.import_cluster.ceph_help import import_ceph
 from tendrl.node_agent.flows.import_cluster.gluster_help import import_gluster
 
+from tendrl.commons.event import Event
+from tendrl.commons.message import Message
 
 class ImportCluster(flows.NodeAgentBaseFlow):
     def run(self):
@@ -37,13 +39,32 @@ class ImportCluster(flows.NodeAgentBaseFlow):
 
                     tendrl_ns.etcd_orm.client.write("/queue/%s" % uuid.uuid4(),
                                                json.dumps(job))
-
-
+        Event(
+            Message(
+                priority="info",
+                publisher=tendrl_ns.publisher_id,
+                payload={
+                    "message": "Import cluster job started on node %s" %
+                    tendrl_ns.node_context.fqdn
+                },
+                request_id=self.parameters['request_id'],
+                flow_id=self.uuid,
+                cluster_id=tendrl_ns.tendrl_context.integration_id,
+            )
+        )
         sds_name = self.parameters['DetectedCluster.sds_pkg_name']
         if "ceph" in sds_name.lower():
-            import_ceph(tendrl_ns.tendrl_context.integration_id)
+            import_ceph(
+                tendrl_ns.tendrl_context.integration_id,
+                self.parameters['request_id'],
+                self.uuid
+            )
         else:
-            import_gluster(tendrl_ns.tendrl_context.integration_id)
+            import_gluster(
+                tendrl_ns.tendrl_context.integration_id,
+                self.parameters['request_id'],
+                self.uuid
+            )
 
         # import cluster's run() should not return unless the new cluster entry
         # is updated in etcd, as the job is marked as finished if this
