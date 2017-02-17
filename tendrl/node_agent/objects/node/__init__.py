@@ -1,4 +1,5 @@
-from tendrl.commons.etcdobj import EtcdObj
+from tendrl.commons import etcdobj
+
 from tendrl.node_agent import objects
 
 
@@ -13,11 +14,11 @@ class Node(objects.NodeAgentBaseObject):
         self._etcd_cls = _NodeEtcd
 
 
-class _NodeEtcd(EtcdObj):
+class _NodeEtcd(etcdobj.EtcdObj):
     """A table of the node, lazily updated
 
     """
-    __name__ = 'nodes/%s' 
+    __name__ = 'nodes/%s'
     _tendrl_cls = Node
 
     def render(self):

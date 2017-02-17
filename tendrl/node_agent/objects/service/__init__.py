@@ -1,6 +1,7 @@
-from tendrl.commons.etcdobj import EtcdObj
-from tendrl.node_agent import objects
+from tendrl.commons import etcdobj
 from tendrl.commons.utils import service_status
+
+from tendrl.node_agent import objects
 
 
 class Service(objects.NodeAgentBaseObject):
@@ -23,7 +24,7 @@ class Service(objects.NodeAgentBaseObject):
         return {"exists": service.exists(), "running": service.status()}
 
 
-class _ServiceEtcd(EtcdObj):
+class _ServiceEtcd(etcdobj.EtcdObj):
     """A table of the service, lazily updated
 
     """

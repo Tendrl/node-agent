@@ -44,7 +44,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 if tendrl_ns.first_node_inventory_sync:
                     interval = 2
                     tendrl_ns.first_node_inventory_sync = False
-                    
+
                 gevent.sleep(interval)
                 tags = []
                 # update node agent service details

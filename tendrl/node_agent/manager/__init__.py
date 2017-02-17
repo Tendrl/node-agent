@@ -5,10 +5,10 @@ import gevent
 import signal
 from tendrl.commons import manager as commons_manager
 
-from tendrl.node_agent import node_sync
 from tendrl.node_agent import central_store
 from tendrl.node_agent.discovery.platform.manager import PlatformManager
 from tendrl.node_agent.discovery.sds.manager import SDSDiscoveryManager
+from tendrl.node_agent import node_sync
 
 LOG = logging.getLogger(__name__)
 
@@ -68,7 +68,8 @@ class NodeAgentManager(commons_manager.Manager):
             if sds_details:
                 try:
                     tendrl_ns.node_agent.objects.DetectedCluster(
-                        detected_cluster_id=sds_details.get('detected_cluster_id'),
+                        detected_cluster_id=sds_details.get(
+                            'detected_cluster_id'),
                         sds_pkg_name=sds_details.get('pkg_name'),
                         sds_pkg_version=sds_details.get('pkg_version'),
                     ).save()

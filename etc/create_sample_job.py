@@ -18,6 +18,6 @@ job = {
     "node_ids": ["9eced8a0-fd46-4144-9578-5b35c2ae2006"]
 }
 
-print "/queue/%s" % job_id1 
+print("/queue/%s" % job_id1)
 client = etcd.Client(host="your_etcd_api_ip", port=2379)
 client.write("/queue/%s" % job_id1, json.dumps(job))

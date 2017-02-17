@@ -74,6 +74,7 @@ class Disk(objects.NodeAgentBaseObject):
         self.driver_modules = driver_modules
         self._etcd_cls = _DiskEtcd
 
+
 class _DiskEtcd(EtcdObj):
     """A table of the service, lazily updated
 

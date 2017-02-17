@@ -1,11 +1,14 @@
 import subprocess
 
-from tendrl.commons.atoms import base_atom
+from tendrl.node_agent import objects
+from tendrl.node_agent.objects import node
 
 
-class Cmd(base_atom.BaseAtom):
-    def run(self, parameters):
-        cmd = parameters.get("Node.cmd_str")
+class Cmd(objects.NodeAgentBaseAtom):
+    obj = node.Node
+
+    def run(self):
+        cmd = self.parameters.get("Node.cmd_str")
         cmd = ["nohup"] + cmd.split(" ")
         subprocess.Popen(cmd)
         return True

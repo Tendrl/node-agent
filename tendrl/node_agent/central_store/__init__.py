@@ -46,5 +46,3 @@ class NodeAgentEtcdCentralStore(central_store.EtcdCentralStore):
 
     def save_package(self, package):
         tendrl_ns.etcd_orm.save(package)
-
-

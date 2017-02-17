@@ -1,5 +1,5 @@
-from tendrl.commons.etcdobj import EtcdObj
 from tendrl.commons import config as cmn_config
+from tendrl.commons import etcdobj
 
 from tendrl.node_agent import objects
 
@@ -10,11 +10,11 @@ class Config(objects.NodeAgentBaseObject):
 
         self.value = '_tendrl/config/node-agent'
         self.data = config or cmn_config.load_config(
-            'node-agent',"/etc/tendrl/node-agent/node-agent.conf.yaml")
+            'node-agent', "/etc/tendrl/node-agent/node-agent.conf.yaml")
         self._etcd_cls = _ConfigEtcd
 
 
-class _ConfigEtcd(EtcdObj):
+class _ConfigEtcd(etcdobj.EtcdObj):
     """Config etcd object, lazily updated
 
     """

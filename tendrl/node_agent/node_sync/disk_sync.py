@@ -25,7 +25,7 @@ def get_node_disks():
             columns)
         cmd = cmd_utils.Command(lsblk)
         out, err, rc = cmd.run(tendrl_ns.config.data[
-                                   'tendrl_ansible_exec_file'])
+                               'tendrl_ansible_exec_file'])
         if not err:
             devlist = map(
                 lambda line: dict(zip(keys, line.split(' '))),
