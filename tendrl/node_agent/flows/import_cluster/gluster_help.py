@@ -53,7 +53,7 @@ def import_gluster(integration_id, request_id, flow_id):
                    "tendrl_ansible_exec_file": "$HOME/.tendrl/gluster-integration/ansible_exec",
                    "log_cfg_path":"/etc/tendrl/gluster-integration/gluster-integration_logging"
                        ".yaml", "log_level": "DEBUG",
-                   "logging_socket_path": "/var/run/.tendrl.message.sock"}
+                   "logging_socket_path": "/var/run/tendrl/message.sock"}
     with open("/etc/tendrl/gluster-integration/gluster-integration"
               ".conf.yaml", 'w') as outfile:
         yaml.dump(config_data, outfile, default_flow_style=False)
@@ -61,6 +61,18 @@ def import_gluster(integration_id, request_id, flow_id):
     gluster_integration_context = "/etc/tendrl/gluster-integration/integration_id"
     with open(gluster_integration_context, 'wb+') as f:
         f.write(integration_id)
+    Event(
+        Message(
+            priority="info",
+            publisher=tendrl_ns.publisher_id,
+            payload={
+                "message": "Created gluster integration configuration file"
+            },
+            request_id=request_id,
+            flow_id=flow_id,
+            cluster_id=integration_id,
+        )
+    )
 
     subprocess.Popen(["nohup", "tendrl-gluster-integration", "&"])
 

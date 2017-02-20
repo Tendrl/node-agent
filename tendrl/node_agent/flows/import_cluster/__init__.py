@@ -11,6 +11,7 @@ from tendrl.node_agent.flows.import_cluster.gluster_help import import_gluster
 from tendrl.commons.event import Event
 from tendrl.commons.message import Message
 
+
 class ImportCluster(flows.NodeAgentBaseFlow):
     def run(self):
         self.pre_run = []
@@ -27,7 +28,7 @@ class ImportCluster(flows.NodeAgentBaseFlow):
                 if tendrl_ns.node_context.node_id != node:
                     new_params = self.parameters.copy()
                     new_params['Node[]'] = [node]
-                # create same flow for each node in node list except $this
+                    # create same flow for each node in node list except $this
                     job = {"integration_id": integration_id,
                            "node_ids": [node],
                            "run": "tendrl.node_agent.flows.ImportCluster",
@@ -38,7 +39,21 @@ class ImportCluster(flows.NodeAgentBaseFlow):
                            }
 
                     tendrl_ns.etcd_orm.client.write("/queue/%s" % uuid.uuid4(),
-                                               json.dumps(job))
+                                                    json.dumps(job))
+                    Event(
+                        Message(
+                            priority="info",
+                            publisher=tendrl_ns.publisher_id,
+                            payload={
+                                "message": "Import cluster job created on node"
+                                " %s" % node
+                            },
+                            request_id=self.parameters['request_id'],
+                            flow_id=self.uuid,
+                            cluster_id=tendrl_ns.tendrl_context.integration_id,
+                        )
+                    )
+
         Event(
             Message(
                 priority="info",

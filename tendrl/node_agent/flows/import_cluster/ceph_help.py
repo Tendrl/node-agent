@@ -53,7 +53,7 @@ def import_ceph(integration_id, request_id, flow_id):
                    "tendrl_ansible_exec_file": "$HOME/.tendrl/ceph-integration/ansible_exec",
                    "log_cfg_path":"/etc/tendrl/ceph-integration/ceph-integration_logging"
                        ".yaml", "log_level": "DEBUG",
-                   "logging_socket_path": "/var/run/.tendrl.message.sock"}
+                   "logging_socket_path": "/var/run/tendrl/message.sock"}
     with open("/etc/tendrl/ceph-integration/ceph-integration"
               ".conf.yaml", 'w') as outfile:
         yaml.dump(config_data, outfile, default_flow_style=False)
@@ -61,6 +61,18 @@ def import_ceph(integration_id, request_id, flow_id):
     ceph_integration_context = "/etc/tendrl/ceph-integration/integration_id"
     with open(ceph_integration_context, 'wb+') as f:
         f.write(integration_id)
+    Event(
+        Message(
+            priority="info",
+            publisher=tendrl_ns.publisher_id,
+            payload={
+                "message": "Created ceph integration configuration file"
+            },
+            request_id=request_id,
+            flow_id=flow_id,
+            cluster_id=integration_id,
+        )
+    )
 
     subprocess.Popen(["nohup", "tendrl-ceph-integration", "&"])
 
