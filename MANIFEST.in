@@ -4,6 +4,7 @@ include README.rst
 include ChangeLog
 include requirements.txt
 include tendrl-node-agent.service
+include tendrl-node-agent.socket
 include version.py
 exclude .gitignore
 exclude .gitreview
