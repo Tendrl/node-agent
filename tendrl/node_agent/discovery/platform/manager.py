@@ -1,12 +1,12 @@
 import importlib
 import inspect
-import logging
 import os
+import traceback
+
+from tendrl.commons.event import Event
+from tendrl.commons.message import Message
 
 from tendrl.node_agent.discovery.platform import base
-
-
-LOG = logging.getLogger(__name__)
 
 
 class PlatformManager(object):
@@ -30,8 +30,16 @@ class PlatformManager(object):
                 for name, cls in clsmembers:
                     exec("from %s import %s" % (plugin_name, name))
         except (SyntaxError, ValueError, ImportError) as ex:
-            LOG.error('Failed to load the platform plugins. Error %s', ex,
-                      exc_info=True)
+            Event(
+                Message(
+                    priority="error",
+                    publisher=tendrl_ns.publisher_id,
+                    payload={"message": 'Failed to load the platform plugins. '
+                                        'Error %s %s' %
+                                        (ex, traceback.format_exc())
+                             }
+                )
+            )
             raise ex
         return
 

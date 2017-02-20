@@ -1,8 +1,9 @@
-import json
-import logging
-
 import etcd
 import gevent
+import json
+
+from tendrl.commons.event import Event
+from tendrl.commons.message import Message
 
 from tendrl.commons import sds_sync
 
@@ -10,8 +11,6 @@ from tendrl.node_agent.node_sync import disk_sync
 from tendrl.node_agent.node_sync import network_sync
 from tendrl.node_agent.node_sync import platform_detect
 from tendrl.node_agent.node_sync import sds_detect
-
-LOG = logging.getLogger(__name__)
 
 # TODO(darshan) this has to be moved to Definition file
 
@@ -39,9 +38,14 @@ TENDRL_SERVICE_TAGS = {
 
 
 class NodeAgentSyncThread(sds_sync.StateSyncThread):
-    def _run(self):
-        LOG.info("%s running", self.__class__.__name__)
-
+    def _run(self):\
+        Event(
+            Message(
+                priority="info",
+                publisher=tendrl_ns.publisher_id,
+                payload={"message": "%s running" % self.__class__.__name__}
+            )
+        )
         while not self._complete.is_set():
             try:
                 interval = 10
@@ -52,7 +56,13 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 gevent.sleep(interval)
                 tags = []
                 # update node agent service details
-                LOG.info("node_sync, Updating Service data")
+                Event(
+                    Message(
+                        priority="info",
+                        publisher=tendrl_ns.publisher_id,
+                        payload={"message": "node_sync, Updating Service data"}
+                    )
+                )
                 for service in TENDRL_SERVICES:
                     s = NS.tendrl.objects.Service(service=service)
                     if s.running:
@@ -61,7 +71,16 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 gevent.sleep(interval)
 
                 # updating node context with latest tags
-                LOG.info("node_sync, updating node context data with tags")
+# updating node context with latest tags
+                Event(
+                    Message(
+                        priority="info",
+                        publisher=tendrl_ns.publisher_id,
+                        payload={"message": "node_sync, updating node context "
+                                            "data with tags"
+                                 }
+                    )
+                )
                 NS.node_context = NS.node_context.load()
                 current_tags = json.loads(NS.node_context.tags)
                 tags += current_tags
@@ -110,31 +129,57 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                         ).save()
                         gevent.sleep(interval)
 
-                LOG.info("node_sync, Updating detected platform")
-                platform_detect.load_and_execute_platform_discovery_plugins()
-
-                LOG.info("node_sync, Updating detected Sds")
-                sds_detect.load_and_execute_sds_discovery_plugins()
-
-                LOG.info("node_sync, Updating OS data")
+                Event(
+                    Message(
+                        priority="info",
+                        publisher=tendrl_ns.publisher_id,
+                        payload={"message": "node_sync, Updating OS data"}
+                    )
+                )
                 NS.tendrl.objects.Os().save()
                 gevent.sleep(interval)
 
-                LOG.info("node_sync, Updating cpu")
+                Event(
+                    Message(
+                        priority="info",
+                        publisher=tendrl_ns.publisher_id,
+                        payload={"message": "node_sync, Updating cpu"}
+                    )
+                )
                 NS.tendrl.objects.Cpu().save()
                 gevent.sleep(interval)
 
-                LOG.info("node_sync, Updating memory")
+                Event(
+                    Message(
+                        priority="info",
+                        publisher=tendrl_ns.publisher_id,
+                        payload={"message": "node_sync, Updating memory"}
+                    )
+                )
                 NS.tendrl.objects.Memory().save()
                 gevent.sleep(interval)
 
-                LOG.info("node_sync, Updating disks")
+                Event(
+                    Message(
+                        priority="info",
+                        publisher=tendrl_ns.publisher_id,
+                        payload={"message": "node_sync, Updating disks"}
+                    )
+                )
                 try:
                     NS.etcd_orm.client.delete(
                         ("nodes/%s/Disks") % NS.node_context.node_id,
                         recursive=True)
                 except etcd.EtcdKeyNotFound as ex:
-                    LOG.debug("Given key is not present in etcd . %s", ex)
+                    Event(
+                        Message(
+                            priority="debug",
+                            publisher=tendrl_ns.publisher_id,
+                            payload={"message": "Given key is not present in "
+                                                "etcd . %s" + ex
+                                     }
+                        )
+                    )
                 disks = disk_sync.get_node_disks()
                 if "disks" in disks:
                     for disk in disks['disks']:
@@ -197,6 +242,19 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                                 **interface).save()
 
             except Exception as ex:
-                LOG.error(ex)
+                Event(
+                    Message(
+                        priority="error",
+                        publisher=tendrl_ns.publisher_id,
+                        payload={"message": str(ex)}
+                    )
+                )
+        Event(
+            Message(
+                priority="info",
+                publisher=tendrl_ns.publisher_id,
+                payload={"message": "%s complete" % self.__class__.__name__}
+            )
+        )
 
         LOG.info("%s complete", self.__class__.__name__)

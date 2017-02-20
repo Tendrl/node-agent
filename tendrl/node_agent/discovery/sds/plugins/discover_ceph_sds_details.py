@@ -1,12 +1,12 @@
-import logging
 import os.path
 import subprocess
+
+from tendrl.commons.event import Event
+from tendrl.commons.message import Message
 
 from tendrl.node_agent.discovery.sds.discover_sds_plugin \
     import DiscoverSDSPlugin
 from tendrl.node_agent import ini2json
-
-LOG = logging.getLogger(__name__)
 
 
 class DiscoverCephStorageSystem(DiscoverSDSPlugin):
@@ -22,7 +22,13 @@ class DiscoverCephStorageSystem(DiscoverSDSPlugin):
         )
         out, err = cmd.communicate()
         if err and 'command not found' in err:
-            LOG.info("ceph not installed on host")
+            Event(
+                Message(
+                    priority="info",
+                    publisher=tendrl_ns.publisher_id,
+                    payload={"message": "ceph not installed on host"}
+                )
+            )
             return ret_val
 
         if out:
@@ -41,7 +47,15 @@ class DiscoverCephStorageSystem(DiscoverSDSPlugin):
 
             if cfg_file != "":
                 if not os.path.exists(cfg_file):
-                    LOG.info("config file: %s not found", cfg_file)
+                    Event(
+                        Message(
+                            priority="info",
+                            publisher=tendrl_ns.publisher_id,
+                            payload={"message": "config file: %s not found" %
+                                                cfg_file
+                                     }
+                        )
+                    )
                     return ret_val
                 with open(cfg_file) as f:
                     for line in f:
