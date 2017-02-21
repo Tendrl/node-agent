@@ -1,11 +1,12 @@
 [Unit]
 Description=tendrl node agent control socket
-DefaultDependencies=no
 Before=sockets.target
 
 [Socket]
 ListenSequentialPacket=/run/tendrl/message.sock
-SocketMode=0600
+SocketMode=0660
+SocketUser=root
+SocketGroup=tendrl
 DirectoryMode=0755
 PassCredentials=yes
 RemoveOnStop=yes
