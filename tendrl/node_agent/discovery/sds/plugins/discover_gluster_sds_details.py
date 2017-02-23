@@ -23,20 +23,19 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
             LOG.error("Error formulating cluster_id")
             return ""
         lines = out.split('\n')[1:]
-        final_checksum = ""
-        dict = {}
+        gfs_peers = []
         for line in lines:
             if line != '':
-                node_det = line.split()
-                if node_det[1] == "localhost":
-                    dict[socket.gethostname()] = node_det[0]
+                peer = line.split()
+                if peer[1] == "localhost":
+                    gfs_peers.append(socket.getfqdn())
                 else:
-                    dict[node_det[1]] = node_det[0]
-        ordered_dict = collections.OrderedDict(sorted(dict.items()))
-        for k, v in ordered_dict.iteritems():
-            checksum = hashlib.sha256(v.encode())
-            final_checksum += checksum.hexdigest()
-        return final_checksum
+                    gfs_peers.append(peer[1])
+                
+                gfs_peers.append(peer[0])
+                
+        gfs_peers.sort()
+        return hashlib.sha256("".join(gfs_peers)).hexdigest()
 
     def discover_storage_system(self):
         ret_val = {}
@@ -57,9 +56,7 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
         ret_val['pkg_name'] = lines[0].split()[0]
 
         # form the temporary cluster_id
-        ret_val['detected_cluster_id'] = hashlib.sha256(
-            self._derive_cluster_id()
-        ).hexdigest()
+        ret_val['detected_cluster_id'] = self._derive_cluster_id()
         ret_val['cluster_attrs'] = {}
 
         return ret_val
