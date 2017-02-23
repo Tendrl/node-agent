@@ -26,12 +26,7 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
         gfs_peers = []
         for line in lines:
             if line != '':
-                peer = line.split()
-                if peer[1] == "localhost":
-                    gfs_peers.append(socket.getfqdn())
-                else:
-                    gfs_peers.append(peer[1])
-                
+                peer = line.split()              
                 gfs_peers.append(peer[0])
                 
         gfs_peers.sort()
