@@ -26,7 +26,8 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
         gfs_peers = []
         for line in lines:
             if line != '':
-                peer = line.split()              
+                peer = line.split()
+                # Use the gluster generated pool UUID as unique key
                 gfs_peers.append(peer[0])
                 
         gfs_peers.sort()
