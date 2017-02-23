@@ -69,11 +69,13 @@ class ImportCluster(flows.NodeAgentBaseFlow):
         )
         sds_name = self.parameters['DetectedCluster.sds_pkg_name']
         if "ceph" in sds_name.lower():
-            import_ceph(
-                tendrl_ns.tendrl_context.integration_id,
-                self.parameters['request_id'],
-                self.uuid
-            )
+            node_context = tendrl_ns.node_context.load()
+            if "mon" in node_context.tags:
+                import_ceph(
+                    tendrl_ns.tendrl_context.integration_id,
+                    self.parameters['request_id'],
+                    self.uuid
+                )
         else:
             import_gluster(
                 tendrl_ns.tendrl_context.integration_id,
