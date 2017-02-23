@@ -8,6 +8,9 @@ class NodeAgentEtcdCentralStore(central_store.EtcdCentralStore):
     def save_nodecontext(self, node_context):
         tendrl_ns.etcd_orm.save(node_context)
 
+    def save_clusternodecontext(self, cluster_node_context):
+        tendrl_ns.etcd_orm.save(cluster_node_context)
+
     def save_config(self, config):
         tendrl_ns.etcd_orm.save(config)
 

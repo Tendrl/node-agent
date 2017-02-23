@@ -62,6 +62,33 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 tendrl_ns.node_agent.objects.NodeContext(tags=tags).save()
                 gevent.sleep(interval)
 
+                if tendrl_ns.tendrl_context.integration_id:
+                    try:
+                        tendrl_ns.etcd_orm.client.read(
+                            "/clusters/%s" % (
+                                tendrl_ns.tendrl_context.integration_id
+                            )
+                        )
+                    except etcd.EtcdKeyNotFound:
+                        LOG.error(
+                            "Local Tendrl Context with integration id: " +
+                            "{} could not be found in central store".format(
+                                tendrl_ns.tendrl_context.integration_id
+                            )
+                        )
+                    else:
+                        LOG.info(
+                            "node_sync, updating node context under clusters"
+                        )
+                        tendrl_ns.node_agent.objects.ClusterNodeContext(
+                            machine_id=tendrl_ns.node_context.machine_id,
+                            node_id=tendrl_ns.node_context.node_id,
+                            fqdn=tendrl_ns.node_context.fqdn,
+                            status=tendrl_ns.node_context.status,
+                            tags=tags
+                        ).save()
+                        gevent.sleep(interval)
+
                 LOG.info("node_sync, Updating OS data")
                 tendrl_ns.node_agent.objects.Os().save()
                 gevent.sleep(interval)

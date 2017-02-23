@@ -10,6 +10,7 @@ from tendrl.commons import CommonNS
 from tendrl.node_agent.objects.definition import Definition
 from tendrl.node_agent.objects.config import Config
 from tendrl.node_agent.objects.node_context import NodeContext
+from tendrl.node_agent.objects.cluster_node_context import ClusterNodeContext
 from tendrl.node_agent.objects.detected_cluster import DetectedCluster
 from tendrl.node_agent.objects.platform import Platform
 from tendrl.node_agent.objects.tendrl_context import TendrlContext
