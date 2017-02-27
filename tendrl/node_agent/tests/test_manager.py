@@ -16,10 +16,8 @@ class TestNodeAgentManager(object):
     def setup_method(self, method):
         manager.pull_hardware_inventory = MagicMock()
         manager.utils = MagicMock()
-        manager.NodeAgentManager.load_and_execute_platform_discovery_plugins\
-            = MagicMock()
-        manager.NodeAgentManager.load_and_execute_sds_discovery_plugins = \
-            MagicMock()
+        manager.SDSDiscoveryManager = MagicMock()
+        manager.PlatformManager = MagicMock()
         self.manager = manager.NodeAgentManager(
             'aa22a6fe-87f0-45cf-8b70-2d0ff4c02af6'
         )
@@ -43,6 +41,22 @@ class TestNodeAgentManager(object):
         self.manager.persister_thread.update_node_context.assert_called()
         self.manager.persister_thread.update_node_context.assert_called()
         self.manager.persister_thread.update_tendrl_definitions.assert_called()
+
+    def test_load_and_execute_discovery_plugins(self, monkeypatch):
+        plugin_obj = MagicMock()
+        plugin_obj.discover_platform = MagicMock(
+            return_value=({"Name": "centos",
+                           "OSVersion": "7",
+                           "KernelVersion": "0.1"
+                           })
+            )
+        pmr_obj = MagicMock()
+        pmr_obj.get_available_plugins = MagicMock(return_value=[plugin_obj])
+        manager.PlatformManager = MagicMock(return_value=pmr_obj)
+        self.manager.load_and_execute_platform_discovery_plugins()
+        assert str(manager.Platform.os.value) == "centos"
+        assert str(manager.Platform.os_version.value) == "7"
+        assert str(manager.Platform.kernel_version.value) == "0.1"
 
 
 class TestNodeAgentSyncStateThread(object):
