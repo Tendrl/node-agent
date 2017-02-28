@@ -117,6 +117,36 @@ namespace.tendrl.node_agent:
       list: nodes/$Node_context.node_id/Services
       help: "Service"
       value: nodes/$Node_context.node_id/Services
+    Job:
+      attrs:
+        job_id:
+          help: "job unique id"
+          type: String
+        integration_id:
+          help: "cluster id"
+          type: String
+        run:
+          help: "main flow"
+          type: String
+        status:
+          help: "job current status"
+          type: String
+        parameters:
+          help: "dict"
+          type: Dict
+        type:
+          help: "job type"
+          type: String
+        node_ids:
+          help: "job belongs to which job"
+          type: String
+        request_id:
+          help: "job request_id"
+          type: String
+      enabled: true
+      list: /queue
+      value: /queue
+      help: "jobs"
     Disk:
       attrs:
         disk_id:
