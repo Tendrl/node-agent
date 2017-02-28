@@ -53,6 +53,7 @@ install -Dm 0644 etc/tendrl/node-agent/logging.yaml.syslog.sample $RPM_BUILD_ROO
 install -Dm 644 etc/tendrl/node-agent/*.sample $RPM_BUILD_ROOT%{_datadir}/tendrl/node-agent/
 
 %post
+getent group tendrl >/dev/null || groupadd -r tendrl
 %systemd_post tendrl-node-agent.service
 
 %preun

@@ -3,7 +3,7 @@ Description=tendrl node agent control socket
 Before=sockets.target
 
 [Socket]
-ListenSequentialPacket=/run/tendrl/message.sock
+ListenSequentialPacket=/var/run/tendrl/message.sock
 SocketMode=0660
 SocketUser=root
 SocketGroup=tendrl
