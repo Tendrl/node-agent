@@ -9,7 +9,7 @@ import yaml
 def import_ceph(integration_id, request_id, flow_id):
     attributes = {}
     if tendrl_ns.config.data['package_source_type'] == 'pip':
-        name = "git+https://github.com/Tendrl/ceph-integration.git@v1.2"
+        name = "git+https://github.com/Tendrl/ceph-integration.git@v1.2.1"
         attributes["name"] = name
         attributes["editable"] = "false"
         ansible_module_path = "core/packaging/language/pip.py"
