@@ -81,7 +81,7 @@ def get_node_disks():
                 Message(
                     priority="error",
                     publisher=tendrl_ns.publisher_id,
-                    payload={"message": err}
+                    payload={"message": str(err)}
                 )
             )
     else:
@@ -89,7 +89,7 @@ def get_node_disks():
             Message(
                 priority="error",
                 publisher=tendrl_ns.publisher_id,
-                payload={"message": err}
+                payload={"message": str(err)}
             )
         )
     return rv
