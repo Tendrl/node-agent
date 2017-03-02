@@ -27,11 +27,29 @@ class ProvisionerBasePlugin(object):
         raise NotImplementedError()
 
     @abstractmethod
-    def configure_mon(self, host, cluster_id, cluster_name, cluster_network, public_network, mons):
+    def configure_mon(
+        self,
+        host,
+        cluster_id,
+        cluster_name,
+        cluster_network,
+        public_network,
+        mons
+    ):
         raise NotImplementedError()
 
     @abstractmethod
-    def configure_osd(self, host, devices, cluster_id, cluster_name, journal_size, cluster_network, public_network, mons):
+    def configure_osd(
+        self,
+        host,
+        devices,
+        cluster_id,
+        cluster_name,
+        journal_size,
+        cluster_network,
+        public_network,
+        mons
+    ):
         raise NotImplementedError()
 
     @abstractmethod

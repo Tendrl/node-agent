@@ -2,6 +2,7 @@ import importlib
 import inspect
 import logging
 import os
+import pkgutil
 import re
 
 from tendrl.node_agent.provisioner.ceph import provisioner_base
@@ -14,23 +15,39 @@ class ProvisioningManager(object):
     def __init__(self, provisioner):
         self.ceph_provisioner = provisioner
         try:
+            self.plugins = []
             self.load_plugins()
         except (SyntaxError, ValueError, ImportError) as ex:
             raise ex
         self.plugin = None
         self.set_plugin()
 
+    def list_modules_in_package_path(self, package_path, prefix):
+        modules = []
+        path_to_walk = [(package_path, prefix)]
+        while len(path_to_walk) > 0:
+            curr_path, curr_prefix = path_to_walk.pop()
+            for importer, name, ispkg in pkgutil.walk_packages(
+                path=[curr_path]
+            ):
+                if ispkg:
+                    path_to_walk.append(
+                        (
+                            '%s/%s/' % (curr_path, name),
+                            '%s.%s' % (curr_prefix, name)
+                        )
+                    )
+                else:
+                    modules.append((name, '%s.%s' % (curr_prefix, name)))
+        return modules
+
     def load_plugins(self):
         try:
             path = os.path.dirname(os.path.abspath(__file__)) + '/plugins'
             pkg = 'tendrl.node_agent.provisioner.ceph.plugins'
-            for py in [f[:-3] for f in os.listdir(path)
-                       if f.endswith('.py') and f != '__init__.py']:
-                plugin_name = '.'.join([pkg, py])
-                mod = importlib.import_module(plugin_name)
-                clsmembers = inspect.getmembers(mod, inspect.isclass)
-                for name, cls in clsmembers:
-                    exec("from %s import %s" % (plugin_name, name))
+            plugins = self.list_modules_in_package_path(path, pkg)
+            for name, plugin_fqdn in plugins:
+                importlib.import_module(plugin_fqdn)
         except (SyntaxError, ValueError, ImportError) as ex:
             LOG.error('Failed to load the ceph provisioner plugins. Error %s' %
                       ex, exc_info=True)
