@@ -22,13 +22,13 @@ class ImportCluster(flows.NodeAgentBaseFlow):
         integration_id = self.parameters['TendrlContext.integration_id']
         tendrl_ns.tendrl_context.integration_id = integration_id
         tendrl_ns.tendrl_context.save()
-        node_list = self.parameters['Node[]'].split(", ")
+        node_list = self.parameters['Node[]']
         if len(node_list) > 1:
             # This is the master node for this flow
             for node in node_list:
                 if tendrl_ns.node_context.node_id != node:
                     new_params = self.parameters.copy()
-                    new_params['Node[]'] = node
+                    new_params['Node[]'] = [node]
                     # create same flow for each node in node list except $this
                     Job(job_id=str(uuid.uuid4()),
                         integration_id=integration_id,
@@ -37,7 +37,7 @@ class ImportCluster(flows.NodeAgentBaseFlow):
                         parameters=new_params,
                         type="node",
                         parent=self.parameters['request_id'],
-                        node_ids=node).save()
+                        node_ids=[node]).save()
 
                     Event(
                         Message(
