@@ -10,6 +10,7 @@ from tendrl.node_agent.flows.import_cluster.gluster_help import import_gluster
 
 from tendrl.commons.event import Event
 from tendrl.commons.message import Message
+from tendrl.commons.objects.job import Job
 
 
 class ImportCluster(flows.NodeAgentBaseFlow):
@@ -29,17 +30,16 @@ class ImportCluster(flows.NodeAgentBaseFlow):
                     new_params = self.parameters.copy()
                     new_params['Node[]'] = [node]
                     # create same flow for each node in node list except $this
-                    job = {"integration_id": integration_id,
-                           "node_ids": [node],
-                           "run": "tendrl.node_agent.flows.ImportCluster",
-                           "status": "new",
-                           "parameters": new_params,
-                           "parent": self.parameters['request_id'],
-                           "type": "node"
-                           }
+                    # TODO(team) The .save() below needs to save the job exactly as the API does
+                    Job(job_id=str(uuid.uuid4()),
+                        integration_id=integration_id,
+                        run="tendrl.node_agent.flows.ImportCluster",
+                        status="new",
+                        parameters=new_params,
+                        type="node",
+                        parent=self.parameters['request_id'],
+                        node_ids=[node]).save()
 
-                    tendrl_ns.etcd_orm.client.write("/queue/%s" % uuid.uuid4(),
-                                                    json.dumps(job))
                     Event(
                         Message(
                             priority="info",

@@ -58,3 +58,6 @@ class NodeAgentEtcdCentralStore(central_store.EtcdCentralStore):
 
     def save_clustermessage(self, message):
         tendrl_ns.etcd_orm.save(message)
+
+    def save_job(self, job):
+        tendrl_ns.etcd_orm.save(job)
