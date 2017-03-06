@@ -61,3 +61,9 @@ class NodeAgentEtcdCentralStore(central_store.EtcdCentralStore):
 
     def save_job(self, job):
         tendrl_ns.etcd_orm.save(job)
+
+    def save_nodenetwork(self, network):
+        tendrl_ns.etcd_orm.save(network)
+
+    def save_globalnetwork(self, network):
+        tendrl_ns.etcd_orm.save(network)
