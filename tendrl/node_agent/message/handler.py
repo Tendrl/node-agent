@@ -9,7 +9,7 @@ import os
 import sys
 from tendrl.commons.message import Message
 from tendrl.node_agent.message.logger import Logger
-
+import traceback
 
 RECEIVE_DATA_SIZE = 4096
 
@@ -27,19 +27,24 @@ class MessageHandler(gevent.greenlet.Greenlet):
             self.data = sock.recv(RECEIVE_DATA_SIZE)
             message = Message.from_json(self.data)
             Logger(message)
-        except (socket_error, socket_timeout) as ex:
+        except (socket_error, socket_timeout):
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            traceback.print_exception(
+                exc_type, exc_value, exc_tb, file=sys.stderr)
+        except (TypeError, ValueError, KeyError, AttributeError):
             sys.stderr.write(
-                "Unable to read message from socket err.%s\n" % str(ex))
-        except (TypeError, ValueError, KeyError, AttributeError) as ex:
-            sys.stderr.write(
-                "Unable to log the message.%s.err:%s\n" % (self.data, str(ex)))
+                "Unable to log the message.%s\n" % self.data)
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            traceback.print_exception(
+                exc_type, exc_value, exc_tb, file=sys.stderr)
 
     def _run(self):
         try:
             self.server.serve_forever()
-        except (TypeError, BlockingIOError, socket_error, ValueError) as ex:
-            sys.stderr.write(
-                "Unable to start socket .%s\n" % str(ex))
+        except (TypeError, BlockingIOError, socket_error, ValueError):
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            traceback.print_exception(
+                exc_type, exc_value, exc_tb, file=sys.stderr)
 
     def stop(self):
         socket_path = tendrl_ns.config.data['logging_socket_path']
@@ -57,7 +62,8 @@ class MessageHandler(gevent.greenlet.Greenlet):
             self.sock.setblocking(0)
             self.sock.bind(socket_path)
             self.sock.listen(50)
-        except (TypeError, BlockingIOError, socket_error, ValueError) as ex:
-            sys.stderr.write(
-                "Unable to create socket .%s\n" % str(ex))
+        except (TypeError, BlockingIOError, socket_error, ValueError):
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            traceback.print_exception(
+                exc_type, exc_value, exc_tb, file=sys.stderr)
         return self.sock
