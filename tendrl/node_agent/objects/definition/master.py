@@ -143,6 +143,12 @@ namespace.tendrl.node_agent:
         request_id:
           help: "job request_id"
           type: String
+        parent:
+          help: "parent job_id"
+          type: String
+        errors:
+          help: "any errors occured or not"
+          type: String
       enabled: true
       list: /queue
       value: /queue
