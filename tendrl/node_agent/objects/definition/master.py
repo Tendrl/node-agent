@@ -321,6 +321,108 @@ namespace.tendrl.node_agent:
           type: String
       enabled: true
       list: nodes/$Node_context.node_id/Disks/free
+    NodeNetwork:
+      attrs:
+        interface:
+          help: "network interface name"
+          type: List
+        ipv4:
+          help: "ipv4 addresses"
+          type: List
+        ipv6:
+          help: "ipv6 addresses"
+          type: List
+        netmask:
+          help: "subnet masks"
+          type: List
+        subnet:
+          help: "subnet"
+          type: String
+        status:
+          help: "interface status up/down"
+          type: String
+        interface_id:
+          help: "unique id"
+          type: String
+        sysfs_id:
+          help: "sysfs id"
+          type: String
+        device_link:
+          help: "device link"
+          type: String
+        interface_type:
+          help: "interface type"
+          type: String
+        model:
+          help: "interface model"
+          type: String
+        driver_modules:
+          help: "driver modules"
+          type: String
+        driver:
+          help: "driver"
+          type: String
+        hw_address:
+          help: "hardware address"
+          type: String
+        link_detected:
+          help: "link detected"
+          type: String
+      enabled: true
+      list: nodes/$Node_context.node.id/Networks
+      help: "Node wise network interface"
+      value: nodes/$Node_context.node.id/Networks
+    GlobalNetwork:
+      attrs:
+        interface:
+          help: "network interface name"
+          type: List
+        ipv4:
+          help: "ipv4 addresses"
+          type: List
+        ipv6:
+          help: "ipv6 addresses"
+          type: List
+        netmask:
+          help: "subnet masks"
+          type: List
+        subnet:
+          help: "subnet"
+          type: String
+        status:
+          help: "interface status up/down"
+          type: String
+        interface_id:
+          help: "unique id"
+          type: String
+        sysfs_id:
+          help: "sysfs id"
+          type: String
+        device_link:
+          help: "device link"
+          type: String
+        interface_type:
+          help: "interface type"
+          type: String
+        model:
+          help: "interface model"
+          type: String
+        driver_modules:
+          help: "driver modules"
+          type: String
+        driver:
+          help: "driver"
+          type: String
+        hw_address:
+          help: "hardware address"
+          type: String
+        link_detected:
+          help: "link detected"
+          type: String
+      enabled: true
+      list: nodes/$Node_context.node.id/Networks
+      help: "Global subnet wise network interface"
+      value: /networks
     Message:
       attrs:
         message_id:

@@ -26,6 +26,8 @@ from tendrl.node_agent.objects.platform import Platform
 from tendrl.node_agent.objects.message import Message
 from tendrl.node_agent.objects.cluster_message import ClusterMessage
 from tendrl.node_agent.objects.node_message import NodeMessage
+from tendrl.node_agent.objects.node_network import NodeNetwork
+from tendrl.node_agent.objects.global_network import GlobalNetwork
 
 from tendrl.node_agent.flows.import_cluster import ImportCluster
 

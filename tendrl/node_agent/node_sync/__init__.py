@@ -6,6 +6,7 @@ import gevent
 from tendrl.commons import sds_sync
 
 from tendrl.node_agent.node_sync import disk_sync
+from tendrl.node_agent.node_sync import network_sync
 
 LOG = logging.getLogger(__name__)
 
@@ -123,7 +124,40 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                             ("nodes/%s/Disks/free/%s") % (
                                 tendrl_ns.node_context.node_id, disk), "")
 
-            except Exception as ex:
+                LOG.info("node_sync, Updating networks")
+                # node wise network
+                try:
+                    tendrl_ns.etcd_orm.client.delete(
+                        ("nodes/%s/Network") % tendrl_ns.node_context.node_id,
+                        recursive=True)
+                except etcd.EtcdKeyNotFound as ex:
+                    LOG.debug("Given key is not present in etcd . %s", ex)
+                interfaces = network_sync.get_node_network()
+                if len(interfaces) > 0:
+                    for interface in interfaces:
+                        tendrl_ns.node_agent.objects.NodeNetwork(**interface).save()
+                # global network
+                try:
+                    networks = tendrl_ns.etcd_orm.client.read("/networks")
+                    for network in networks.leaves:
+                        try:
+                            tendrl_ns.etcd_orm.client.delete(("%s/%s") %
+                                (network.key, tendrl_ns.node_context.node_id),
+                                recursive=True)
+                            # it will delete subnet dir when it is empty
+                            # if one entry present then deletion never happen
+                            tendrl_ns.etcd_orm.client.delete(network.key, dir=True)
+                        except etcd.EtcdKeyNotFound as ex:
+                            continue
+                except etcd.EtcdKeyNotFound as ex:
+                    LOG.debug("Given key is not present in etcd . %s", ex)
+                if len(interfaces) > 0:
+                    for interface in interfaces:
+                        if interface["subnet"] is not "":
+                            tendrl_ns.node_agent.objects.GlobalNetwork(**interface).save()
+                    
+
+            except ValueError as ex:
                 LOG.error(ex)
 
         LOG.info("%s complete" % self.__class__.__name__)

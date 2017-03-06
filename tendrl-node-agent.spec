@@ -24,6 +24,8 @@ Requires: collectd
 Requires: python-jinja2
 Requires: tendrl-commons
 Requires: hwinfo 
+Requires: python-netifaces
+Requires: netaddr
 
 %description
 Python module for Tendrl node bridge to manage storage node in the sds cluster
