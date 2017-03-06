@@ -28,17 +28,23 @@ class MessageHandler(gevent.greenlet.Greenlet):
             message = Message.from_json(self.data)
             Logger(message)
         except (socket_error, socket_timeout):
-            traceback.print_exc(file=sys.stderr)
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            traceback.print_exception(
+                exc_type, exc_value, exc_tb, file=sys.stderr)
         except (TypeError, ValueError, KeyError, AttributeError):
             sys.stderr.write(
                 "Unable to log the message.%s\n" % self.data)
-            traceback.print_exc(file=sys.stderr)
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            traceback.print_exception(
+                exc_type, exc_value, exc_tb, file=sys.stderr)
 
     def _run(self):
         try:
             self.server.serve_forever()
         except (TypeError, BlockingIOError, socket_error, ValueError):
-            traceback.print_exc(file=sys.stderr)
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            traceback.print_exception(
+                exc_type, exc_value, exc_tb, file=sys.stderr)
 
     def stop(self):
         socket_path = tendrl_ns.config.data['logging_socket_path']
@@ -57,5 +63,7 @@ class MessageHandler(gevent.greenlet.Greenlet):
             self.sock.bind(socket_path)
             self.sock.listen(50)
         except (TypeError, BlockingIOError, socket_error, ValueError):
-            traceback.print_exc(file=sys.stderr)
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            traceback.print_exception(
+                exc_type, exc_value, exc_tb, file=sys.stderr)
         return self.sock
