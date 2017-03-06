@@ -1,6 +1,5 @@
 [Unit]
 Description=Tendrl message socket for logging
-Before=sockets.target
 
 [Socket]
 ListenSequentialPacket=/var/run/tendrl/message.sock
