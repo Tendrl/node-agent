@@ -76,7 +76,7 @@ py.test -v tendrl/node-agent/tests || :
 %{_sysconfdir}/tendrl/node-agent/node-agent.conf.yaml
 %{_sysconfdir}/tendrl/node-agent/node-agent_logging.yaml
 %{_unitdir}/tendrl-node-agent.service
-%{_unitdir}/tendrl-node-agent.socket
+%{_unitdir}/tendrl-message.socket
 
 %changelog
 * Tue Nov 01 2016 Timothy Asir Jeyasingh <tjeyasin@redhat.com> - 0.0.1-1
