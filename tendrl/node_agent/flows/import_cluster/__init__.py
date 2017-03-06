@@ -30,6 +30,7 @@ class ImportCluster(flows.NodeAgentBaseFlow):
                     new_params = self.parameters.copy()
                     new_params['Node[]'] = [node]
                     # create same flow for each node in node list except $this
+                    # TODO(team) The .save() below needs to save the job exactly as the API does
                     Job(job_id=str(uuid.uuid4()),
                         integration_id=integration_id,
                         run="tendrl.node_agent.flows.ImportCluster",
