@@ -23,7 +23,13 @@ class Logger(object):
             """
             self._logger(self.push_operation())
         else:
-            self._logger(self.message.payload["message"])
+            if "exception_traceback" in message.payload:
+                self._logger("%s - %s: %s" % (
+                    self.message.payload["message"],
+                    self.message.payload["exception_type"],
+                    self.message.payload["exception_traceback"]))
+            else:
+                self._logger(self.message.payload["message"])
 
     def push_operation(self):
         tendrl_ns.etcd_orm.client.write(

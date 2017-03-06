@@ -1,0 +1,9 @@
+[Unit]
+Description=Tendrl message socket for logging
+
+[Socket]
+ListenSequentialPacket=/var/run/tendrl/message.sock
+SocketMode=0660
+SocketUser=root
+SocketGroup=tendrl
+DirectoryMode=0755
