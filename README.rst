@@ -77,7 +77,6 @@ System Setup
        $ sudo mkdir -p /etc/tendrl/node-agent \
          /etc/tendrl/{ceph,gluster}_integration \
          /var/log/tendrl/node-agent \
-         /var/log/tendrl/commons \
          /var/log/tendrl/{ceph,gluster}_integration
 
 Environment Setup
@@ -125,69 +124,32 @@ Install Tendrl commons and node\_agent
        [node-agent] $ pip install .
        [node-agent] $ popd
 
-#. Fetch the ceph\_integration and gluster\_integration codebases.
-
-   ::
-
-       $ git clone https://github.com/Tendrl/ceph_integration.git
-       $ git clone https://github.com/Tendrl/gluster_integration.git
-
 Configuration
 -------------
 
-#. Create the tendrl configuration file ``/etc/tendrl/tendrl.conf``.
+#. Create the tendrl configuration file ``/etc/tendrl/node-agent/node-agent.conf.yaml``.
 
    ::
 
-       $ cp commons/etc/tendrl/tendrl.conf.sample /etc/tendrl/tendrl.conf
+       $ cp etc/tendrl/node-agent/node-agent-dev.conf.yaml /etc/tendrl/node-agent/node-agent.conf.yaml
 
    * Configure the following ``etcd_port`` and ``etcd_connection``
-     directives in ``/etc/tendrl/tendrl.conf`` to point to the etcd
+     directives in ``/etc/tendrl/node-agent/node-agent.conf.yaml`` to point to the etcd
      instance discussed in the first step.
-
-#. Install the commons logging configuration file
-   ``/etc/tendrl/commons_logging.yaml``.
-
-   ::
-
-       $ cp commons/etc/samples/logging.yaml.timedrotation.sample \
-         /etc/tendrl/commons_logging.yaml
-
-   .. note::
-
-       There are other sample configuration files in the
-       ``commons/etc/samples`` directory which could be used to setup
-       logging for different system configuration such as via syslog and
-       journald.
 
 #. Install the node agent logging configuration file
    ``/etc/tendrl/node-agent_logging.yaml``.
 
    ::
 
-       $ cp node-agent/etc/logging.yaml.timedrotation.sample \
+       $ cp node-agent/etc/tendrl/node-agent/logging.yaml.timedrotation.sample \
          /etc/tendrl/node-agent_logging.yaml
-       $ cp ceph_integration/etc/logging.yaml.timedrotation.sample \
-         /etc/tendrl/ceph_integration_logging.yaml
-       $ cp gluster_integration/etc/logging.yaml.timedrotation.sample \
-         /etc/tendrl/gluster_integration_logging.yaml
 
    .. note::
 
        There are other sample configuration files in the ``node-agent/etc``
        directory which could be used to setup logging for different system
        configuration such as via syslog and journald.
-
-#. Append the following configuration to the tendrl configuration file
-   ``/etc/tendrl/tendrl.conf``:
-
-   ::
-
-       [node-agent]
-       # Path to the log file and log level
-       log_cfg_path = /etc/tendrl/node-agent_logging.yaml
-       log_level = DEBUG
-       tendrl_exe_file_prefix = /tmp/.tendrl_runner
 
 Run
 ---
