@@ -113,7 +113,6 @@ setup(
         "gevent>=1.0",
         "namespaces",
         "netaddr",
-        "psutil", # not directly imported
         "python-etcd",
         "netifaces",
         "six",
