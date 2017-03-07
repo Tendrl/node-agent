@@ -14,7 +14,7 @@ from tendrl.node_agent.discovery.platform.manager import PlatformManager
 from tendrl.node_agent.discovery.sds.manager import SDSDiscoveryManager
 from tendrl.node_agent import node_sync
 from tendrl import provisioning
-
+from tendrl.node_agent.message.handler import MessageHandler
 LOG = logging.getLogger(__name__)
 
 
@@ -24,7 +24,8 @@ class NodeAgentManager(commons_manager.Manager):
         # node details and pushes the same to etcd
         super(NodeAgentManager, self).__init__(
             NS.state_sync_thread,
-            NS.central_store_thread
+            NS.central_store_thread,
+            NS.message_handler_thread
         )
 
         self.load_and_execute_platform_discovery_plugins()
@@ -113,6 +114,9 @@ def main():
     NS.tendrl_context.save()
     NS.node_agent.definitions.save()
     NS.node_agent.config.save()
+    NS.message_handler_thread = MessageHandler()
+
+    NS.publisher_id = "node_agent"
 
     m = NodeAgentManager()
     m.start()

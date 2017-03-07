@@ -8,6 +8,9 @@ class NodeAgentEtcdCentralStore(central_store.EtcdCentralStore):
     def save_nodecontext(self, node_context):
         NS.etcd_orm.save(node_context)
 
+    def save_clusternodecontext(self, cluster_node_context):
+        NS.etcd_orm.save(cluster_node_context)
+
     def save_config(self, config):
         NS.etcd_orm.save(config)
 
@@ -49,3 +52,21 @@ class NodeAgentEtcdCentralStore(central_store.EtcdCentralStore):
 
     def save_compileddefinitions(self, compiled_definitions):
         NS.etcd_orm.save(compiled_definitions)
+
+    def save_message(self, message):
+        NS.etcd_orm.save(message)
+
+    def save_nodemessage(self, message):
+        NS.etcd_orm.save(message)
+
+    def save_clustermessage(self, message):
+        NS.etcd_orm.save(message)
+
+    def save_job(self, job):
+        NS.etcd_orm.save(job)
+
+    def save_nodenetwork(self, network):
+        NS.etcd_orm.save(network)
+
+    def save_globalnetwork(self, network):
+        NS.etcd_orm.save(network)
