@@ -112,8 +112,9 @@ setup(
         "PyYAML",
         "gevent>=1.0",
         "namespaces",
-        "psutil", # not directly imported
+        "netaddr",
         "python-etcd",
+        "netifaces",
         "six",
         "tendrl-commons",
         "urllib3",
