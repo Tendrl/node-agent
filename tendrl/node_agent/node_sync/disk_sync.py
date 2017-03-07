@@ -24,7 +24,7 @@ def get_node_disks():
             "lsblk --all --bytes --noheadings --output='%s' --path --raw" %
             columns)
         cmd = cmd_utils.Command(lsblk)
-        out, err, rc = cmd.run(tendrl_ns.config.data[
+        out, err, rc = cmd.run(NS.config.data[
                                'tendrl_ansible_exec_file'])
         if not err:
             devlist = map(
@@ -89,7 +89,7 @@ def get_all_disks():
     disks = []
     # Block will give all disk and partitons and cdroms details
     cmd = cmd_utils.Command('hwinfo --block')
-    out, err, rc = cmd.run(tendrl_ns.config.data['tendrl_ansible_exec_file'])
+    out, err, rc = cmd.run(NS.config.data['tendrl_ansible_exec_file'])
     if not err:
         all_disks = []
         parents = []

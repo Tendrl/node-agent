@@ -3,13 +3,18 @@ import logging
 import etcd
 import gevent
 import signal
-from tendrl.commons import manager as commons_manager
 
+from tendrl.commons import TendrlNS
+from tendrl.commons import manager as commons_manager
+from tendrl.integrations import ceph
+from tendrl.integrations import gluster
+from tendrl import node_agent
 from tendrl.node_agent import central_store
 from tendrl.node_agent.discovery.platform.manager import PlatformManager
 from tendrl.node_agent.discovery.sds.manager import SDSDiscoveryManager
 from tendrl.node_agent import node_sync
-
+from tendrl import provisioning
+from tendrl.node_agent.message.handler import MessageHandler
 LOG = logging.getLogger(__name__)
 
 
@@ -18,8 +23,9 @@ class NodeAgentManager(commons_manager.Manager):
         # Initialize the state sync thread which gets the underlying
         # node details and pushes the same to etcd
         super(NodeAgentManager, self).__init__(
-            tendrl_ns.state_sync_thread,
-            tendrl_ns.central_store_thread
+            NS.state_sync_thread,
+            NS.central_store_thread,
+            NS.message_handler_thread
         )
 
         self.load_and_execute_platform_discovery_plugins()
@@ -41,12 +47,12 @@ class NodeAgentManager(commons_manager.Manager):
             if len(platform_details.keys()) > 0:
                 # update etcd
                 try:
-                    tendrl_ns.platform = tendrl_ns.node_agent.objects.Platform(
+                    NS.platform = NS.tendrl.objects.Platform(
                         os=platform_details["Name"],
                         os_version=platform_details["OSVersion"],
                         kernel_version=platform_details["KernelVersion"],
                         )
-                    tendrl_ns.platform.save()
+                    NS.platform.save()
 
                 except etcd.EtcdException as ex:
                     LOG.error(
@@ -67,7 +73,7 @@ class NodeAgentManager(commons_manager.Manager):
             sds_details = plugin.discover_storage_system()
             if sds_details:
                 try:
-                    tendrl_ns.node_agent.objects.DetectedCluster(
+                    NS.tendrl.objects.DetectedCluster(
                         detected_cluster_id=sds_details.get(
                             'detected_cluster_id'),
                         sds_pkg_name=sds_details.get('pkg_name'),
@@ -79,14 +85,38 @@ class NodeAgentManager(commons_manager.Manager):
 
 
 def main():
-    tendrl_ns.central_store_thread = central_store.NodeAgentEtcdCentralStore()
-    tendrl_ns.first_node_inventory_sync = True
-    tendrl_ns.state_sync_thread = node_sync.NodeAgentSyncThread()
+    node_agent.NodeAgentNS()  # NS.node_agent contains the config object,
+    # hence initialize it before any other NS
+    TendrlNS()  # Init NS.tendrl
+    provisioning.ProvisioningNS() # Init NS.provisioning
+    ceph.CephIntegrationNS() # Init NS.integrations.ceph
+    gluster.GlusterIntegrationNS() # Init NS.integrations.gluster
 
-    tendrl_ns.node_context.save()
-    tendrl_ns.tendrl_context.save()
-    tendrl_ns.definitions.save()
-    tendrl_ns.config.save()
+    NS.compiled_definitions = \
+        NS.node_agent.objects.CompiledDefinitions()
+    NS.compiled_definitions.merge_definitions(
+            [NS.tendrl.definitions, NS.node_agent.definitions,
+             NS.provisioning.definitions,
+             NS.integrations.ceph.definitions,
+             NS.integrations.gluster.definitions])
+    NS.node_agent.compiled_definitions = NS.compiled_definitions
+
+    # Every process needs to set a NS.type
+    # Allowed types are "node", "integration", "monitoring"
+    NS.type = "node"
+
+    NS.central_store_thread = central_store.NodeAgentEtcdCentralStore()
+    NS.first_node_inventory_sync = True
+    NS.state_sync_thread = node_sync.NodeAgentSyncThread()
+
+    NS.compiled_definitions.save()
+    NS.node_context.save()
+    NS.tendrl_context.save()
+    NS.node_agent.definitions.save()
+    NS.node_agent.config.save()
+    NS.message_handler_thread = MessageHandler()
+
+    NS.publisher_id = "node_agent"
 
     m = NodeAgentManager()
     m.start()

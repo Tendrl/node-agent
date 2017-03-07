@@ -1,5 +1,5 @@
 Name: tendrl-node-agent
-Version: 1.2
+Version: 1.2.1
 Release: 1%{?dist}
 BuildArch: noarch
 Summary: Module for Tendrl Node Agent
@@ -24,6 +24,8 @@ Requires: collectd
 Requires: python-jinja2
 Requires: tendrl-commons
 Requires: hwinfo 
+Requires: python-netifaces
+Requires: python-netaddr
 
 %description
 Python module for Tendrl node bridge to manage storage node in the sds cluster
@@ -47,11 +49,13 @@ install -m  0755  --directory $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node-agent
 install -m  0755  --directory $RPM_BUILD_ROOT%{_datadir}/tendrl/node-agent
 install -m  0755  --directory $RPM_BUILD_ROOT%{_sharedstatedir}/tendrl
 install -Dm 0644 tendrl-node-agent.service $RPM_BUILD_ROOT%{_unitdir}/tendrl-node-agent.service
+install -Dm 0644 tendrl-message.socket $RPM_BUILD_ROOT%{_unitdir}/tendrl-message.socket
 install -Dm 0644 etc/tendrl/node-agent/node-agent.conf.yaml.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node-agent/node-agent.conf.yaml
-install -Dm 0644 etc/tendrl/node-agent/logging.yaml.timedrotation.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node-agent/node-agent_logging.yaml
+install -Dm 0644 etc/tendrl/node-agent/logging.yaml.syslog.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node-agent/node-agent_logging.yaml
 install -Dm 644 etc/tendrl/node-agent/*.sample $RPM_BUILD_ROOT%{_datadir}/tendrl/node-agent/
 
 %post
+getent group tendrl >/dev/null || groupadd -r tendrl
 %systemd_post tendrl-node-agent.service
 
 %preun
@@ -74,6 +78,7 @@ py.test -v tendrl/node-agent/tests || :
 %{_sysconfdir}/tendrl/node-agent/node-agent.conf.yaml
 %{_sysconfdir}/tendrl/node-agent/node-agent_logging.yaml
 %{_unitdir}/tendrl-node-agent.service
+%{_unitdir}/tendrl-message.socket
 
 %changelog
 * Tue Nov 01 2016 Timothy Asir Jeyasingh <tjeyasin@redhat.com> - 0.0.1-1

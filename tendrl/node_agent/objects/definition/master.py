@@ -1,54 +1,12 @@
 # flake8: noqa
 data = """---
 namespace.tendrl.node_agent:
-  _meta:
-    platforms:
-        # platform_type supported by tendrl. One of these platforms and their
-        # corresponding versions must be reused in any of the definition files.
-        centos:
-          # platform_version
-          # Supported versions, in ascending order of release. This list, being
-          # ordered, enables the comparators used later in the file to function.
-          - 6.x
-          - 7.x
-        ubuntu:
-          - 15.04.x
-          - 15.10.x
-          - 16.04.x
-    storage_system_types:
-        ceph: namespace.tendrl.ceph_integration
-        gluster: namespace.tendrl.gluster_integration
-  flows:
-    ImportCluster:
-      atoms:
-        - tendrl.node_agent.objects.Package.atoms.Install
-        - tendrl.node_agent.objects.SDS.atoms.GenerateConfig
-        - tendrl.node_agent.objects.File.atoms.Write
-        - tendrl.node_agent.objects.Node.atoms.Cmd
-      help: "Import existing Gluster Cluster"
-      enabled: true
-      inputs:
-        mandatory:
-          - "Node[]"
-          - DetectedCluster.sds_pkg_name
-          - DetectedCluster.sds_pkg_version
-          - TendrlContext.integration_id
-      post_run:
-        - tendrl.node_agent.objects.TendrlContext.atoms.CheckClusterIdExists
-      pre_run:
-        - tendrl.node_agent.objects.Node.atoms.CheckNodeUp
-        - tendrl.node_agent.objects.TendrlContext.atoms.Compare
-      run: tendrl.node_agent.flows.import_cluster.ImportCluster
-      type: Create
-      uuid: 2f94a48a-05d7-408c-b400-e27827f4edef
-      version: 1
-
   objects:
     Definition:
         enabled: True
         help: "Definition"
-        value: _tendrl/definitions/master
-        list: _tendrl/definitions/master
+        value: _tendrl/definitions/data
+        list: _tendrl/definitions/data
         attrs:
             master:
                 help: master definitions
@@ -56,8 +14,8 @@ namespace.tendrl.node_agent:
     Config:
         enabled: True
         help: "Config"
-        value: _tendrl/config/node-agent/data
-        list: _tendrl/config/node-agent
+        value: _tendrl/config/data
+        list: _tendrl/config/
         attrs:
             data:
                 help: config
@@ -117,6 +75,42 @@ namespace.tendrl.node_agent:
       list: nodes/$Node_context.node_id/Services
       help: "Service"
       value: nodes/$Node_context.node_id/Services
+    Job:
+      attrs:
+        job_id:
+          help: "job unique id"
+          type: String
+        integration_id:
+          help: "cluster id"
+          type: String
+        run:
+          help: "main flow"
+          type: String
+        status:
+          help: "job current status"
+          type: String
+        parameters:
+          help: "dict"
+          type: Dict
+        type:
+          help: "job type"
+          type: String
+        node_ids:
+          help: "job belongs to which job"
+          type: String
+        request_id:
+          help: "job request_id"
+          type: String
+        parent:
+          help: "parent job_id"
+          type: String
+        errors:
+          help: "any errors occured or not"
+          type: String
+      enabled: true
+      list: /queue
+      value: /queue
+      help: "jobs"
     Disk:
       attrs:
         disk_id:
@@ -285,6 +279,228 @@ namespace.tendrl.node_agent:
           type: String
       enabled: true
       list: nodes/$Node_context.node_id/Disks/free
+    NodeNetwork:
+      attrs:
+        interface:
+          help: "network interface name"
+          type: List
+        ipv4:
+          help: "ipv4 addresses"
+          type: List
+        ipv6:
+          help: "ipv6 addresses"
+          type: List
+        netmask:
+          help: "subnet masks"
+          type: List
+        subnet:
+          help: "subnet"
+          type: String
+        status:
+          help: "interface status up/down"
+          type: String
+        interface_id:
+          help: "unique id"
+          type: String
+        sysfs_id:
+          help: "sysfs id"
+          type: String
+        device_link:
+          help: "device link"
+          type: String
+        interface_type:
+          help: "interface type"
+          type: String
+        model:
+          help: "interface model"
+          type: String
+        driver_modules:
+          help: "driver modules"
+          type: String
+        driver:
+          help: "driver"
+          type: String
+        hw_address:
+          help: "hardware address"
+          type: String
+        link_detected:
+          help: "link detected"
+          type: String
+      enabled: true
+      list: nodes/$Node_context.node.id/Networks
+      help: "Node wise network interface"
+      value: nodes/$Node_context.node.id/Networks
+    GlobalNetwork:
+      attrs:
+        interface:
+          help: "network interface name"
+          type: List
+        ipv4:
+          help: "ipv4 addresses"
+          type: List
+        ipv6:
+          help: "ipv6 addresses"
+          type: List
+        netmask:
+          help: "subnet masks"
+          type: List
+        subnet:
+          help: "subnet"
+          type: String
+        status:
+          help: "interface status up/down"
+          type: String
+        interface_id:
+          help: "unique id"
+          type: String
+        sysfs_id:
+          help: "sysfs id"
+          type: String
+        device_link:
+          help: "device link"
+          type: String
+        interface_type:
+          help: "interface type"
+          type: String
+        model:
+          help: "interface model"
+          type: String
+        driver_modules:
+          help: "driver modules"
+          type: String
+        driver:
+          help: "driver"
+          type: String
+        hw_address:
+          help: "hardware address"
+          type: String
+        link_detected:
+          help: "link detected"
+          type: String
+      enabled: true
+      list: nodes/$Node_context.node.id/Networks
+      help: "Global subnet wise network interface"
+      value: /networks
+    Message:
+      attrs:
+        message_id:
+          help: "Message UUID"
+          type: String
+        timestamp:
+          help: "time"
+          type: Time
+        priority:
+          help: "Message priority"
+          type: String
+        publisher:
+          help: "Message publisher"
+          type: String
+        node_id:
+          help: "node id"
+          type: String
+        payload:
+          help: "Differ based on message"
+          type: Dict
+        caller:
+          help: "Called details"
+          type: Dict
+      enabled: true
+      list: /Messages
+      help: "Messages"
+      value: /Messages
+    NodeMessage:
+      attrs:
+        message_id:
+          help: "Message UUID"
+          type: String
+        timestamp:
+          help: "time"
+          type: Time
+        priority:
+          help: "Message priority"
+          type: String
+        publisher:
+          help: "Message publisher"
+          type: String
+        node_id:
+          help: "node id"
+          type: String
+        payload:
+          help: "Differ based on message"
+          type: Dict
+        caller:
+          help: "Called details"
+          type: Dict
+      enabled: true
+      list: node/$Node_context.node_id/Messages
+      help: "Node Messages"
+      value: node/$Node_context.node_id/Messages
+    ClusterMessage:
+      attrs:
+        message_id:
+          help: "Message UUID"
+          type: String
+        timestamp:
+          help: "time"
+          type: Time
+        priority:
+          help: "Message priority"
+          type: String
+        publisher:
+          help: "Message publisher"
+          type: String
+        node_id:
+          help: "node id"
+          type: String
+        payload:
+          help: "Differ based on message"
+          type: Dict
+        caller:
+          help: "Called details"
+          type: Dict
+      enabled: true
+      list: clusters/$TendrlContext.integration_id/Messages
+      help: "Cluster Messages"
+      value: clusters/$TendrlContext.integration_id/Messages
+    JobUpdate:
+      attrs:
+        message_id:
+          help: "Message UUID"
+          type: String
+        timestamp:
+          help: "time"
+          type: Time
+        priority:
+          help: "Message priority"
+          type: String
+        publisher:
+          help: "Message publisher"
+          type: String
+        node_id:
+          help: "node id"
+          type: String
+        payload:
+          help: "Differ based on message"
+          type: Dict
+        request_id:
+          help: "Job id"
+          type: String
+        flow_id:
+          help: "Flow id"
+          type: String
+        parent_id:
+          help: "parent id"
+          type: String
+        cluster_id:
+          help: "cluster id"
+          type: String
+        caller:
+          help: "Called details"
+          type: Dict
+      enabled: true
+      list: $request_id
+      help: "Job Updates"
+      value: $request_id
     Node:
       atoms:
         cmd:
@@ -423,6 +639,28 @@ namespace.tendrl.node_agent:
       list: nodes/$Node_context.node_id/Node_context
       value: nodes/$Node_context.node_id/Node_context
       help: Node Context
+    ClusterNodeContext:
+      attrs:
+        machine_id:
+          help: "Unique /etc/machine-id"
+          type: String
+        fqdn:
+          help: "FQDN of the Tendrl managed node"
+          type: String
+        node_id:
+          help: "Tendrl ID for the managed node"
+          type: String
+        tags:
+          help: "The tags associated with this node"
+          type: String
+        status:
+          help: "Node status"
+          type: String
+
+      enabled: true
+      list: clusters/$TendrlContext.integration_id/nodes/$Node_context.node_id/Node_context
+      value: clusters/$TendrlContext.integration_id/nodes/$Node_context.node_id/Node_context
+      help: Cluster leval Node Context
     File:
       atoms:
         write:

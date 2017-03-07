@@ -32,7 +32,7 @@ class DiscoverCephStorageSystem(DiscoverSDSPlugin):
             ret_val['pkg_name'] = details[0]
 
             # get the cluster_id details
-            os_name = tendrl_ns.platform.os
+            os_name = NS.platform.os
             cfg_file = ""
             if os_name in ['CentOS Linux', 'Red Hat Enterprise Linux Server']:
                 cfg_file = '/etc/sysconfig/ceph'

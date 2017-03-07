@@ -1,14 +1,13 @@
 import logging
 
 from tendrl.commons.etcdobj import EtcdObj
-
-from tendrl.node_agent import objects
+from tendrl.commons import objects
 
 
 LOG = logging.getLogger(__name__)
 
 
-class TendrlContext(objects.NodeAgentBaseObject):
+class TendrlContext(objects.BaseObject):
     def __init__(self, integration_id=None, *args, **kwargs):
         super(TendrlContext, self).__init__(*args, **kwargs)
 
@@ -27,5 +26,5 @@ class _TendrlContextEtcd(EtcdObj):
     _tendrl_cls = TendrlContext
 
     def render(self):
-        self.__name__ = self.__name__ % tendrl_ns.node_context.node_id
+        self.__name__ = self.__name__ % NS.node_context.node_id
         return super(_TendrlContextEtcd, self).render()
