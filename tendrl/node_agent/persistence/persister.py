@@ -6,34 +6,34 @@ class NodeAgentEtcdPersister(EtcdPersister):
         super(NodeAgentEtcdPersister, self).__init__(config)
 
     def save_node_context(self, node_context):
-        tendrl_ns.etcd_orm.save(node_context)
+        NS.etcd_orm.save(node_context)
 
     def save_node(self, node):
-        tendrl_ns.etcd_orm.save(node)
+        NS.etcd_orm.save(node)
 
     def save_tendrl_context(self, tendrl_context):
-        tendrl_ns.etcd_orm.save(tendrl_context)
+        NS.etcd_orm.save(tendrl_context)
 
     def save_config(self, config):
-        tendrl_ns.etcd_orm.save(config)
+        NS.etcd_orm.save(config)
 
     def save_cpu(self, cpu):
-        tendrl_ns.etcd_orm.save(cpu)
+        NS.etcd_orm.save(cpu)
 
     def save_os(self, os):
-        tendrl_ns.etcd_orm.save(os)
+        NS.etcd_orm.save(os)
 
     def save_memory(self, memory):
-        tendrl_ns.etcd_orm.save(memory)
+        NS.etcd_orm.save(memory)
 
     def save_platform(self, platform):
-        tendrl_ns.etcd_orm.save(platform)
+        NS.etcd_orm.save(platform)
 
     def save_service(self, service):
-        tendrl_ns.etcd_orm.save(service)
+        NS.etcd_orm.save(service)
 
     def save_disk(self, disk):
-        tendrl_ns.etcd_orm.save(disk)
+        NS.etcd_orm.save(disk)
 
     def update_memory(self, memory):
         self._store.save(memory)

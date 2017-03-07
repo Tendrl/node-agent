@@ -41,16 +41,16 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
         while not self._complete.is_set():
             try:
                 interval = 10
-                if tendrl_ns.first_node_inventory_sync:
+                if NS.first_node_inventory_sync:
                     interval = 2
-                    tendrl_ns.first_node_inventory_sync = False
+                    NS.first_node_inventory_sync = False
 
                 gevent.sleep(interval)
                 tags = []
                 # update node agent service details
                 LOG.info("node_sync, Updating Service data")
                 for service in TENDRL_SERVICES:
-                    s = tendrl_ns.node_agent.objects.Service(service=service)
+                    s = NS.node_agent.objects.Service(service=service)
                     if s.running:
                         tags.append(TENDRL_SERVICE_TAGS[service.strip("@*")])
                     s.save()
@@ -59,42 +59,42 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 # updating node context with latest tags
                 LOG.info("node_sync, updating node context data with tags")
                 tags = "\n".join(tags)
-                tendrl_ns.node_agent.objects.NodeContext(tags=tags).save()
+                NS.node_agent.objects.NodeContext(tags=tags).save()
                 gevent.sleep(interval)
 
                 LOG.info("node_sync, Updating OS data")
-                tendrl_ns.node_agent.objects.Os().save()
+                NS.node_agent.objects.Os().save()
                 gevent.sleep(interval)
 
                 LOG.info("node_sync, Updating cpu")
-                tendrl_ns.node_agent.objects.Cpu().save()
+                NS.node_agent.objects.Cpu().save()
                 gevent.sleep(interval)
 
                 LOG.info("node_sync, Updating memory")
-                tendrl_ns.node_agent.objects.Memory().save()
+                NS.node_agent.objects.Memory().save()
                 gevent.sleep(interval)
 
                 LOG.info("node_sync, Updating disks")
                 try:
-                    tendrl_ns.etcd_orm.client.delete(
-                        ("nodes/%s/Disks") % tendrl_ns.node_context.node_id,
+                    NS.etcd_orm.client.delete(
+                        ("nodes/%s/Disks") % NS.node_context.node_id,
                         recursive=True)
                 except etcd.EtcdKeyNotFound as ex:
                     LOG.debug("Given key is not present in etcd . %s", ex)
                 disks = disk_sync.get_node_disks()
                 if "disks" in disks:
                     for disk in disks['disks']:
-                        tendrl_ns.node_agent.objects.Disk(**disk).save()
+                        NS.node_agent.objects.Disk(**disk).save()
                 if "used_disks_id" in disks:
                     for disk in disks['used_disks_id']:
-                        tendrl_ns.etcd_orm.client.write(
+                        NS.etcd_orm.client.write(
                             ("nodes/%s/Disks/used/%s") % (
-                                tendrl_ns.node_context.node_id, disk), "")
+                                NS.node_context.node_id, disk), "")
                 if "free_disks_id" in disks:
                     for disk in disks['free_disks_id']:
-                        tendrl_ns.etcd_orm.client.write(
+                        NS.etcd_orm.client.write(
                             ("nodes/%s/Disks/free/%s") % (
-                                tendrl_ns.node_context.node_id, disk), "")
+                                NS.node_context.node_id, disk), "")
 
             except Exception as ex:
                 LOG.error(ex)

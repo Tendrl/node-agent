@@ -5,15 +5,10 @@ except ImportError:
 else:
     monkey.patch_all()
 
-from tendrl.commons import CommonNS
+from tendrl.commons import TendrlNS
 
 
-class NodeAgentNS(CommonNS):
-    def __init__(self):
-
-        # Create the "tendrl_ns.node_agent" namespace
-        self.to_str = "tendrl.node_agent"
-        self.type = 'node'
-        super(NodeAgentNS, self).__init__()
-
-NodeAgentNS()
+class NodeAgentNS(TendrlNS):
+    def __init__(self, ns_name="tendrl.node_agent",
+                 ns_src="tendrl.node_agent"):
+        super(NodeAgentNS, self).__init__(ns_name, ns_src)
