@@ -34,6 +34,7 @@ class DiscoverCephStorageSystem(DiscoverSDSPlugin):
             # get the cluster_id details
             os_name = NS.platform.os
             cfg_file = ""
+            cluster_name = None
             if os_name in ['CentOS Linux', 'Red Hat Enterprise Linux Server']:
                 cfg_file = '/etc/sysconfig/ceph'
             # TODO(shtripat) handle the case of ubuntu
