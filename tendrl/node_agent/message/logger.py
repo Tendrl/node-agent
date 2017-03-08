@@ -32,7 +32,7 @@ class Logger(object):
                 self._logger(self.message.payload["message"])
 
     def push_operation(self):
-        tendrl_ns.etcd_orm.client.write(
+        NS.etcd_orm.client.write(
             self.message.request_id,
             Message.to_json(self.message),
             append=True)
@@ -46,7 +46,7 @@ class Logger(object):
             "info", "debug"]:
             # Stroring messages cluster wise
             if self.message.cluster_id is not None:
-                tendrl_ns.node_agent.objects.ClusterMessage(
+                NS.node_agent.objects.ClusterMessage(
                     message_id=self.message.message_id,
                     timestamp=self.message.timestamp,
                     priority=self.message.priority,
@@ -61,7 +61,7 @@ class Logger(object):
                 ).save()
             # storing messages node wise
             else:
-                tendrl_ns.node_agent.objects.NodeMessage(
+                NS.node_agent.objects.NodeMessage(
                     message_id=self.message.message_id,
                     timestamp=self.message.timestamp,
                     priority=self.message.priority,
@@ -74,7 +74,7 @@ class Logger(object):
                     parent_id=self.message.parent_id,
                     caller=self.message.caller
                 ).save()
-            tendrl_ns.node_agent.objects.Message(
+            NS.node_agent.objects.Message(
                 message_id=self.message.message_id,
                 timestamp=self.message.timestamp,
                 priority=self.message.priority,

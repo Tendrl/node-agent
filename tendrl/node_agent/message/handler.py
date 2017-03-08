@@ -47,14 +47,14 @@ class MessageHandler(gevent.greenlet.Greenlet):
                 exc_type, exc_value, exc_tb, file=sys.stderr)
 
     def stop(self):
-        socket_path = tendrl_ns.config.data['logging_socket_path']
+        socket_path = NS.config.data['logging_socket_path']
         self.sock.close()
         if os.path.exists(socket_path):
             os.remove(socket_path)
         self.server.close()
 
     def bind_unix_listener(self):
-        socket_path = tendrl_ns.config.data['logging_socket_path']
+        socket_path = NS.config.data['logging_socket_path']
         self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         try:
             if os.path.exists(socket_path):

@@ -63,29 +63,29 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 NS.node_agent.objects.NodeContext(tags=tags).save()
                 gevent.sleep(interval)
 
-                if tendrl_ns.tendrl_context.integration_id:
+                if NS.tendrl_context.integration_id:
                     try:
-                        tendrl_ns.etcd_orm.client.read(
+                        NS.etcd_orm.client.read(
                             "/clusters/%s" % (
-                                tendrl_ns.tendrl_context.integration_id
+                                NS.tendrl_context.integration_id
                             )
                         )
                     except etcd.EtcdKeyNotFound:
                         LOG.error(
                             "Local Tendrl Context with integration id: " +
                             "{} could not be found in central store".format(
-                                tendrl_ns.tendrl_context.integration_id
+                                NS.tendrl_context.integration_id
                             )
                         )
                     else:
                         LOG.info(
                             "node_sync, updating node context under clusters"
                         )
-                        tendrl_ns.node_agent.objects.ClusterNodeContext(
-                            machine_id=tendrl_ns.node_context.machine_id,
-                            node_id=tendrl_ns.node_context.node_id,
-                            fqdn=tendrl_ns.node_context.fqdn,
-                            status=tendrl_ns.node_context.status,
+                        NS.node_agent.objects.ClusterNodeContext(
+                            machine_id=NS.node_context.machine_id,
+                            node_id=NS.node_context.node_id,
+                            fqdn=NS.node_context.fqdn,
+                            status=NS.node_context.status,
                             tags=tags
                         ).save()
                         gevent.sleep(interval)
@@ -127,26 +127,26 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 LOG.info("node_sync, Updating networks")
                 # node wise network
                 try:
-                    tendrl_ns.etcd_orm.client.delete(
-                        ("nodes/%s/Network") % tendrl_ns.node_context.node_id,
+                    NS.etcd_orm.client.delete(
+                        ("nodes/%s/Network") % NS.node_context.node_id,
                         recursive=True)
                 except etcd.EtcdKeyNotFound as ex:
                     LOG.debug("Given key is not present in etcd . %s", ex)
                 interfaces = network_sync.get_node_network()
                 if len(interfaces) > 0:
                     for interface in interfaces:
-                        tendrl_ns.node_agent.objects.NodeNetwork(**interface).save()
+                        NS.node_agent.objects.NodeNetwork(**interface).save()
                 # global network
                 try:
-                    networks = tendrl_ns.etcd_orm.client.read("/networks")
+                    networks = NS.etcd_orm.client.read("/networks")
                     for network in networks.leaves:
                         try:
-                            tendrl_ns.etcd_orm.client.delete(("%s/%s") %
-                                (network.key, tendrl_ns.node_context.node_id),
+                            NS.etcd_orm.client.delete(("%s/%s") %
+                                (network.key, NS.node_context.node_id),
                                 recursive=True)
                             # it will delete subnet dir when it is empty
                             # if one entry present then deletion never happen
-                            tendrl_ns.etcd_orm.client.delete(network.key, dir=True)
+                            NS.etcd_orm.client.delete(network.key, dir=True)
                         except etcd.EtcdKeyNotFound as ex:
                             continue
                 except etcd.EtcdKeyNotFound as ex:
@@ -154,7 +154,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 if len(interfaces) > 0:
                     for interface in interfaces:
                         if interface["subnet"] is not "":
-                            tendrl_ns.node_agent.objects.GlobalNetwork(**interface).save()
+                            NS.node_agent.objects.GlobalNetwork(**interface).save()
                     
 
             except ValueError as ex:
