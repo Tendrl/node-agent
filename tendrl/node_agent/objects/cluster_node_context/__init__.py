@@ -21,7 +21,7 @@ class ClusterNodeContext(objects.BaseObject):
         self.machine_id = machine_id or self._get_machine_id()
         self.node_id = node_id or self._get_node_id() or self._create_node_id()
         self.fqdn = fqdn or socket.getfqdn()
-        self.tags = tags or ""
+        self.tags = tags or NS.config.data['tags']
         self.status = status or "UP"
         self._etcd_cls = _ClusterNodeContextEtcd
 

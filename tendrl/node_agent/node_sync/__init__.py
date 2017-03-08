@@ -59,7 +59,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
 
                 # updating node context with latest tags
                 LOG.info("node_sync, updating node context data with tags")
-                tags = "\n".join(tags)
+                tags += NS.node_context.tags
                 NS.tendrl.objects.NodeContext(tags=tags).save()
                 gevent.sleep(interval)
 
