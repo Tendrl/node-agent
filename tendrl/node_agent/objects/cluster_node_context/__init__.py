@@ -27,8 +27,7 @@ class ClusterNodeContext(objects.BaseObject):
 
     def _get_machine_id(self):
         cmd = cmd_utils.Command("cat /etc/machine-id")
-        out, err, rc = cmd.run(
-            NS.config.data['tendrl_ansible_exec_file'])
+        out, err, rc = cmd.run()
         return str(out)
 
     def _create_node_id(self, node_id=None):
