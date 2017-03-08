@@ -51,7 +51,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 # update node agent service details
                 LOG.info("node_sync, Updating Service data")
                 for service in TENDRL_SERVICES:
-                    s = NS.node_agent.objects.Service(service=service)
+                    s = NS.tendrl.objects.Service(service=service)
                     if s.running:
                         tags.append(TENDRL_SERVICE_TAGS[service.strip("@*")])
                     s.save()
@@ -60,7 +60,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 # updating node context with latest tags
                 LOG.info("node_sync, updating node context data with tags")
                 tags = "\n".join(tags)
-                NS.node_agent.objects.NodeContext(tags=tags).save()
+                NS.tendrl.objects.NodeContext(tags=tags).save()
                 gevent.sleep(interval)
 
                 if NS.tendrl_context.integration_id:
@@ -91,15 +91,15 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                         gevent.sleep(interval)
 
                 LOG.info("node_sync, Updating OS data")
-                NS.node_agent.objects.Os().save()
+                NS.tendrl.objects.Os().save()
                 gevent.sleep(interval)
 
                 LOG.info("node_sync, Updating cpu")
-                NS.node_agent.objects.Cpu().save()
+                NS.tendrl.objects.Cpu().save()
                 gevent.sleep(interval)
 
                 LOG.info("node_sync, Updating memory")
-                NS.node_agent.objects.Memory().save()
+                NS.tendrl.objects.Memory().save()
                 gevent.sleep(interval)
 
                 LOG.info("node_sync, Updating disks")
@@ -112,7 +112,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 disks = disk_sync.get_node_disks()
                 if "disks" in disks:
                     for disk in disks['disks']:
-                        NS.node_agent.objects.Disk(**disk).save()
+                        NS.tendrl.objects.Disk(**disk).save()
                 if "used_disks_id" in disks:
                     for disk in disks['used_disks_id']:
                         NS.etcd_orm.client.write(
@@ -135,7 +135,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 interfaces = network_sync.get_node_network()
                 if len(interfaces) > 0:
                     for interface in interfaces:
-                        NS.node_agent.objects.NodeNetwork(**interface).save()
+                        NS.tendrl.objects.NodeNetwork(**interface).save()
                 # global network
                 try:
                     networks = NS.etcd_orm.client.read("/networks")
@@ -155,7 +155,6 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                     for interface in interfaces:
                         if interface["subnet"] is not "":
                             NS.node_agent.objects.GlobalNetwork(**interface).save()
-                    
 
             except ValueError as ex:
                 LOG.error(ex)
