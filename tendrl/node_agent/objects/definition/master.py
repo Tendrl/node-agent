@@ -80,30 +80,12 @@ namespace.tendrl.node_agent:
         job_id:
           help: "job unique id"
           type: String
-        integration_id:
-          help: "cluster id"
-          type: String
-        run:
-          help: "main flow"
-          type: String
         status:
           help: "job current status"
           type: String
-        parameters:
+        payload:
           help: "dict"
           type: Dict
-        type:
-          help: "job type"
-          type: String
-        node_ids:
-          help: "job belongs to which job"
-          type: String
-        request_id:
-          help: "job request_id"
-          type: String
-        parent:
-          help: "parent job_id"
-          type: String
         errors:
           help: "any errors occured or not"
           type: String
@@ -405,9 +387,9 @@ namespace.tendrl.node_agent:
           help: "Called details"
           type: Dict
       enabled: true
-      list: /Messages
+      list: /Messages/events
       help: "Messages"
-      value: /Messages
+      value: /Messages/events
     NodeMessage:
       attrs:
         message_id:
@@ -482,7 +464,7 @@ namespace.tendrl.node_agent:
         payload:
           help: "Differ based on message"
           type: Dict
-        request_id:
+        job_id:
           help: "Job id"
           type: String
         flow_id:
@@ -498,9 +480,9 @@ namespace.tendrl.node_agent:
           help: "Called details"
           type: Dict
       enabled: true
-      list: $request_id
+      list: /Messages/jobs
       help: "Job Updates"
-      value: $request_id
+      value: /Messages/jobs
     Node:
       atoms:
         cmd:
