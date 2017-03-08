@@ -12,6 +12,7 @@ from tendrl.node_agent.message.logger import Logger
 import traceback
 
 RECEIVE_DATA_SIZE = 4096
+SYSTEMD_SOCKET_PATH= "/var/run/tendrl/message.sock"
 
 
 class MessageHandler(gevent.greenlet.Greenlet):
@@ -22,7 +23,7 @@ class MessageHandler(gevent.greenlet.Greenlet):
             self.read_socket
         )
 
-    def read_socket(self, sock, address):
+    def read_socket(self, sock):
         try:
             self.data = sock.recv(RECEIVE_DATA_SIZE)
             message = Message.from_json(self.data)
@@ -47,23 +48,25 @@ class MessageHandler(gevent.greenlet.Greenlet):
                 exc_type, exc_value, exc_tb, file=sys.stderr)
 
     def stop(self):
-        socket_path = NS.config.data['logging_socket_path']
-        self.sock.close()
-        if os.path.exists(socket_path):
-            os.remove(socket_path)
-        self.server.close()
+        pass
 
     def bind_unix_listener(self):
-        socket_path = NS.config.data['logging_socket_path']
-        self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        try:
-            if os.path.exists(socket_path):
-                os.remove(socket_path)
-            self.sock.setblocking(0)
-            self.sock.bind(socket_path)
-            self.sock.listen(50)
-        except (TypeError, BlockingIOError, socket_error, ValueError):
-            exc_type, exc_value, exc_tb = sys.exc_info()
-            traceback.print_exception(
-                exc_type, exc_value, exc_tb, file=sys.stderr)
+        # http://0pointer.de/blog/projects/systemd.html (search "file
+        # descriptor 3")
+        socket_fd = 3
+        if os.environ.get('LISTEN_PID', None) == str(os.getpid()):
+            self.sock = socket.fromfd(socket_fd, socket.AF_UNIX,
+                                      socket.SOCK_STREAM)
+        else:
+            try:
+                self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                if os.path.exists(SYSTEMD_SOCKET_PATH):
+                    os.remove(SYSTEMD_SOCKET_PATH)
+                self.sock.setblocking(0)
+                self.sock.bind(SYSTEMD_SOCKET_PATH)
+                self.sock.listen(50)
+            except (TypeError, BlockingIOError, socket_error, ValueError):
+                exc_type, exc_value, exc_tb = sys.exc_info()
+                traceback.print_exception(exc_type, exc_value, exc_tb,
+                                          file=sys.stderr)
         return self.sock
