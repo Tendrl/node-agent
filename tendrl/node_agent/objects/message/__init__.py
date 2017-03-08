@@ -1,9 +1,9 @@
 from tendrl.commons import etcdobj
 from tendrl.commons.message import Message as message
-from tendrl.node_agent import objects
+from tendrl.commons import objects
 
 
-class Message(message, objects.NodeAgentBaseObject):
+class Message(message, objects.BaseObject):
     def __init__(self, **message_arg):
         super(Message, self).__init__(**message_arg)
         self.value = 'Messages/%s'
