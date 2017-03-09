@@ -258,24 +258,11 @@ class CephInstallerPlugin(ProvisionerBasePlugin):
         else:
             return None
 
-    def setup(self, provisioner_node_fqdn):
-        url = 'http://%s:%s/setup/' % (
-            provisioner_node_fqdn, self._CEPH_INSTALLER_API_PORT)
+    def setup(self):
+        url = 'http://localhost:%s/setup/' %self._CEPH_INSTALLER_API_PORT
         resp = self.http.request(
             self._MGET,
             url)
         if resp.status == 200:
             resp_data = resp.data.decode("utf-8")
-            try:
-                f = open("/tmp/setup.sh", "w")
-                f.write(resp_data)
-            except IOError as e:
-                raise Exception(
-                    'Unable to open the file: %r' % e)
-            finally:
-                f.close()
-            ret_val = os.system('/usr/bin/bash /tmp/setup.sh')
-            if ret_val == 0:
-                return True
-            else:
-                return False
+            return resp_data

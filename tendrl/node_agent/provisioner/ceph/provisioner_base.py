@@ -60,5 +60,5 @@ class ProvisionerBasePlugin(object):
         raise NotImplementedError()
 
     @abstractmethod
-    def setup(self, provisioner_node_fqdn):
+    def setup(self):
         raise NotImplementedError()
