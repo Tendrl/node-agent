@@ -1,7 +1,7 @@
+from ruamel import yaml
 from tendrl.commons import etcdobj
 from tendrl.commons import objects
 from tendrl.integrations.ceph.objects.definition import definitions
-import yaml
 
 
 # Definitions need there own special init and have to be present in the NS
