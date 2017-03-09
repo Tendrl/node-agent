@@ -30,6 +30,8 @@ class NodeNetwork(objects.BaseObject):
         self.link_detected = link_detected
         self._etcd_cls = _NodeNetworkEtcd
 
+    def load_definition(self):
+        return {}
 
 class _NodeNetworkEtcd(EtcdObj):
     """A table of the Node Network, lazily updated

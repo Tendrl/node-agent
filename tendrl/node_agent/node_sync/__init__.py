@@ -135,7 +135,20 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 interfaces = network_sync.get_node_network()
                 if len(interfaces) > 0:
                     for interface in interfaces:
-                        NS.tendrl.objects.NodeNetwork(**interface).save()
+                        NS.node_agent.objects.NodeNetwork(**interface).save()
+                        if interface['ipv4']:
+                            for ipv4 in interface['ipv4']:
+                                index_key = "/indexes/ip/%s/%s" % (ipv4,
+                                                                   NS.node_context.node_id)
+                                NS.etcd_orm.client.write(index_key, 1)
+                        # TODO(team) add ipv6 support
+                        #if interface['ipv6']:
+                        #    for ipv6 in interface['ipv6']:
+                        #        index_key = "/indexes/ip/%s/%s" % (ipv6,
+                        #
+                                # NS.node_context.node_id)
+                        #        NS.etcd_orm.client.write(index_key, 1)
+
                 # global network
                 try:
                     networks = NS.etcd_orm.client.read("/networks")
