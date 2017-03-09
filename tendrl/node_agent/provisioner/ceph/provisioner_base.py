@@ -30,10 +30,9 @@ class ProvisionerBasePlugin(object):
     def configure_mon(
         self,
         host,
-        cluster_config,
         cluster_id,
         cluster_name,
-        network_interface,
+        ip_address,
         cluster_network,
         public_network,
         monitors
@@ -44,7 +43,6 @@ class ProvisionerBasePlugin(object):
     def configure_osd(
         self,
         host,
-        cluster_config,
         devices,
         cluster_id,
         cluster_name,

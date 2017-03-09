@@ -99,10 +99,9 @@ class CephInstallerPlugin(ProvisionerBasePlugin):
     def configure_mon(
         self,
         host,
-        cluster_config,
         cluster_id,
         cluster_name,
-        network_interface,
+        ip_address,
         cluster_network,
         public_network,
         monitors
@@ -134,9 +133,8 @@ class CephInstallerPlugin(ProvisionerBasePlugin):
 
         data = {
             "calamari": False,
-            "conf": cluster_config,
             "host": host,
-            "interface": network_interface,
+            "address": ip_address,
             "fsid": cluster_id,
             "monitor_secret": "AQA7P8dWAAAAABAAH/tbiZQn/40Z8pr959UmEA==",
             "cluster_name": cluster_name,
@@ -165,7 +163,6 @@ class CephInstallerPlugin(ProvisionerBasePlugin):
     def configure_osd(
         self,
         host,
-        cluster_config,
         devices,
         cluster_id,
         cluster_name,
@@ -204,7 +201,6 @@ class CephInstallerPlugin(ProvisionerBasePlugin):
         # OSDs and Journals.
 
         data = {
-            "conf": cluster_config,
             "devices": devices,
             "host": host,
             "fsid": cluster_id,
