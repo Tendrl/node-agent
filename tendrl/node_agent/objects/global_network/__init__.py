@@ -31,6 +31,8 @@ class GlobalNetwork(objects.BaseObject):
         self.link_detected = link_detected
         self._etcd_cls = _GlobalNetworkEtcd
 
+    def load_definition(self):
+        return {}
 
 class _GlobalNetworkEtcd(EtcdObj):
     """A table of the Global Network, lazily updated
