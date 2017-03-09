@@ -111,7 +111,6 @@ setup(
     install_requires=[
         "PyYAML",
         "gevent>=1.0",
-        "namespaces",
         "netaddr",
         "python-etcd",
         "netifaces",
