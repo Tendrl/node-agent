@@ -6,6 +6,8 @@ payload = {
 "created_at": "2017-03-09T14:15:14Z",
 "username": "admin",
 "parameters": {
+    "Node[]": ["81720b6c-6732-49dd-ad32-15845f199c79",
+               "ab003bbc-00cd-4b74-b236-f19c2c33b96b"],
     "sds_type": "ceph",
     "sds_version": "10.2.5",
     "name": "MyCluster",
@@ -38,10 +40,8 @@ payload = {
     },
     "TendrlContext.integration_id": "89604c6b-2eff-4221-96b4-e41319240240"
 },
-"node_ids": ["81720b6c-6732-49dd-ad32-15845f199c79"],
-"tags": [
-    "provisioner/ceph"
-]
+"node_ids": [],
+"tags": ["provisioner/ceph"]
 }
 
 import json
