@@ -2,6 +2,7 @@
 import json
 import logging
 import os
+import socket
 
 import urllib3
 
@@ -259,7 +260,8 @@ class CephInstallerPlugin(ProvisionerBasePlugin):
             return None
 
     def setup(self):
-        url = 'http://localhost:%s/setup/' %self._CEPH_INSTALLER_API_PORT
+        url = 'http://%s:%s/setup/' % (socket.gethostbyname(
+            socket.gethostname()), self._CEPH_INSTALLER_API_PORT)
         resp = self.http.request(
             self._MGET,
             url)
