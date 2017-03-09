@@ -6,6 +6,8 @@ import signal
 
 from tendrl.commons import TendrlNS
 from tendrl.commons import manager as commons_manager
+from tendrl.node_agent.provisioner.ceph.manager import ProvisioningManager
+
 from tendrl.integrations import ceph
 from tendrl.integrations import gluster
 from tendrl import node_agent
@@ -108,6 +110,8 @@ def main():
     NS.central_store_thread = central_store.NodeAgentEtcdCentralStore()
     NS.first_node_inventory_sync = True
     NS.state_sync_thread = node_sync.NodeAgentSyncThread()
+    # TODO (team) the prov plugin to read from a config file
+    NS.provisioner = ProvisioningManager("CephInstallerPlugin")
 
     NS.compiled_definitions.save()
     NS.node_context.save()
