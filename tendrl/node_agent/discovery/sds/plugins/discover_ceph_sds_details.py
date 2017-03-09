@@ -1,4 +1,3 @@
-import json
 import logging
 import os.path
 import subprocess
@@ -33,11 +32,12 @@ class DiscoverCephStorageSystem(DiscoverSDSPlugin):
             ret_val['pkg_name'] = details[0]
 
             # get the cluster_id details
-            os_name = tendrl_ns.platform.os
+            os_name = NS.platform.os
             cfg_file = ""
+            cluster_name = None
             if os_name in ['CentOS Linux', 'Red Hat Enterprise Linux Server']:
                 cfg_file = '/etc/sysconfig/ceph'
-            #TODO(shtripat) handle the case of ubuntu
+            # TODO(shtripat) handle the case of ubuntu
 
             if cfg_file != "":
                 if not os.path.exists(cfg_file):
@@ -53,8 +53,7 @@ class DiscoverCephStorageSystem(DiscoverSDSPlugin):
                     "/etc/ceph/%s.conf" % cluster_name
                 )
                 if "global" in raw_data:
-                    ret_val['detected_cluster_id'] = raw_data['global']\
-                        ['fsid']
+                    ret_val['detected_cluster_id'] = raw_data['global']['fsid']
                     ret_val['cluster_attrs'] = {
                         'fsid': raw_data['global']['fsid'],
                         'name': 'ceph'

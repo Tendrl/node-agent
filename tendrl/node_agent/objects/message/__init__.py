@@ -1,12 +1,12 @@
 from tendrl.commons import etcdobj
 from tendrl.commons.message import Message as message
-from tendrl.node_agent import objects
+from tendrl.commons import objects
 
 
-class Message(message, objects.NodeAgentBaseObject):
+class Message(message, objects.BaseObject):
     def __init__(self, **message_arg):
         super(Message, self).__init__(**message_arg)
-        self.value = 'Messages/%s'
+        self.value = 'Messages/events/%s'
         self._etcd_cls = _MessageEtcd
 
 
@@ -14,7 +14,7 @@ class _MessageEtcd(etcdobj.EtcdObj):
     """Message object, lazily updated
 
     """
-    __name__ = 'Messages/%s'
+    __name__ = 'Messages/events/%s'
     _tendrl_cls = Message
 
     def render(self):

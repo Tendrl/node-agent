@@ -1,6 +1,6 @@
 from tendrl.commons import etcdobj
 from tendrl.commons import objects
-from tendrl.node_agent.objects.definition import master
+from tendrl.integrations.gluster.objects.definition import definitions
 import yaml
 
 
@@ -12,8 +12,8 @@ class Definition(objects.BaseObject):
     def __init__(self, *args, **kwargs):
         super(Definition, self).__init__(*args, **kwargs)
 
-        self.value = '_tendrl/node_agent/definitions'
-        self.data = master.data
+        self.value = '_tendrl/integrations/gluster/definitions'
+        self.data = definitions.data
         self._parsed_defs = yaml.safe_load(self.data)
         self._etcd_cls = _DefinitionEtcd
 
@@ -29,5 +29,5 @@ class _DefinitionEtcd(etcdobj.EtcdObj):
     """A table of the Definitions, lazily updated
 
     """
-    __name__ = '_tendrl/node_agent/definitions'
+    __name__ = '_tendrl/integrations/gluster/definitions'
     _tendrl_cls = Definition
