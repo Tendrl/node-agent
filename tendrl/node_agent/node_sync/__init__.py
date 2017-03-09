@@ -1,3 +1,4 @@
+import json
 import logging
 
 import etcd
@@ -59,8 +60,10 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
 
                 # updating node context with latest tags
                 LOG.info("node_sync, updating node context data with tags")
-                tags += NS.node_context.tags
-                NS.tendrl.objects.NodeContext(tags=tags).save()
+                NS.node_context = NS.node_context.load()
+                current_tags = json.loads(NS.node_context.tags)
+                tags += current_tags
+                NS.tendrl.objects.NodeContext(tags=list(set(tags))).save()
                 gevent.sleep(interval)
 
                 if NS.tendrl_context.integration_id:
