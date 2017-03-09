@@ -30,11 +30,13 @@ class ProvisionerBasePlugin(object):
     def configure_mon(
         self,
         host,
+        cluster_config,
         cluster_id,
         cluster_name,
+        network_interface,
         cluster_network,
         public_network,
-        mons
+        monitors
     ):
         raise NotImplementedError()
 
@@ -42,13 +44,14 @@ class ProvisionerBasePlugin(object):
     def configure_osd(
         self,
         host,
+        cluster_config,
         devices,
         cluster_id,
         cluster_name,
         journal_size,
         cluster_network,
         public_network,
-        mons
+        monitors
     ):
         raise NotImplementedError()
 

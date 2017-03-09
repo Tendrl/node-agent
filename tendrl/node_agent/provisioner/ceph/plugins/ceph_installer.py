@@ -98,11 +98,13 @@ class CephInstallerPlugin(ProvisionerBasePlugin):
     def configure_mon(
         self,
         host,
+        cluster_config,
         cluster_id,
         cluster_name,
+        network_interface,
         cluster_network,
         public_network,
-        mons
+        monitors
     ):
         url = 'http://localhost:%s/api/mon/configure' % \
             self._CEPH_INSTALLER_API_PORT
@@ -131,9 +133,9 @@ class CephInstallerPlugin(ProvisionerBasePlugin):
 
         data = {
             "calamari": False,
-            "conf": {"global": {"auth supported": "cephx"}},
+            "conf": cluster_config,
             "host": host,
-            "interface": "eth0",
+            "interface": network_interface,
             "fsid": cluster_id,
             "monitor_secret": "AQA7P8dWAAAAABAAH/tbiZQn/40Z8pr959UmEA==",
             "cluster_name": cluster_name,
@@ -142,8 +144,8 @@ class CephInstallerPlugin(ProvisionerBasePlugin):
             "redhat_storage": False,
             "verbose": False
         }
-        if mons is not None:
-            data.update({"mons": mons})
+        if monitors is not None:
+            data.update({"monitors": monitors})
         resp = self.http.request(
             self._MPOST,
             url,
@@ -162,13 +164,14 @@ class CephInstallerPlugin(ProvisionerBasePlugin):
     def configure_osd(
         self,
         host,
+        cluster_config,
         devices,
         cluster_id,
         cluster_name,
         journal_size,
         cluster_network,
         public_network,
-        mons
+        monitors
     ):
         url = 'http://localhost:%s/api/osd/configure' % \
             self._CEPH_INSTALLER_API_PORT
@@ -200,7 +203,7 @@ class CephInstallerPlugin(ProvisionerBasePlugin):
         # OSDs and Journals.
 
         data = {
-            "conf": {"global": {"auth supported": "cephx"}},
+            "conf": cluster_config,
             "devices": devices,
             "host": host,
             "fsid": cluster_id,
@@ -208,7 +211,7 @@ class CephInstallerPlugin(ProvisionerBasePlugin):
             "cluster_name": cluster_name,
             "cluster_network": cluster_network,
             "public_network": public_network,
-            "monitors": mons,
+            "monitors": monitors,
             "redhat_storage": False,
             "verbose": False
         }
