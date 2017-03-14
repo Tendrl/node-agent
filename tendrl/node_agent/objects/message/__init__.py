@@ -9,6 +9,9 @@ class Message(message, objects.BaseObject):
         self.value = 'Messages/events/%s'
         self._etcd_cls = _MessageEtcd
 
+    def load_definition(self):
+        return {}
+
 
 class _MessageEtcd(etcdobj.EtcdObj):
     """Message object, lazily updated

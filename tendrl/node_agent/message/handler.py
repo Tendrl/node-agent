@@ -23,7 +23,7 @@ class MessageHandler(gevent.greenlet.Greenlet):
             self.read_socket
         )
 
-    def read_socket(self, sock):
+    def read_socket(self, sock, *args):
         try:
             self.data = sock.recv(RECEIVE_DATA_SIZE)
             message = Message.from_json(self.data)
