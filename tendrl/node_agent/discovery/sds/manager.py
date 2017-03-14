@@ -7,6 +7,7 @@ import sys
 from tendrl.node_agent.discovery.sds.discover_sds_plugin \
     import DiscoverSDSPlugin
 
+
 LOG = logging.getLogger(__name__)
 
 

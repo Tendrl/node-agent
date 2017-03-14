@@ -1,8 +1,8 @@
 from tendrl.commons.etcdobj import EtcdObj
-from tendrl.node_agent import objects
+from tendrl.commons import objects
 
 
-class GlobalNetwork(objects.NodeAgentBaseObject):
+class GlobalNetwork(objects.BaseObject):
 
     def __init__(self, interface=None, interface_id=None,
                  ipv4=None, ipv6=None, netmask=None, subnet=None,
@@ -31,6 +31,8 @@ class GlobalNetwork(objects.NodeAgentBaseObject):
         self.link_detected = link_detected
         self._etcd_cls = _GlobalNetworkEtcd
 
+    def load_definition(self):
+        return {}
 
 class _GlobalNetworkEtcd(EtcdObj):
     """A table of the Global Network, lazily updated
@@ -42,7 +44,7 @@ class _GlobalNetworkEtcd(EtcdObj):
     def render(self):
         self.__name__ = self.__name__ % (
             self.subnet.replace("/", "_"),
-            tendrl_ns.node_context.node_id,
+            NS.node_context.node_id,
             self.interface_id
         )
         return super(_GlobalNetworkEtcd, self).render()

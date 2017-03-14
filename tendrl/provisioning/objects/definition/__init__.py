@@ -1,7 +1,7 @@
 from ruamel import yaml
 from tendrl.commons import etcdobj
 from tendrl.commons import objects
-from tendrl.node_agent.objects.definition import master
+from tendrl.provisioning.objects.definition import master
 
 # Definitions need there own special init and have to be present in the NS
 # before anything else, Hence subclassing BaseObject
@@ -11,7 +11,7 @@ class Definition(objects.BaseObject):
     def __init__(self, *args, **kwargs):
         super(Definition, self).__init__(*args, **kwargs)
 
-        self.value = '_tendrl/node_agent/definitions'
+        self.value = '_tendrl/provisioning/definitions'
         self.data = master.data
         self._parsed_defs = yaml.safe_load(self.data)
         self._etcd_cls = _DefinitionEtcd
@@ -28,5 +28,5 @@ class _DefinitionEtcd(etcdobj.EtcdObj):
     """A table of the Definitions, lazily updated
 
     """
-    __name__ = '_tendrl/node_agent/definitions'
+    __name__ = '_tendrl/provisioning/definitions'
     _tendrl_cls = Definition

@@ -32,9 +32,10 @@ class ProvisionerBasePlugin(object):
         host,
         cluster_id,
         cluster_name,
+        ip_address,
         cluster_network,
         public_network,
-        mons
+        monitors
     ):
         raise NotImplementedError()
 
@@ -48,10 +49,14 @@ class ProvisionerBasePlugin(object):
         journal_size,
         cluster_network,
         public_network,
-        mons
+        monitors
     ):
         raise NotImplementedError()
 
     @abstractmethod
     def task_status(self, task_id):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def setup(self):
         raise NotImplementedError()

@@ -28,8 +28,7 @@ def get_node_network():
     rv = []
     network_interfaces = get_node_interface()
     cmd = cmd_utils.Command('hwinfo --network')
-    out, err, rc = cmd.run(tendrl_ns.config.data[
-                           'tendrl_ansible_exec_file'])
+    out, err, rc = cmd.run()
     if not err:
         for interface in out.split('\n\n'):
             devlist = {"interface_id": "",
@@ -146,6 +145,5 @@ def Check_interface_status(interface):
     status = ""
     cmd = cmd_utils.Command(
         "cat /sys/class/net/%s/operstate" % interface)
-    out, err, rc = cmd.run(tendrl_ns.config.data[
-                           'tendrl_ansible_exec_file'])
+    out, err, rc = cmd.run()
     return out, err

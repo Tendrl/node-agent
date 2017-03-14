@@ -1,54 +1,12 @@
 # flake8: noqa
 data = """---
 namespace.tendrl.node_agent:
-  _meta:
-    platforms:
-        # platform_type supported by tendrl. One of these platforms and their
-        # corresponding versions must be reused in any of the definition files.
-        centos:
-          # platform_version
-          # Supported versions, in ascending order of release. This list, being
-          # ordered, enables the comparators used later in the file to function.
-          - 6.x
-          - 7.x
-        ubuntu:
-          - 15.04.x
-          - 15.10.x
-          - 16.04.x
-    storage_system_types:
-        ceph: namespace.tendrl.ceph_integration
-        gluster: namespace.tendrl.gluster_integration
-  flows:
-    ImportCluster:
-      atoms:
-        - tendrl.node_agent.objects.Package.atoms.Install
-        - tendrl.node_agent.objects.SDS.atoms.GenerateConfig
-        - tendrl.node_agent.objects.File.atoms.Write
-        - tendrl.node_agent.objects.Node.atoms.Cmd
-      help: "Import existing Gluster Cluster"
-      enabled: true
-      inputs:
-        mandatory:
-          - "Node[]"
-          - DetectedCluster.sds_pkg_name
-          - DetectedCluster.sds_pkg_version
-          - TendrlContext.integration_id
-      post_run:
-        - tendrl.node_agent.objects.TendrlContext.atoms.CheckClusterIdExists
-      pre_run:
-        - tendrl.node_agent.objects.Node.atoms.CheckNodeUp
-        - tendrl.node_agent.objects.TendrlContext.atoms.Compare
-      run: tendrl.node_agent.flows.import_cluster.ImportCluster
-      type: Create
-      uuid: 2f94a48a-05d7-408c-b400-e27827f4edef
-      version: 1
-
   objects:
     Definition:
         enabled: True
         help: "Definition"
-        value: _tendrl/definitions/master
-        list: _tendrl/definitions/master
+        value: _tendrl/definitions/data
+        list: _tendrl/definitions/data
         attrs:
             master:
                 help: master definitions
@@ -56,8 +14,8 @@ namespace.tendrl.node_agent:
     Config:
         enabled: True
         help: "Config"
-        value: _tendrl/config/node-agent/data
-        list: _tendrl/config/node-agent
+        value: _tendrl/config/data
+        list: _tendrl/config/
         attrs:
             data:
                 help: config
@@ -122,30 +80,12 @@ namespace.tendrl.node_agent:
         job_id:
           help: "job unique id"
           type: String
-        integration_id:
-          help: "cluster id"
-          type: String
-        run:
-          help: "main flow"
-          type: String
         status:
           help: "job current status"
           type: String
-        parameters:
+        payload:
           help: "dict"
           type: Dict
-        type:
-          help: "job type"
-          type: String
-        node_ids:
-          help: "job belongs to which job"
-          type: String
-        request_id:
-          help: "job request_id"
-          type: String
-        parent:
-          help: "parent job_id"
-          type: String
         errors:
           help: "any errors occured or not"
           type: String
@@ -447,9 +387,9 @@ namespace.tendrl.node_agent:
           help: "Called details"
           type: Dict
       enabled: true
-      list: /Messages
+      list: /Messages/events
       help: "Messages"
-      value: /Messages
+      value: /Messages/events
     NodeMessage:
       attrs:
         message_id:
@@ -524,7 +464,7 @@ namespace.tendrl.node_agent:
         payload:
           help: "Differ based on message"
           type: Dict
-        request_id:
+        job_id:
           help: "Job id"
           type: String
         flow_id:
@@ -540,9 +480,9 @@ namespace.tendrl.node_agent:
           help: "Called details"
           type: Dict
       enabled: true
-      list: $request_id
+      list: /Messages/jobs
       help: "Job Updates"
-      value: $request_id
+      value: /Messages/jobs
     Node:
       atoms:
         cmd:

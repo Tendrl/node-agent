@@ -1,8 +1,8 @@
 from tendrl.commons.etcdobj import EtcdObj
-from tendrl.node_agent import objects
+from tendrl.commons import objects
 
 
-class NodeNetwork(objects.NodeAgentBaseObject):
+class NodeNetwork(objects.BaseObject):
 
     def __init__(self, interface=None, interface_id=None,
                  ipv4=None, ipv6=None, netmask=None, subnet=None,
@@ -30,6 +30,8 @@ class NodeNetwork(objects.NodeAgentBaseObject):
         self.link_detected = link_detected
         self._etcd_cls = _NodeNetworkEtcd
 
+    def load_definition(self):
+        return {}
 
 class _NodeNetworkEtcd(EtcdObj):
     """A table of the Node Network, lazily updated
@@ -40,6 +42,6 @@ class _NodeNetworkEtcd(EtcdObj):
 
     def render(self):
         self.__name__ = self.__name__ % (
-            tendrl_ns.node_context.node_id, self.interface 
+            NS.node_context.node_id, self.interface
         )
         return super(_NodeNetworkEtcd, self).render()
