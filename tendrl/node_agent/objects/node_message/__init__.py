@@ -10,6 +10,9 @@ class NodeMessage(message, objects.BaseObject):
         self.value = 'nodes/%s/Messages/%s'
         self._etcd_cls = _NodeMessageEtcd
 
+    def load_definition(self):
+        return {}
+
 
 class _NodeMessageEtcd(etcdobj.EtcdObj):
     """Node message object, lazily updated
