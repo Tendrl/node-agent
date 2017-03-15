@@ -163,7 +163,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                             # it will delete subnet dir when it is empty
                             # if one entry present then deletion never happen
                             NS.etcd_orm.client.delete(network.key, dir=True)
-                        except etcd.EtcdKeyNotFound as ex:
+                        except (etcd.EtcdKeyNotFound, etcd.EtcdDirNotEmpty) as ex:
                             continue
                 except etcd.EtcdKeyNotFound as ex:
                     LOG.debug("Given key is not present in etcd . %s", ex)
@@ -172,7 +172,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                         if interface["subnet"] is not "":
                             NS.node_agent.objects.GlobalNetwork(**interface).save()
 
-            except ValueError as ex:
+            except Exception as ex:
                 LOG.error(ex)
 
         LOG.info("%s complete" % self.__class__.__name__)
