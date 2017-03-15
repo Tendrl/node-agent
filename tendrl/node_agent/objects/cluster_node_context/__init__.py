@@ -54,6 +54,9 @@ class ClusterNodeContext(objects.BaseObject):
         except AttributeError:
             return None
 
+    def load_definition(self):
+        return {}
+
 
 class _ClusterNodeContextEtcd(EtcdObj):
     """A table of the node context, lazily updated
