@@ -113,6 +113,7 @@ setup(
         "netifaces",
         "tendrl-commons",
         "urllib3",
+        "python-hwinfo"
         ],
     entry_points={
         'console_scripts': [
