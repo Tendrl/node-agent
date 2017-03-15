@@ -29,7 +29,7 @@ TENDRL_SERVICE_TAGS = {
     "etcd": "tendrl/central-store",
     "tendrl-apid": "tendrl/server",
     "tendrl-gluster-integration": "tendrl/integration/gluster",
-    "tendrl-ceph-integration": "tendrl/integration/gluster",
+    "tendrl-ceph-integration": "tendrl/integration/ceph",
     "glusterd": "gluster/server",
     "ceph-mon": "ceph/mon",
     "ceph-osd": "ceph/osd"
