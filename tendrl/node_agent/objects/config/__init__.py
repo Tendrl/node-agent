@@ -15,6 +15,7 @@ class Config(objects.BaseObject):
     def load_definition(self):
         return {}
 
+
 class _ConfigEtcd(etcdobj.EtcdObj):
     """Config etcd object, lazily updated
 

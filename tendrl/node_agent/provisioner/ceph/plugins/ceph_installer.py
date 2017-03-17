@@ -1,7 +1,6 @@
 
 import json
 import logging
-import os
 import socket
 
 import urllib3
@@ -90,8 +89,7 @@ class CephInstallerPlugin(ProvisionerBasePlugin):
             try:
                 res_data = json.loads(resp.data.decode('utf-8'))
             except (TypeError, ValueError, UnicodeError) as e:
-                raise Exception(
-                   'Server response was not valid JSON: %r' % e)
+                raise Exception('Server response was not valid JSON: %r' % e)
             return res_data['identifier']
         else:
             return None

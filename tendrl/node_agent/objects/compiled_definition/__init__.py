@@ -28,7 +28,8 @@ class CompiledDefinitions(objects.BaseObject):
         for definition in defs:
             compiled_defs.update(definition.get_parsed_defs())
         self.data = yaml.safe_dump(compiled_defs, default_flow_style=False)
-        definition.data = self.data
+        definitions.data = self.data
+
 
 class _CompiledDefinitionsEtcd(etcdobj.EtcdObj):
     """A table of the CompiledDefinitions, lazily updated

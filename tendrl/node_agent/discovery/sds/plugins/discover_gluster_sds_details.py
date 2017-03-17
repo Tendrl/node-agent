@@ -1,7 +1,5 @@
-import collections
 import hashlib
 import logging
-import socket
 import subprocess
 
 from tendrl.node_agent.discovery.sds.discover_sds_plugin \
@@ -29,7 +27,7 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
                 peer = line.split()
                 # Use the gluster generated pool UUID as unique key
                 gfs_peers.append(peer[0])
-                
+
         gfs_peers.sort()
         return hashlib.sha256("".join(gfs_peers)).hexdigest()
 
