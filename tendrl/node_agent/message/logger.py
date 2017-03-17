@@ -22,6 +22,7 @@ class Logger(object):
             """
             self._logger(self.push_operation())
         else:
+            self.push_event()
             if "exception_traceback" in message.payload:
                 self._logger("%s - %s: %s" % (
                     self.message.payload["message"],
@@ -73,6 +74,11 @@ class Logger(object):
                     parent_id=self.message.parent_id,
                     caller=self.message.caller
                 ).save()
+
+    def push_event(self):
+        # storing messages in global under event
+        if self.message.priority not in [
+            "info", "debug"]:
             NS.node_agent.objects.Message(
                 message_id=self.message.message_id,
                 timestamp=self.message.timestamp,

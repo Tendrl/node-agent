@@ -1,4 +1,5 @@
-data = """namespace.tendrl.integrations.gluster:
+# flake8:noqa
+data = """namespace.integrations.gluster:
   flows:
     ImportCluster:
       atoms:

@@ -12,7 +12,7 @@ from tendrl.node_agent.message.logger import Logger
 import traceback
 
 RECEIVE_DATA_SIZE = 4096
-SYSTEMD_SOCKET_PATH= "/var/run/tendrl/message.sock"
+SYSTEMD_SOCKET_PATH = "/var/run/tendrl/message.sock"
 
 
 class MessageHandler(gevent.greenlet.Greenlet):

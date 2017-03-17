@@ -36,7 +36,7 @@ class ClusterNodeContext(objects.BaseObject):
         with open(local_node_context, 'wb+') as f:
             f.write(node_id)
             LOG.info("SET_LOCAL: "
-                     "NS.node_agent.objects.NodeContext.node_id==%s" %
+                     "NS.node_agent.objects.NodeContext.node_id==%s",
                      node_id)
         return node_id
 
@@ -49,7 +49,7 @@ class ClusterNodeContext(objects.BaseObject):
                     if node_id:
                         LOG.info(
                             "GET_LOCAL: NS.node_agent.objects.NodeContext"
-                            ".node_id==%s" % node_id)
+                            ".node_id==%s", node_id)
                         return node_id
         except AttributeError:
             return None
@@ -66,7 +66,6 @@ class _ClusterNodeContextEtcd(EtcdObj):
     _tendrl_cls = ClusterNodeContext
 
     def render(self):
-        self.__name__ = self.__name__ % (
-            NS.tendrl_context.integration_id,
-            NS.node_context.node_id)
+        self.__name__ = self.__name__ % (NS.tendrl_context.integration_id,
+                                         NS.node_context.node_id)
         return super(_ClusterNodeContextEtcd, self).render()

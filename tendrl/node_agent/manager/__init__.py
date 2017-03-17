@@ -4,19 +4,20 @@ import etcd
 import gevent
 import signal
 
-from tendrl.commons import TendrlNS
 from tendrl.commons import manager as commons_manager
-from tendrl.node_agent.provisioner.ceph.manager import ProvisioningManager
-
+from tendrl.commons import TendrlNS
 from tendrl.integrations import ceph
 from tendrl.integrations import gluster
 from tendrl import node_agent
 from tendrl.node_agent import central_store
 from tendrl.node_agent.discovery.platform.manager import PlatformManager
 from tendrl.node_agent.discovery.sds.manager import SDSDiscoveryManager
-from tendrl.node_agent import node_sync
-from tendrl import provisioning
 from tendrl.node_agent.message.handler import MessageHandler
+from tendrl.node_agent import node_sync
+from tendrl.node_agent.provisioner.ceph.manager import ProvisioningManager
+from tendrl import provisioning
+
+
 LOG = logging.getLogger(__name__)
 
 
@@ -41,7 +42,7 @@ class NodeAgentManager(commons_manager.Manager):
             pMgr = PlatformManager()
         except ValueError as ex:
             LOG.error(
-                'Failed to init PlatformManager. \Error %s' % str(ex))
+                'Failed to init PlatformManager. \Error %s', str(ex))
             return
         # execute the platform plugins
         for plugin in pMgr.get_available_plugins():
@@ -58,7 +59,7 @@ class NodeAgentManager(commons_manager.Manager):
 
                 except etcd.EtcdException as ex:
                     LOG.error(
-                        'Failed to update etcd . \Error %s' % str(ex))
+                        'Failed to update etcd . \Error %s', str(ex))
                 break
 
     def load_and_execute_sds_discovery_plugins(self):
@@ -67,7 +68,7 @@ class NodeAgentManager(commons_manager.Manager):
             sds_discovery_manager = SDSDiscoveryManager()
         except ValueError as ex:
             LOG.error(
-                'Failed to init SDSDiscoveryManager. \Error %s' % str(ex))
+                'Failed to init SDSDiscoveryManager. \Error %s', str(ex))
             return
 
         # Execute the SDS discovery plugins and tag the nodes with data
@@ -82,25 +83,36 @@ class NodeAgentManager(commons_manager.Manager):
                         sds_pkg_version=sds_details.get('pkg_version'),
                     ).save()
                 except etcd.EtcdException as ex:
-                    LOG.error('Failed to update etcd . Error %s' % str(ex))
+                    LOG.error('Failed to update etcd . Error %s', str(ex))
                 break
 
 
 def main():
-    node_agent.NodeAgentNS()  # NS.node_agent contains the config object,
+    # NS.node_agent contains the config object,
     # hence initialize it before any other NS
-    TendrlNS()  # Init NS.tendrl
-    provisioning.ProvisioningNS() # Init NS.provisioning
-    ceph.CephIntegrationNS() # Init NS.integrations.ceph
-    gluster.GlusterIntegrationNS() # Init NS.integrations.gluster
+    node_agent.NodeAgentNS()
 
+    # Init NS.tendrl
+    TendrlNS()
+
+    # Init NS.provisioning
+    provisioning.ProvisioningNS()
+
+    # Init NS.integrations.ceph
+    ceph.CephIntegrationNS()
+
+    # Init NS.integrations.gluster
+    gluster.GlusterIntegrationNS()
+
+    # Compile all definitions
     NS.compiled_definitions = \
         NS.node_agent.objects.CompiledDefinitions()
-    NS.compiled_definitions.merge_definitions(
-            [NS.tendrl.definitions, NS.node_agent.definitions,
-             NS.provisioning.definitions,
-             NS.integrations.ceph.definitions,
-             NS.integrations.gluster.definitions])
+    NS.compiled_definitions.merge_definitions([
+        NS.tendrl.definitions, NS.node_agent.definitions,
+        NS.provisioning.definitions,
+        NS.integrations.ceph.definitions,
+        NS.integrations.gluster.definitions
+    ])
     NS.node_agent.compiled_definitions = NS.compiled_definitions
 
     # Every process needs to set a NS.type
@@ -110,7 +122,7 @@ def main():
     NS.central_store_thread = central_store.NodeAgentEtcdCentralStore()
     NS.first_node_inventory_sync = True
     NS.state_sync_thread = node_sync.NodeAgentSyncThread()
-    # TODO (team) the prov plugin to read from a config file
+    # TODO(team) the prov plugin to read from a config file
     NS.provisioner = ProvisioningManager("CephInstallerPlugin")
 
     NS.compiled_definitions.save()
