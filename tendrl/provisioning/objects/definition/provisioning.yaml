@@ -1,6 +1,5 @@
-# flake8: noqa
-data = """---
-namespace.tendrl.node_agent:
+---
+namespace.provisioning:
   objects:
     Definition:
         enabled: True
@@ -38,4 +37,3 @@ namespace.tendrl.node_agent:
       value: nodes/$Node_context.node_id/TendrlContext
       help: "Tendrl context"
 tendrl_schema_version: 0.3
-"""

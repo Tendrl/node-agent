@@ -1,5 +1,5 @@
-# flake8:noqa
-data = """namespace.tendrl.integrations.ceph:
+---
+namespace.ceph:
   flows:
     ImportCluster:
       atoms:
@@ -75,4 +75,3 @@ data = """namespace.tendrl.integrations.ceph:
           help: "Path to the Ceph integration tendrl configuration"
           type: String
       enabled: true
-"""

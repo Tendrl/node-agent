@@ -119,5 +119,6 @@ setup(
             'tendrl-node-agent = tendrl.node_agent.manager:main'
         ]
     },
+    include_package_data=True,
     cmdclass={'bumpversion': BumpVersionCommand, 'release': ReleaseCommand},
 )
