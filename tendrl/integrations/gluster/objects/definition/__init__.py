@@ -1,7 +1,8 @@
+import pkg_resources
 from ruamel import yaml
+
 from tendrl.commons import etcdobj
 from tendrl.commons import objects
-from tendrl.integrations.gluster.objects.definition import definitions
 
 # Definitions need there own special init and have to be present in the NS
 # before anything else, Hence subclassing BaseObject
@@ -12,7 +13,7 @@ class Definition(objects.BaseObject):
         super(Definition, self).__init__(*args, **kwargs)
 
         self.value = '_tendrl/integrations/gluster/definitions'
-        self.data = definitions.data
+        self.data = pkg_resources.resource_string(__name__, "gluster.yaml")
         self._parsed_defs = yaml.safe_load(self.data)
         self._etcd_cls = _DefinitionEtcd
 
