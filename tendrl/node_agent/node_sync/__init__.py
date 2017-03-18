@@ -8,6 +8,8 @@ from tendrl.commons import sds_sync
 
 from tendrl.node_agent.node_sync import disk_sync
 from tendrl.node_agent.node_sync import network_sync
+from tendrl.node_agent.node_sync import platform_detect
+from tendrl.node_agent.node_sync import sds_detect
 
 LOG = logging.getLogger(__name__)
 
@@ -92,6 +94,12 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                             tags=tags
                         ).save()
                         gevent.sleep(interval)
+
+                LOG.info("node_sync, Updating detected platform")
+                platform_detect.load_and_execute_platform_discovery_plugins()
+
+                LOG.info("node_sync, Updating detected Sds")
+                sds_detect.load_and_execute_sds_discovery_plugins()
 
                 LOG.info("node_sync, Updating OS data")
                 NS.tendrl.objects.Os().save()
