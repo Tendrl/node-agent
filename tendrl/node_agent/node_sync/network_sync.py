@@ -149,7 +149,7 @@ def get_subnet(ipv4, netmask):
 
 
 def Check_interface_status(interface):
-    status = ""
+    status = "unknown"
     err = None
     try:
         with open('/sys/class/net/%s/operstate' % interface, 'r') as f:
