@@ -149,7 +149,11 @@ def get_subnet(ipv4, netmask):
 
 
 def Check_interface_status(interface):
-    cmd = cmd_utils.Command(
-        "cat /sys/class/net/%s/operstate" % interface)
-    out, err, rc = cmd.run()
-    return out, err
+    status = "unknown"
+    err = None
+    try:
+        with open('/sys/class/net/%s/operstate' % interface, 'r') as f:
+            status = f.read().strip('\n')
+    except IOError as ex:
+        err = str(ex)
+    return status, err
