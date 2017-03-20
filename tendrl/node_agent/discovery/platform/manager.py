@@ -30,8 +30,8 @@ class PlatformManager(object):
                 for name, cls in clsmembers:
                     exec("from %s import %s" % (plugin_name, name))
         except (SyntaxError, ValueError, ImportError) as ex:
-            LOG.error('Failed to load the platform plugins. Error %s' %
-                      ex, exc_info=True)
+            LOG.error('Failed to load the platform plugins. Error %s', ex,
+                      exc_info=True)
             raise ex
         return
 

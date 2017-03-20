@@ -1,6 +1,5 @@
-# flake8: noqa
-data = """---
-namespace.tendrl.node_agent:
+---
+namespace.node_agent:
   objects:
     Definition:
         enabled: True
@@ -832,4 +831,3 @@ namespace.tendrl.node_agent.ceph_integration:
       enabled: true
 
 tendrl_schema_version: 0.3
-"""

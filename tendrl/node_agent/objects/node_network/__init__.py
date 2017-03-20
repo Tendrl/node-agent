@@ -33,6 +33,7 @@ class NodeNetwork(objects.BaseObject):
     def load_definition(self):
         return {}
 
+
 class _NodeNetworkEtcd(EtcdObj):
     """A table of the Node Network, lazily updated
 

@@ -1,5 +1,4 @@
 import importlib
-import inspect
 import logging
 import os
 import pkgutil
@@ -49,7 +48,7 @@ class ProvisioningManager(object):
             for name, plugin_fqdn in plugins:
                 importlib.import_module(plugin_fqdn)
         except (SyntaxError, ValueError, ImportError) as ex:
-            LOG.error('Failed to load the ceph provisioner plugins. Error %s' %
+            LOG.error('Failed to load the ceph provisioner plugins. Error %s',
                       ex, exc_info=True)
             raise ex
 

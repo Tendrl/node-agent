@@ -41,7 +41,7 @@ class DiscoverCephStorageSystem(DiscoverSDSPlugin):
 
             if cfg_file != "":
                 if not os.path.exists(cfg_file):
-                    LOG.info("config file: %s not found" % cfg_file)
+                    LOG.info("config file: %s not found", cfg_file)
                     return ret_val
                 with open(cfg_file) as f:
                     for line in f:

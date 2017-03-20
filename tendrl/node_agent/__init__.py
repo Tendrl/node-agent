@@ -9,6 +9,6 @@ from tendrl.commons import TendrlNS
 
 
 class NodeAgentNS(TendrlNS):
-    def __init__(self, ns_name="tendrl.node_agent",
+    def __init__(self, ns_name="node_agent",
                  ns_src="tendrl.node_agent"):
         super(NodeAgentNS, self).__init__(ns_name, ns_src)

@@ -4,6 +4,7 @@ Description= A python agent local to every managed storage node in the sds clust
 [Service]
 Type=simple
 Environment="HOME=/var/lib/tendrl"
+Environment="ANSIBLE_HOST_KEY_CHECKING=False"
 ExecStart=/usr/bin/tendrl-node-agent
 ExecReload=/bin/kill -HUP $MAINPID
 KillMode=process
