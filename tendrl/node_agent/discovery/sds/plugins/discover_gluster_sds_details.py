@@ -1,5 +1,4 @@
 import hashlib
-import socket
 import subprocess
 
 from tendrl.commons.event import Event
@@ -22,7 +21,7 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
             Event(
                 Message(
                     priority="error",
-                    publisher=tendrl_ns.publisher_id,
+                    publisher=NS.publisher_id,
                     payload={"message": "Error formulating cluster_id"}
                 )
             )
@@ -53,7 +52,7 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
             Event(
                 Message(
                     priority="info",
-                    publisher=tendrl_ns.publisher_id,
+                    publisher=NS.publisher_id,
                     payload={"message": "gluster not installed on host"}
                 )
             )

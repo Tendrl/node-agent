@@ -1,12 +1,12 @@
 import importlib
-import logging
 import os
 import pkgutil
 import re
 
-from tendrl.node_agent.provisioner.ceph import provisioner_base
+from tendrl.commons.event import Event
+from tendrl.commons.message import ExceptionMessage
 
-LOG = logging.getLogger(__name__)
+from tendrl.node_agent.provisioner.ceph import provisioner_base
 
 
 class ProvisioningManager(object):
@@ -48,8 +48,17 @@ class ProvisioningManager(object):
             for name, plugin_fqdn in plugins:
                 importlib.import_module(plugin_fqdn)
         except (SyntaxError, ValueError, ImportError) as ex:
-            LOG.error('Failed to load the ceph provisioner plugins. Error %s',
-                      ex, exc_info=True)
+            Event(
+                ExceptionMessage(
+                    priority="error",
+                    publisher=NS.publisher_id,
+                    payload={
+                        "message": "Failed to load the ceph provisioner "
+                                   "plugins",
+                        "exception": ex
+                    }
+                )
+            )
             raise ex
 
     def get_plugin(self):

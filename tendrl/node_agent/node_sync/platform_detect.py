@@ -1,21 +1,35 @@
-import logging
-
 import etcd
 
-from tendrl.node_agent.discovery.platform import manager as platform_manager
+from tendrl.commons.event import Event
+from tendrl.commons.message import Message, ExceptionMessage
 
-LOG = logging.getLogger(__name__)
+from tendrl.node_agent.discovery.platform import manager as platform_manager
 
 
 def load_and_execute_platform_discovery_plugins():
     # platform plugins
-    LOG.info("load_and_execute_platform_discovery_plugins, platform \
-     plugins")
+    Event(
+        Message(
+            priority="info",
+            publisher=NS.publisher_id,
+            payload={"message": "load_and_execute_platform_discovery_plugins, "
+                                "platform plugins"
+                     }
+        )
+    )
     try:
         pMgr = platform_manager.PlatformManager()
     except ValueError as ex:
-        LOG.error(
-            'Failed to init PlatformManager. \Error %s', str(ex))
+        Event(
+            ExceptionMessage(
+                priority="error",
+                publisher=NS.publisher_id,
+                payload={
+                    "message": 'Failed to init PlatformManager. \Error %s',
+                    "exception": ex
+                    }
+            )
+        )
         return
     # execute the platform plugins
     for plugin in pMgr.get_available_plugins():
@@ -31,6 +45,14 @@ def load_and_execute_platform_discovery_plugins():
                 NS.platform.save()
 
             except etcd.EtcdException as ex:
-                LOG.error(
-                    'Failed to update etcd . \Error %s', str(ex))
+                Event(
+                    ExceptionMessage(
+                        priority="error",
+                        publisher=NS.publisher_id,
+                        payload={
+                            "message": "Failed to update etcd . \Error %s",
+                            "exception": ex
+                        }
+                    )
+                )
             break

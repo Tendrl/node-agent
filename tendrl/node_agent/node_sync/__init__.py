@@ -3,7 +3,7 @@ import gevent
 import json
 
 from tendrl.commons.event import Event
-from tendrl.commons.message import Message
+from tendrl.commons.message import Message, ExceptionMessage
 
 from tendrl.commons import sds_sync
 
@@ -38,11 +38,11 @@ TENDRL_SERVICE_TAGS = {
 
 
 class NodeAgentSyncThread(sds_sync.StateSyncThread):
-    def _run(self):\
+    def _run(self):
         Event(
             Message(
                 priority="info",
-                publisher=tendrl_ns.publisher_id,
+                publisher=NS.publisher_id,
                 payload={"message": "%s running" % self.__class__.__name__}
             )
         )
@@ -59,7 +59,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 Event(
                     Message(
                         priority="info",
-                        publisher=tendrl_ns.publisher_id,
+                        publisher=NS.publisher_id,
                         payload={"message": "node_sync, Updating Service data"}
                     )
                 )
@@ -71,11 +71,10 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 gevent.sleep(interval)
 
                 # updating node context with latest tags
-# updating node context with latest tags
                 Event(
                     Message(
                         priority="info",
-                        publisher=tendrl_ns.publisher_id,
+                        publisher=NS.publisher_id,
                         payload={"message": "node_sync, updating node context "
                                             "data with tags"
                                  }
@@ -132,7 +131,27 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 Event(
                     Message(
                         priority="info",
-                        publisher=tendrl_ns.publisher_id,
+                        publisher=NS.publisher_id,
+                        payload={"message": "node_sync, Updating detected "
+                                            "platform"
+                                 }
+                    )
+                )
+                platform_detect.load_and_execute_platform_discovery_plugins()
+
+                Event(
+                    Message(
+                        priority="info",
+                        publisher=NS.publisher_id,
+                        payload={"message": "node_sync, Updating detected Sds"}
+                    )
+                )
+                sds_detect.load_and_execute_sds_discovery_plugins()
+
+                Event(
+                    Message(
+                        priority="info",
+                        publisher=NS.publisher_id,
                         payload={"message": "node_sync, Updating OS data"}
                     )
                 )
@@ -142,7 +161,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 Event(
                     Message(
                         priority="info",
-                        publisher=tendrl_ns.publisher_id,
+                        publisher=NS.publisher_id,
                         payload={"message": "node_sync, Updating cpu"}
                     )
                 )
@@ -152,7 +171,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 Event(
                     Message(
                         priority="info",
-                        publisher=tendrl_ns.publisher_id,
+                        publisher=NS.publisher_id,
                         payload={"message": "node_sync, Updating memory"}
                     )
                 )
@@ -162,7 +181,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 Event(
                     Message(
                         priority="info",
-                        publisher=tendrl_ns.publisher_id,
+                        publisher=NS.publisher_id,
                         payload={"message": "node_sync, Updating disks"}
                     )
                 )
@@ -172,11 +191,12 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                         recursive=True)
                 except etcd.EtcdKeyNotFound as ex:
                     Event(
-                        Message(
+                        ExceptionMessage(
                             priority="debug",
-                            publisher=tendrl_ns.publisher_id,
+                            publisher=NS.publisher_id,
                             payload={"message": "Given key is not present in "
-                                                "etcd . %s" + ex
+                                                "etcd .",
+                                                "exception": ex
                                      }
                         )
                     )
@@ -195,14 +215,29 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                             ("nodes/%s/Disks/free/%s") % (
                                 NS.node_context.node_id, disk), "")
 
-                LOG.info("node_sync, Updating networks")
+                Event(
+                    Message(
+                        priority="info",
+                        publisher=NS.publisher_id,
+                        payload={"message": "node_sync, Updating networks"}
+                    )
+                )
                 # node wise network
                 try:
                     NS.etcd_orm.client.delete(
                         ("nodes/%s/Network") % NS.node_context.node_id,
                         recursive=True)
                 except etcd.EtcdKeyNotFound as ex:
-                    LOG.debug("Given key is not present in etcd . %s", ex)
+                    Event(
+                        ExceptionMessage(
+                            priority="debug",
+                            publisher=NS.publisher_id,
+                            payload={"message": "Given key is not present in "
+                                                "etcd .",
+                                     "exception": ex
+                                     }
+                        )
+                    )
                 interfaces = network_sync.get_node_network()
                 if len(interfaces) > 0:
                     for interface in interfaces:
@@ -234,7 +269,16 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                         except (etcd.EtcdKeyNotFound, etcd.EtcdDirNotEmpty):
                             continue
                 except etcd.EtcdKeyNotFound as ex:
-                    LOG.debug("Given key is not present in etcd . %s", ex)
+                    Event(
+                        ExceptionMessage(
+                            priority="debug",
+                            publisher=NS.publisher_id,
+                            payload={"message": "Given key is not present in "
+                                                "etcd .",
+                                     "exception": ex
+                                     }
+                        )
+                    )
                 if len(interfaces) > 0:
                     for interface in interfaces:
                         if interface["subnet"] is not "":
@@ -243,18 +287,18 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
 
             except Exception as ex:
                 Event(
-                    Message(
+                    ExceptionMessage(
                         priority="error",
-                        publisher=tendrl_ns.publisher_id,
-                        payload={"message": str(ex)}
+                        publisher=NS.publisher_id,
+                        payload={"message": "error",
+                                 "exception": ex}
                     )
                 )
         Event(
             Message(
                 priority="info",
-                publisher=tendrl_ns.publisher_id,
+                publisher=NS.publisher_id,
                 payload={"message": "%s complete" % self.__class__.__name__}
             )
         )
 
-        LOG.info("%s complete", self.__class__.__name__)

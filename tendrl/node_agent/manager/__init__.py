@@ -1,11 +1,10 @@
 
-import etcd
 import gevent
 import signal
 
-from tendrl.node_agent.provisioner.ceph.manager import ProvisioningManager
-from tendrl.commons.event import Event
 from tendrl.commons import manager as commons_manager
+from tendrl.commons import TendrlNS
+from tendrl.commons.event import Event
 from tendrl.commons.message import Message
 
 from tendrl.integrations import ceph
@@ -17,7 +16,6 @@ from tendrl.node_agent import node_sync
 from tendrl.node_agent.provisioner.ceph.manager import ProvisioningManager
 from tendrl import provisioning
 
-from tendrl.node_agent.message.handler import MessageHandler
 
 class NodeAgentManager(commons_manager.Manager):
     def __init__(self):
@@ -29,103 +27,8 @@ class NodeAgentManager(commons_manager.Manager):
             NS.message_handler_thread
         )
 
-        self.load_and_execute_platform_discovery_plugins()
-        self.load_and_execute_sds_discovery_plugins()
-
-    def load_and_execute_platform_discovery_plugins(self):
-        # platform plugins
-        Event(
-            Message(
-                priority="info",
-                publisher=tendrl_ns.publisher_id,
-                payload={"message": "load_and_execute_platform_discovery_"
-                                    "plugins, platform plugins"
-                         }
-            )
-        )
-        try:
-            pMgr = PlatformManager()
-        except ValueError as ex:
-            Event(
-                Message(
-                    priority="error",
-                    publisher=tendrl_ns.publisher_id,
-                    payload={"message": 'Failed to init PlatformManager. '
-                                        '\Error %s' % str(ex)
-                             }
-                )
-            )
-            return
-        # execute the platform plugins
-        for plugin in pMgr.get_available_plugins():
-            platform_details = plugin.discover_platform()
-            if len(platform_details.keys()) > 0:
-                # update etcd
-                try:
-                    NS.platform = NS.tendrl.objects.Platform(
-                        os=platform_details["Name"],
-                        os_version=platform_details["OSVersion"],
-                        kernel_version=platform_details["KernelVersion"],
-                        )
-                    NS.platform.save()
-
-                except etcd.EtcdException as ex:
-                    Event(
-                        Message(
-                            priority="error",
-                            publisher=tendrl_ns.publisher_id,
-                            payload={"message": 'Failed to update etcd . '
-                                                '\Error %s' % str(ex)
-                                     }
-                        )
-                    )
-                break
-
-    def load_and_execute_sds_discovery_plugins(self):
-        Event(
-            Message(
-                priority="info",
-                publisher=tendrl_ns.publisher_id,
-                payload={"message": "load_and_execute_sds_discovery_plugins"}
-            )
-        )
-        try:
-            sds_discovery_manager = SDSDiscoveryManager()
-        except ValueError as ex:
-            Event(
-                Message(
-                    priority="error",
-                    publisher=tendrl_ns.publisher_id,
-                    payload={"message": 'Failed to init SDSDiscoveryManager. '
-                                        '\Error %s' % str(ex)
-                             }
-                )
-            )
-            return
-
-        # Execute the SDS discovery plugins and tag the nodes with data
-        for plugin in sds_discovery_manager.get_available_plugins():
-            sds_details = plugin.discover_storage_system()
-            if sds_details:
-                try:
-                    NS.tendrl.objects.DetectedCluster(
-                        detected_cluster_id=sds_details.get(
-                            'detected_cluster_id'),
-                        sds_pkg_name=sds_details.get('pkg_name'),
-                        sds_pkg_version=sds_details.get('pkg_version'),
-                    ).save()
-                except etcd.EtcdException as ex:
-                    Event(
-                        Message(
-                            priority="error",
-                            publisher=tendrl_ns.publisher_id,
-                            payload={"message": 'Failed to update etcd . '
-                                                'Error %s' % str(ex)
-                                     }
-                        )
-                    )
-                break
-
+        node_sync.platform_detect.load_and_execute_platform_discovery_plugins()
+        node_sync.sds_detect.load_and_execute_sds_discovery_plugins()
 
 def main():
     # NS.node_agent contains the config object,
@@ -158,6 +61,7 @@ def main():
     # Every process needs to set a NS.type
     # Allowed types are "node", "integration", "monitoring"
     NS.type = "node"
+    NS.publisher_id = "node_agent"
 
     NS.central_store_thread = central_store.NodeAgentEtcdCentralStore()
     NS.first_node_inventory_sync = True
@@ -183,7 +87,7 @@ def main():
     NS.node_agent.config.save()
     NS.message_handler_thread = MessageHandler()
 
-    NS.publisher_id = "node_agent"
+
 
     m = NodeAgentManager()
     m.start()
@@ -194,7 +98,7 @@ def main():
         Event(
             Message(
                 priority="info",
-                publisher=tendrl_ns.publisher_id,
+                publisher=NS.publisher_id,
                 payload={"message": "Signal handler: stopping"}
             )
         )

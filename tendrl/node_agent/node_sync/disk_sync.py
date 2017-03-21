@@ -80,7 +80,7 @@ def get_node_disks():
             Event(
                 Message(
                     priority="error",
-                    publisher=tendrl_ns.publisher_id,
+                    publisher=NS.publisher_id,
                     payload={"message": str(err)}
                 )
             )
@@ -88,7 +88,7 @@ def get_node_disks():
         Event(
             Message(
                 priority="error",
-                publisher=tendrl_ns.publisher_id,
+                publisher=NS.publisher_id,
                 payload={"message": str(err)}
             )
         )

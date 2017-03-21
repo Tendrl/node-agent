@@ -25,7 +25,7 @@ class DiscoverCephStorageSystem(DiscoverSDSPlugin):
             Event(
                 Message(
                     priority="info",
-                    publisher=tendrl_ns.publisher_id,
+                    publisher=NS.publisher_id,
                     payload={"message": "ceph not installed on host"}
                 )
             )
@@ -50,7 +50,7 @@ class DiscoverCephStorageSystem(DiscoverSDSPlugin):
                     Event(
                         Message(
                             priority="info",
-                            publisher=tendrl_ns.publisher_id,
+                            publisher=NS.publisher_id,
                             payload={"message": "config file: %s not found" %
                                                 cfg_file
                                      }

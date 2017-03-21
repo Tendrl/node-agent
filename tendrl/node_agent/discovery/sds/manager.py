@@ -2,10 +2,9 @@ import importlib
 import inspect
 import os
 import sys
-import traceback
 
 from tendrl.commons.event import Event
-from tendrl.commons.message import Message
+from tendrl.commons.message import ExceptionMessage
 
 from tendrl.node_agent.discovery.sds.discover_sds_plugin \
     import DiscoverSDSPlugin
@@ -41,12 +40,12 @@ class SDSDiscoveryManager(object):
                     exec("from %s import %s" % (plugin_name, name))
         except (SyntaxError, ValueError, ImportError) as ex:
             Event(
-                Message(
+                ExceptionMessage(
                     priority="error",
-                    publisher=tendrl_ns.publisher_id,
-                    payload={"message": "Failed to load SDS detection plugins."
-                                        " Error %s %s" %
-                                        (ex, traceback.format_exc())
+                    publisher=NS.publisher_id,
+                    payload={"message": "Failed to load SDS detection "
+                                        "plugins.",
+                             "exception": ex
                              }
                 )
             )
