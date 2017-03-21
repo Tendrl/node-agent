@@ -86,7 +86,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                         LOG.info(
                             "node_sync, updating node context under clusters"
                         )
-                        NS.node_agent.objects.ClusterNodeContext(
+                        NS.tendrl.objects.ClusterNodeContext(
                             machine_id=NS.node_context.machine_id,
                             node_id=NS.node_context.node_id,
                             fqdn=NS.node_context.fqdn,
@@ -146,7 +146,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 interfaces = network_sync.get_node_network()
                 if len(interfaces) > 0:
                     for interface in interfaces:
-                        NS.node_agent.objects.NodeNetwork(**interface).save()
+                        NS.tendrl.objects.NodeNetwork(**interface).save()
                         if interface['ipv4']:
                             for ipv4 in interface['ipv4']:
                                 index_key = "/indexes/ip/%s" % ipv4
