@@ -1,4 +1,5 @@
-data = """namespace.tendrl.integrations.gluster:
+---
+namespace.gluster:
   flows:
     ImportCluster:
       atoms:
@@ -74,5 +75,3 @@ data = """namespace.tendrl.integrations.gluster:
           help: "Path to the Gluster integration tendrl configuration"
           type: String
       enabled: true
-
-"""

@@ -34,6 +34,7 @@ class GlobalNetwork(objects.BaseObject):
     def load_definition(self):
         return {}
 
+
 class _GlobalNetworkEtcd(EtcdObj):
     """A table of the Global Network, lazily updated
 
