@@ -5,6 +5,14 @@ import base64
 
 
 def generate_auth_key():
+    """
+    Generates a secret key to be used in ceph cluster keyring.
+
+    It generates a base64 encoded string out of a byte string
+    created by packing random data into struct. This is used
+    while cluster creation as keyring secret key
+    """
+
     key = os.urandom(16)
     header = struct.pack(
         '<hiih',
