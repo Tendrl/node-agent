@@ -1,5 +1,6 @@
 import logging
 
+import etcd
 import gevent
 import signal
 
