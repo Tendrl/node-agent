@@ -54,13 +54,21 @@ class NodeAgentEtcdCentralStore(central_store.EtcdCentralStore):
         NS.etcd_orm.save(compiled_definitions)
 
     def save_message(self, message):
-        NS.etcd_orm.save(message)
+        NS.etcd_orm.save(
+            message,
+            ttl=NS.config.data['message_retention_time'])
 
     def save_nodemessage(self, message):
-        NS.etcd_orm.save(message)
+        NS.etcd_orm.save(
+            message,
+            ttl=NS.config.data['message_retention_time']
+        )
 
     def save_clustermessage(self, message):
-        NS.etcd_orm.save(message)
+        NS.etcd_orm.save(
+            message,
+            ttl=NS.config.data['message_retention_time']
+        )
 
     def save_job(self, job):
         NS.etcd_orm.save(job)
