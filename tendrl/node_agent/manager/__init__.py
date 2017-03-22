@@ -72,7 +72,7 @@ def main():
 
     NS.compiled_definitions.save()
     NS.node_context.save()
-    NS.tendrl_context = NS.tendr_context.load()
+    NS.tendrl_context = NS.tendrl_context.load()
     NS.tendrl_context.save()
     NS.node_agent.definitions.save()
     NS.node_agent.config.save()
