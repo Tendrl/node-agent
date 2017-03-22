@@ -72,7 +72,12 @@ def main():
 
     NS.compiled_definitions.save()
     NS.node_context.save()
-    NS.tendrl_context = NS.tendrl_context.load()
+    try:
+        NS.tendrl_context = NS.tendrl_context.load()
+    except etcd.EtcdKeyNotFound:
+        LOG.info("Node %s does not participate in any sds cluster",
+                 NS.node_context.node_id)
+        pass
     NS.tendrl_context.save()
     NS.node_agent.definitions.save()
     NS.node_agent.config.save()
