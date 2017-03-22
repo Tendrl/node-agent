@@ -1,5 +1,6 @@
 import logging
 
+import etcd
 import gevent
 import signal
 
@@ -72,6 +73,17 @@ def main():
 
     NS.compiled_definitions.save()
     NS.node_context.save()
+    
+    # Check if Node is part of any Tendrl imported/created sds cluster
+    try:
+        NS.tendrl_context = NS.tendrl_context.load()
+        LOG.info("Node %s is part of sds cluster %s",
+                 NS.node_context.node_id,
+                 NS.tendrl_context.integration_id)
+    except etcd.EtcdKeyNotFound:
+        LOG.info("Node %s is not part of any sds cluster",
+                 NS.node_context.node_id)
+        pass
     NS.tendrl_context.save()
     NS.node_agent.definitions.save()
     NS.node_agent.config.save()
