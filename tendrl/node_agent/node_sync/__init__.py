@@ -90,6 +90,8 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                             integration_id=NS.tendrl_context.integration_id,
                             cluster_id=NS.tendrl_context.cluster_id,
                             cluster_name=NS.tendrl_context.cluster_name,
+                            sds_name=NS.tendrl_context.sds_name,
+                            sds_version=NS.tendrl_context.sds_version
                         ).save()
                         NS.tendrl.objects.ClusterNodeContext(
                             machine_id=NS.node_context.machine_id,
