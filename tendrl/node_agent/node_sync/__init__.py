@@ -86,6 +86,11 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                         LOG.info(
                             "node_sync, updating node context under clusters"
                         )
+                        NS.tendrl.objects.ClusterTendrlContext(
+                            integration_id=NS.tendrl_context.integration_id,
+                            cluster_id=NS.tendrl_context.cluster_id,
+                            cluster_name=NS.tendrl_context.cluster_name,
+                        ).save()
                         NS.tendrl.objects.ClusterNodeContext(
                             machine_id=NS.node_context.machine_id,
                             node_id=NS.node_context.node_id,
