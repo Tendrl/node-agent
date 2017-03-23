@@ -48,8 +48,10 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
         )
         while not self._complete.is_set():
             try:
+                priority = "debug"
                 interval = 10
                 if NS.first_node_inventory_sync:
+                    priority = "info"
                     interval = 2
                     NS.first_node_inventory_sync = False
 
@@ -58,7 +60,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 # update node agent service details
                 Event(
                     Message(
-                        priority="info",
+                        priority=priority,
                         publisher=NS.publisher_id,
                         payload={"message": "node_sync, Updating Service data"}
                     )
@@ -73,7 +75,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 # updating node context with latest tags
                 Event(
                     Message(
-                        priority="info",
+                        priority=priority,
                         publisher=NS.publisher_id,
                         payload={"message": "node_sync, updating node context "
                                             "data with tags"
@@ -108,6 +110,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                                 NS.node_context.node_id)
                     else:
                         LOG.info("node_sync, updating cluster tendrl context
+
                         NS.tendrl.objects.ClusterTendrlContext(
                             integration_id=NS.tendrl_context.integration_id,
                             cluster_id=NS.tendrl_context.cluster_id,
@@ -130,7 +133,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
 
                 Event(
                     Message(
-                        priority="info",
+                        priority=priority,
                         publisher=NS.publisher_id,
                         payload={"message": "node_sync, Updating detected "
                                             "platform"
@@ -141,7 +144,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
 
                 Event(
                     Message(
-                        priority="info",
+                        priority=priority,
                         publisher=NS.publisher_id,
                         payload={"message": "node_sync, Updating detected Sds"}
                     )
@@ -150,7 +153,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
 
                 Event(
                     Message(
-                        priority="info",
+                        priority=priority,
                         publisher=NS.publisher_id,
                         payload={"message": "node_sync, Updating OS data"}
                     )
@@ -160,7 +163,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
 
                 Event(
                     Message(
-                        priority="info",
+                        priority=priority,
                         publisher=NS.publisher_id,
                         payload={"message": "node_sync, Updating cpu"}
                     )
@@ -170,7 +173,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
 
                 Event(
                     Message(
-                        priority="info",
+                        priority=priority,
                         publisher=NS.publisher_id,
                         payload={"message": "node_sync, Updating memory"}
                     )
@@ -180,7 +183,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
 
                 Event(
                     Message(
-                        priority="info",
+                        priority=priority,
                         publisher=NS.publisher_id,
                         payload={"message": "node_sync, Updating disks"}
                     )
@@ -217,7 +220,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
 
                 Event(
                     Message(
-                        priority="info",
+                        priority=priority,
                         publisher=NS.publisher_id,
                         payload={"message": "node_sync, Updating networks"}
                     )
