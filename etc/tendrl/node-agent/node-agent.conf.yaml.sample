@@ -5,5 +5,6 @@ log_cfg_path: /etc/tendrl/node-agent/node-agent_logging.yaml
 log_level: DEBUG
 package_source_type: rpm
 logging_socket_path: /var/run/tendrl/message.sock
+message_retention_time: 172800 # default 2 days(2*24*60*60)
 tags:
 - tendrl/node
