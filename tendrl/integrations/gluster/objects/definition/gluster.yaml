@@ -1,5 +1,5 @@
 ---
-namespace.gluster:
+namespace.integrations.gluster:
   flows:
     ImportCluster:
       atoms:
@@ -20,7 +20,7 @@ namespace.gluster:
       pre_run:
         - tendrl.node_agent.objects.Node.atoms.check_node_up
         - tendrl.node_agent.objects.TendrlContext.atoms.compare
-      run: tendrl.node_agent.gluster_integration.flows.import_cluster.ImportCluster
+      run: integrations.gluster.flows.ImportCluster
       type: Create
       uuid: 2f94a48a-05d7-408c-b400-e27827f4edef
       version: 1
