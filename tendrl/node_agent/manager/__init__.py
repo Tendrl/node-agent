@@ -1,6 +1,7 @@
-
+import etcd
 import gevent
 import signal
+import sys
 
 from tendrl.commons import manager as commons_manager
 from tendrl.commons import TendrlNS
@@ -34,7 +35,6 @@ def main():
     # NS.node_agent contains the config object,
     # hence initialize it before any other NS
     node_agent.NodeAgentNS()
-
     # Init NS.tendrl
     TendrlNS()
 
@@ -61,7 +61,6 @@ def main():
     # Every process needs to set a NS.type
     # Allowed types are "node", "integration", "monitoring"
     NS.type = "node"
-    NS.publisher_id = "node_agent"
 
     NS.central_store_thread = central_store.NodeAgentEtcdCentralStore()
     NS.first_node_inventory_sync = True
@@ -71,22 +70,21 @@ def main():
 
     NS.compiled_definitions.save()
     NS.node_context.save()
-    
+
     # Check if Node is part of any Tendrl imported/created sds cluster
     try:
         NS.tendrl_context = NS.tendrl_context.load()
-        LOG.info("Node %s is part of sds cluster %s",
-                 NS.node_context.node_id,
-                 NS.tendrl_context.integration_id)
+        sys.stdout.write("Node %s is part of sds cluster %s" % (
+            NS.node_context.node_id, NS.tendrl_context.integration_id))
     except etcd.EtcdKeyNotFound:
-        LOG.info("Node %s is not part of any sds cluster",
-                 NS.node_context.node_id)
+        sys.stdout.write("Node %s is not part of any sds cluster" %
+                         NS.node_context.node_id)
         pass
     NS.tendrl_context.save()
     NS.node_agent.definitions.save()
     NS.node_agent.config.save()
+    NS.publisher_id = "node_agent"
     NS.message_handler_thread = MessageHandler()
-
 
 
     m = NodeAgentManager()

@@ -90,12 +90,28 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 # Check if Node is part of any Tendrl imported/created sds cluster
                 try:
                     NS.tendrl_context = NS.tendrl_context.load()
-                    LOG.info("Node %s is part of sds cluster %s",
-                             NS.node_context.node_id,
-                             NS.tendrl_context.integration_id)
+                    Event(
+                        Message(
+                            priority=priority,
+                            publisher=NS.publisher_id,
+                            payload={"message": "Node %s is part of sds "
+                                                "cluster %s" % (
+                                NS.node_context.node_id,
+                                NS.tendrl_context.integration_id)
+                                     }
+                        )
+                    )
                 except etcd.EtcdKeyNotFound:
-                    LOG.warning("Node %s is not part of any sds cluster",
-                             NS.node_context.node_id)
+                    Event(
+                        Message(
+                            priority=priority,
+                            publisher=NS.publisher_id,
+                            payload={"message": "Node %s is not part of any "
+                                                "sds cluster" %
+                                                NS.node_context.node_id
+                                     }
+                        )
+                    )
                     pass
 
                 if NS.tendrl_context.integration_id:
@@ -106,10 +122,26 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                             )
                         )
                     except etcd.EtcdKeyNotFound:
-                    LOG.warning("Node %s is not part of any sds cluster",
-                                NS.node_context.node_id)
+                        Event(
+                            Message(
+                                priority="warning",
+                                publisher=NS.publisher_id,
+                                payload={"message": "Node %s is not part of "
+                                                    "any sds cluster" %
+                                                    NS.node_context.node_id
+                                         }
+                            )
+                        )
                     else:
-                        LOG.info("node_sync, updating cluster tendrl context
+                        Event(
+                            Message(
+                                priority=priority,
+                                publisher=NS.publisher_id,
+                                payload={"message": "node_sync, updating "
+                                                    "cluster tendrl context"
+                                         }
+                            )
+                        )
 
                         NS.tendrl.objects.ClusterTendrlContext(
                             integration_id=NS.tendrl_context.integration_id,
@@ -118,10 +150,15 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                             sds_name=NS.tendrl_context.sds_name,
                             sds_version=NS.tendrl_context.sds_version
                         ).save()
-                        LOG.info(
-                            "node_sync, updating cluster node context"
+                        Event(
+                            Message(
+                                priority=priority,
+                                publisher=NS.publisher_id,
+                                payload={"message": "node_sync, Updating"
+                                                    "detected platform"
+                                         }
+                            )
                         )
-
                         NS.tendrl.objects.ClusterNodeContext(
                             machine_id=NS.node_context.machine_id,
                             node_id=NS.node_context.node_id,
@@ -304,4 +341,3 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 payload={"message": "%s complete" % self.__class__.__name__}
             )
         )
-

@@ -13,6 +13,4 @@ class NodeAgentNS(TendrlNS):
                  ns_src="tendrl.node_agent"):
         super(NodeAgentNS, self).__init__(ns_name, ns_src)
 
-        log.setup_logging(
-            self.config.data['log_cfg_path'],
-        )
+        log.setup_logging(self.current_ns.config.data['log_cfg_path'])
