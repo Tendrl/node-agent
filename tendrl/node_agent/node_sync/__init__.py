@@ -67,6 +67,16 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 tags += current_tags
                 NS.tendrl.objects.NodeContext(tags=list(set(tags))).save()
                 gevent.sleep(interval)
+                # Check if Node is part of any Tendrl imported/created sds cluster
+                try:
+                    NS.tendrl_context = NS.tendrl_context.load()
+                    LOG.info("Node %s is part of sds cluster %s",
+                             NS.node_context.node_id,
+                             NS.tendrl_context.integration_id)
+                except etcd.EtcdKeyNotFound:
+                    LOG.warning("Node %s is not part of any sds cluster",
+                             NS.node_context.node_id)
+                    pass
 
                 if NS.tendrl_context.integration_id:
                     try:
@@ -76,16 +86,10 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                             )
                         )
                     except etcd.EtcdKeyNotFound:
-                        LOG.error(
-                            "Local Tendrl Context with integration id: " +
-                            "{} could not be found in central store".format(
-                                NS.tendrl_context.integration_id
-                            )
-                        )
+                    LOG.warning("Node %s is not part of any sds cluster",
+                                NS.node_context.node_id)
                     else:
-                        LOG.info(
-                            "node_sync, updating node context under clusters"
-                        )
+                        LOG.info("node_sync, updating cluster tendrl context
                         NS.tendrl.objects.ClusterTendrlContext(
                             integration_id=NS.tendrl_context.integration_id,
                             cluster_id=NS.tendrl_context.cluster_id,
@@ -93,6 +97,10 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                             sds_name=NS.tendrl_context.sds_name,
                             sds_version=NS.tendrl_context.sds_version
                         ).save()
+                        LOG.info(
+                            "node_sync, updating cluster node context"
+                        )
+
                         NS.tendrl.objects.ClusterNodeContext(
                             machine_id=NS.node_context.machine_id,
                             node_id=NS.node_context.node_id,
