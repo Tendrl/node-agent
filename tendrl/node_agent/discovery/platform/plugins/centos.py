@@ -1,9 +1,5 @@
-import logging
 import platform
 from tendrl.node_agent.discovery.platform import base
-
-
-LOG = logging.getLogger(__name__)
 
 
 class CentosPlugin(base.PlatformDiscoverPlugin):

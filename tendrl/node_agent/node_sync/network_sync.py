@@ -1,11 +1,8 @@
-import logging
-
 import netaddr
 import netifaces as ni
-
+from tendrl.commons.event import Event
+from tendrl.commons.message import Message
 from tendrl.commons.utils import cmd_utils
-
-LOG = logging.getLogger(__name__)
 
 
 def get_node_network():
@@ -80,7 +77,13 @@ def get_node_network():
                 network_interfaces[interface_name].update(devlist)
                 rv.append(network_interfaces[interface_name])
     else:
-        LOG.error(err)
+        Event(
+            Message(
+                priority="error",
+                publisher=NS.publisher_id,
+                payload={"message": err}
+            )
+        )
 
     return rv
 
@@ -119,7 +122,13 @@ def get_node_interface():
                     for ipv6_addr_detail in ipv6_addr_list:
                         IPv6.append(ipv6_addr_detail['addr'])
             else:
-                LOG.error(err)
+                Event(
+                    Message(
+                        priority="error",
+                        publisher=NS.publisher_id,
+                        payload={"message": err}
+                    )
+                )
 
             rv[interface] = (
                 {

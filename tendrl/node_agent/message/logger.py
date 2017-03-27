@@ -46,9 +46,8 @@ class Logger(object):
         return log_message
 
     def push_messages(self):
-        if self.message.priority not in [
-            "info", "debug"]:
-            # Stroring messages cluster wise
+        if self.message.priority not in ["info", "debug"]:
+            # Storing messages cluster wise
             if self.message.cluster_id is not None:
                 NS.node_agent.objects.ClusterMessage(
                     message_id=self.message.message_id,
@@ -81,8 +80,7 @@ class Logger(object):
 
     def push_event(self):
         # storing messages in global under event
-        if self.message.priority not in [
-            "info", "debug"]:
+        if self.message.priority not in ["info", "debug"]:
             NS.node_agent.objects.Message(
                 message_id=self.message.message_id,
                 timestamp=self.message.timestamp,
@@ -101,7 +99,7 @@ class Logger(object):
         # Invalid message
         if isinstance(log_message, Message):
             log_message = Message.to_json(log_message)
-        message = ("%s - %s - %s:%s - %s - %s - %s") % (
+        message = "%s - %s - %s:%s - %s - %s - %s" % (
             self.message.timestamp,
             self.message.publisher,
             self.message.caller["filename"],

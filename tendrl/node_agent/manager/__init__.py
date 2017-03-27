@@ -1,11 +1,12 @@
-import logging
-
 import etcd
 import gevent
 import signal
+import sys
 
 from tendrl.commons import manager as commons_manager
 from tendrl.commons import TendrlNS
+from tendrl.commons.event import Event
+from tendrl.commons.message import Message
 from tendrl.node_agent.provisioner.ceph.manager import \
     ProvisioningManager as CephProvisioningManager
 from tendrl.node_agent.provisioner.gluster.manager import \
@@ -18,9 +19,6 @@ from tendrl.node_agent import central_store
 from tendrl.node_agent.message.handler import MessageHandler
 from tendrl.node_agent import node_sync
 from tendrl import provisioning
-
-
-LOG = logging.getLogger(__name__)
 
 
 class NodeAgentManager(commons_manager.Manager):
@@ -36,12 +34,10 @@ class NodeAgentManager(commons_manager.Manager):
         node_sync.platform_detect.load_and_execute_platform_discovery_plugins()
         node_sync.sds_detect.load_and_execute_sds_discovery_plugins()
 
-
 def main():
     # NS.node_agent contains the config object,
     # hence initialize it before any other NS
     node_agent.NodeAgentNS()
-
     # Init NS.tendrl
     TendrlNS()
 
@@ -74,20 +70,20 @@ def main():
 
     NS.compiled_definitions.save()
     NS.node_context.save()
-    
+
     # Check if Node is part of any Tendrl imported/created sds cluster
     try:
         NS.tendrl_context = NS.tendrl_context.load()
-        LOG.info("Node %s is part of sds cluster %s",
-                 NS.node_context.node_id,
-                 NS.tendrl_context.integration_id)
+        sys.stdout.write("Node %s is part of sds cluster %s" % (
+            NS.node_context.node_id, NS.tendrl_context.integration_id))
     except etcd.EtcdKeyNotFound:
-        LOG.info("Node %s is not part of any sds cluster",
-                 NS.node_context.node_id)
+        sys.stdout.write("Node %s is not part of any sds cluster" %
+                         NS.node_context.node_id)
         pass
     NS.tendrl_context.save()
     NS.node_agent.definitions.save()
     NS.node_agent.config.save()
+    NS.publisher_id = "node_agent"
     NS.message_handler_thread = MessageHandler()
     NS.publisher_id = "node_agent"
 
@@ -104,7 +100,13 @@ def main():
     complete = gevent.event.Event()
 
     def shutdown():
-        LOG.info("Signal handler: stopping")
+        Event(
+            Message(
+                priority="info",
+                publisher=NS.publisher_id,
+                payload={"message": "Signal handler: stopping"}
+            )
+        )
         complete.set()
         m.stop()
 
