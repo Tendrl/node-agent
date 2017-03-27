@@ -42,23 +42,22 @@ def main():
     TendrlNS()
 
     # Init NS.provisioning
-    # TODO (team) remove NS.provisioner and use NS.provisioning.{ceph, gluster}
+    # TODO(team) remove NS.provisioner and use NS.provisioning.{ceph, gluster}
     #provisioning.ProvisioningNS()
 
     # Init NS.integrations.ceph
-    ceph.CephIntegrationNS()
+    # TODO(team) add all short circuited ceph(import/create) NS.tendrl.flows to NS.integrations.ceph
+    #ceph.CephIntegrationNS()
 
     # Init NS.integrations.gluster
-    gluster.GlusterIntegrationNS()
+    # TODO(team) add all short circuited ceph(import/create) NS.tendrl.flows to NS.integrations.ceph
+    #gluster.GlusterIntegrationNS()
 
     # Compile all definitions
     NS.compiled_definitions = \
         NS.node_agent.objects.CompiledDefinitions()
     NS.compiled_definitions.merge_definitions([
-        NS.tendrl.definitions, NS.node_agent.definitions,
-        NS.integrations.ceph.definitions,
-        NS.integrations.gluster.definitions
-    ])
+        NS.tendrl.definitions, NS.node_agent.definitions])
     NS.node_agent.compiled_definitions = NS.compiled_definitions
 
     # Every process needs to set a NS.type
