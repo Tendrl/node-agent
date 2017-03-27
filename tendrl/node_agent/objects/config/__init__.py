@@ -4,6 +4,7 @@ from tendrl.commons import objects
 
 
 class Config(objects.BaseObject):
+    internal = True
     def __init__(self, config=None, *args, **kwargs):
         super(Config, self).__init__(*args, **kwargs)
 
@@ -11,10 +12,7 @@ class Config(objects.BaseObject):
         self.data = config or cmn_config.load_config(
             'node-agent', "/etc/tendrl/node-agent/node-agent.conf.yaml")
         self._etcd_cls = _ConfigEtcd
-
-    def load_definition(self):
-        return {}
-
+        self._defs = {}
 
 class _ConfigEtcd(etcdobj.EtcdObj):
     """Config etcd object, lazily updated
