@@ -42,7 +42,8 @@ def main():
     TendrlNS()
 
     # Init NS.provisioning
-    provisioning.ProvisioningNS()
+    # TODO (team) remove NS.provisioner and use NS.provisioning.{ceph, gluster}
+    #provisioning.ProvisioningNS()
 
     # Init NS.integrations.ceph
     ceph.CephIntegrationNS()
@@ -55,7 +56,6 @@ def main():
         NS.node_agent.objects.CompiledDefinitions()
     NS.compiled_definitions.merge_definitions([
         NS.tendrl.definitions, NS.node_agent.definitions,
-        NS.provisioning.definitions,
         NS.integrations.ceph.definitions,
         NS.integrations.gluster.definitions
     ])
