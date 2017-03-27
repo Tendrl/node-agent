@@ -11,7 +11,7 @@ from tendrl.commons import objects
 class Definition(objects.BaseObject):
     internal = True
     def __init__(self, *args, **kwargs):
-        self._def = True
+        self._defs = True
         super(Definition, self).__init__(*args, **kwargs)
 
         self.value = '_NS/provisioning/definitions'
