@@ -1,18 +1,19 @@
 import importlib
+import inspect
+import logging
 import os
 import pkgutil
 import re
 
-from tendrl.commons.event import Event
-from tendrl.commons.message import ExceptionMessage
+from tendrl.node_agent.provisioner.gluster import provisioner_base
 
-from tendrl.node_agent.provisioner.ceph import provisioner_base
+LOG = logging.getLogger(__name__)
 
 
 class ProvisioningManager(object):
 
     def __init__(self, provisioner):
-        self.ceph_provisioner = provisioner
+        self.gluster_provisioner = provisioner
         try:
             self.plugins = []
             self.load_plugins()
@@ -43,22 +44,13 @@ class ProvisioningManager(object):
     def load_plugins(self):
         try:
             path = os.path.dirname(os.path.abspath(__file__)) + '/plugins'
-            pkg = 'tendrl.node_agent.provisioner.ceph.plugins'
+            pkg = 'tendrl.node_agent.provisioner.gluster.plugins'
             plugins = self.list_modules_in_package_path(path, pkg)
             for name, plugin_fqdn in plugins:
                 importlib.import_module(plugin_fqdn)
         except (SyntaxError, ValueError, ImportError) as ex:
-            Event(
-                ExceptionMessage(
-                    priority="error",
-                    publisher=NS.publisher_id,
-                    payload={
-                        "message": "Failed to load the ceph provisioner "
-                                   "plugins",
-                        "exception": ex
-                    }
-                )
-            )
+            LOG.error('Failed to load the gluster provisioner plugins. Error %s' %
+                      ex, exc_info=True)
             raise ex
 
     def get_plugin(self):
@@ -66,7 +58,7 @@ class ProvisioningManager(object):
 
     def set_plugin(self):
         for plugin in provisioner_base.ProvisionerBasePlugin.plugins:
-            if re.search(self.ceph_provisioner.lower(), type(
+            if re.search(self.gluster_provisioner.lower(), type(
                     plugin).__name__.lower(), re.IGNORECASE):
                 self.plugin = plugin
 

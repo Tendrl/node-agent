@@ -1,19 +1,31 @@
-import logging
-
 import etcd
+
+from tendrl.commons.event import Event
+from tendrl.commons.message import Message, ExceptionMessage
 
 from tendrl.node_agent.discovery.sds import manager as sds_manager
 
-LOG = logging.getLogger(__name__)
-
 
 def load_and_execute_sds_discovery_plugins():
-    LOG.info("load_and_execute_sds_discovery_plugins")
+    Event(
+        Message(
+            priority="info",
+            publisher=NS.publisher_id,
+            payload={"message": "load_and_execute_sds_discovery_plugins"}
+        )
+    )
     try:
         sds_discovery_manager = sds_manager.SDSDiscoveryManager()
     except ValueError as ex:
-        LOG.error(
-            'Failed to init SDSDiscoveryManager. \Error %s', str(ex))
+        Event(
+            ExceptionMessage(
+                priority="error",
+                publisher=NS.publisher_id,
+                payload={"message": "Failed to init SDSDiscoveryManager.",
+                         "exception": ex
+                }
+            )
+        )
         return
 
     # Execute the SDS discovery plugins and tag the nodes with data
@@ -28,5 +40,13 @@ def load_and_execute_sds_discovery_plugins():
                     sds_pkg_version=sds_details.get('pkg_version'),
                 ).save()
             except etcd.EtcdException as ex:
-                LOG.error('Failed to update etcd . Error %s', str(ex))
+                Event(
+                    ExceptionMessage(
+                        priority="error",
+                        publisher=NS.publisher_id,
+                        payload={"message": "Failed to update etcd .",
+                                 "exception": ex
+                                 }
+                    )
+                )
             break

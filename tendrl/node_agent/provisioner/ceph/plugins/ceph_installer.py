@@ -1,6 +1,5 @@
 
 import json
-import logging
 import socket
 
 import urllib3
@@ -9,8 +8,6 @@ from tendrl.node_agent.provisioner.ceph.provisioner_base import\
     ProvisionerBasePlugin
 from tendrl.node_agent.provisioner.ceph import utils as \
     provisioner_utils
-
-LOG = logging.getLogger(__name__)
 
 
 class CephInstallerPlugin(ProvisionerBasePlugin):

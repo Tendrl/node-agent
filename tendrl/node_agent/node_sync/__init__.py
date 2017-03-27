@@ -1,8 +1,9 @@
-import json
-import logging
-
 import etcd
 import gevent
+import json
+
+from tendrl.commons.event import Event
+from tendrl.commons.message import Message, ExceptionMessage
 
 from tendrl.commons import sds_sync
 
@@ -10,8 +11,6 @@ from tendrl.node_agent.node_sync import disk_sync
 from tendrl.node_agent.node_sync import network_sync
 from tendrl.node_agent.node_sync import platform_detect
 from tendrl.node_agent.node_sync import sds_detect
-
-LOG = logging.getLogger(__name__)
 
 # TODO(darshan) this has to be moved to Definition file
 
@@ -40,19 +39,32 @@ TENDRL_SERVICE_TAGS = {
 
 class NodeAgentSyncThread(sds_sync.StateSyncThread):
     def _run(self):
-        LOG.info("%s running", self.__class__.__name__)
-
+        Event(
+            Message(
+                priority="info",
+                publisher=NS.publisher_id,
+                payload={"message": "%s running" % self.__class__.__name__}
+            )
+        )
         while not self._complete.is_set():
             try:
+                priority = "debug"
                 interval = 10
                 if NS.first_node_inventory_sync:
+                    priority = "info"
                     interval = 2
                     NS.first_node_inventory_sync = False
 
                 gevent.sleep(interval)
                 tags = []
                 # update node agent service details
-                LOG.info("node_sync, Updating Service data")
+                Event(
+                    Message(
+                        priority=priority,
+                        publisher=NS.publisher_id,
+                        payload={"message": "node_sync, Updating Service data"}
+                    )
+                )
                 for service in TENDRL_SERVICES:
                     s = NS.tendrl.objects.Service(service=service)
                     if s.running:
@@ -61,21 +73,46 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 gevent.sleep(interval)
 
                 # updating node context with latest tags
-                LOG.info("node_sync, updating node context data with tags")
+                Event(
+                    Message(
+                        priority=priority,
+                        publisher=NS.publisher_id,
+                        payload={"message": "node_sync, updating node context "
+                                            "data with tags"
+                                 }
+                    )
+                )
                 NS.node_context = NS.node_context.load()
                 current_tags = json.loads(NS.node_context.tags)
                 tags += current_tags
-                NS.tendrl.objects.NodeContext(tags=list(set(tags))).save()
+                NS.node_Context.tags = list(set(tags))
+                NS.node_context.save()
                 gevent.sleep(interval)
                 # Check if Node is part of any Tendrl imported/created sds cluster
                 try:
                     NS.tendrl_context = NS.tendrl_context.load()
-                    LOG.info("Node %s is part of sds cluster %s",
-                             NS.node_context.node_id,
-                             NS.tendrl_context.integration_id)
+                    Event(
+                        Message(
+                            priority=priority,
+                            publisher=NS.publisher_id,
+                            payload={"message": "Node %s is part of sds "
+                                                "cluster %s" % (
+                                NS.node_context.node_id,
+                                NS.tendrl_context.integration_id)
+                                     }
+                        )
+                    )
                 except etcd.EtcdKeyNotFound:
-                    LOG.warning("Node %s is not part of any sds cluster",
-                             NS.node_context.node_id)
+                    Event(
+                        Message(
+                            priority=priority,
+                            publisher=NS.publisher_id,
+                            payload={"message": "Node %s is not part of any "
+                                                "sds cluster" %
+                                                NS.node_context.node_id
+                                     }
+                        )
+                    )
                     pass
 
                 if NS.tendrl_context.integration_id:
@@ -86,10 +123,27 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                             )
                         )
                     except etcd.EtcdKeyNotFound:
-                        LOG.warning("Node %s is not part of any sds cluster",
-                                    NS.node_context.node_id)
+                        Event(
+                            Message(
+                                priority="warning",
+                                publisher=NS.publisher_id,
+                                payload={"message": "Node %s is not part of "
+                                                    "any sds cluster" %
+                                                    NS.node_context.node_id
+                                         }
+                            )
+                        )
                     else:
-                        LOG.info("node_sync, updating cluster tendrl context")
+                        Event(
+                            Message(
+                                priority=priority,
+                                publisher=NS.publisher_id,
+                                payload={"message": "node_sync, updating "
+                                                    "cluster tendrl context"
+                                         }
+                            )
+                        )
+
                         NS.tendrl.objects.ClusterTendrlContext(
                             integration_id=NS.tendrl_context.integration_id,
                             cluster_id=NS.tendrl_context.cluster_id,
@@ -97,10 +151,15 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                             sds_name=NS.tendrl_context.sds_name,
                             sds_version=NS.tendrl_context.sds_version
                         ).save()
-                        LOG.info(
-                            "node_sync, updating cluster node context"
+                        Event(
+                            Message(
+                                priority=priority,
+                                publisher=NS.publisher_id,
+                                payload={"message": "node_sync, Updating"
+                                                    "cluster node context"
+                                         }
+                            )
                         )
-
                         NS.tendrl.objects.ClusterNodeContext(
                             machine_id=NS.node_context.machine_id,
                             node_id=NS.node_context.node_id,
@@ -110,31 +169,78 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                         ).save()
                         gevent.sleep(interval)
 
-                LOG.info("node_sync, Updating detected platform")
+                Event(
+                    Message(
+                        priority=priority,
+                        publisher=NS.publisher_id,
+                        payload={"message": "node_sync, Updating detected "
+                                            "platform"
+                                 }
+                    )
+                )
                 platform_detect.load_and_execute_platform_discovery_plugins()
 
-                LOG.info("node_sync, Updating detected Sds")
+                Event(
+                    Message(
+                        priority=priority,
+                        publisher=NS.publisher_id,
+                        payload={"message": "node_sync, Updating detected Sds"}
+                    )
+                )
                 sds_detect.load_and_execute_sds_discovery_plugins()
 
-                LOG.info("node_sync, Updating OS data")
+                Event(
+                    Message(
+                        priority=priority,
+                        publisher=NS.publisher_id,
+                        payload={"message": "node_sync, Updating OS data"}
+                    )
+                )
                 NS.tendrl.objects.Os().save()
                 gevent.sleep(interval)
 
-                LOG.info("node_sync, Updating cpu")
+                Event(
+                    Message(
+                        priority=priority,
+                        publisher=NS.publisher_id,
+                        payload={"message": "node_sync, Updating cpu"}
+                    )
+                )
                 NS.tendrl.objects.Cpu().save()
                 gevent.sleep(interval)
 
-                LOG.info("node_sync, Updating memory")
+                Event(
+                    Message(
+                        priority=priority,
+                        publisher=NS.publisher_id,
+                        payload={"message": "node_sync, Updating memory"}
+                    )
+                )
                 NS.tendrl.objects.Memory().save()
                 gevent.sleep(interval)
 
-                LOG.info("node_sync, Updating disks")
+                Event(
+                    Message(
+                        priority=priority,
+                        publisher=NS.publisher_id,
+                        payload={"message": "node_sync, Updating disks"}
+                    )
+                )
                 try:
                     NS.etcd_orm.client.delete(
                         ("nodes/%s/Disks") % NS.node_context.node_id,
                         recursive=True)
                 except etcd.EtcdKeyNotFound as ex:
-                    LOG.debug("Given key is not present in etcd . %s", ex)
+                    Event(
+                        ExceptionMessage(
+                            priority="debug",
+                            publisher=NS.publisher_id,
+                            payload={"message": "Given key is not present in "
+                                                "etcd .",
+                                                "exception": ex
+                                     }
+                        )
+                    )
                 disks = disk_sync.get_node_disks()
                 if "disks" in disks:
                     for disk in disks['disks']:
@@ -150,14 +256,29 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                             ("nodes/%s/Disks/free/%s") % (
                                 NS.node_context.node_id, disk), "")
 
-                LOG.info("node_sync, Updating networks")
+                Event(
+                    Message(
+                        priority=priority,
+                        publisher=NS.publisher_id,
+                        payload={"message": "node_sync, Updating networks"}
+                    )
+                )
                 # node wise network
                 try:
                     NS.etcd_orm.client.delete(
                         ("nodes/%s/Network") % NS.node_context.node_id,
                         recursive=True)
                 except etcd.EtcdKeyNotFound as ex:
-                    LOG.debug("Given key is not present in etcd . %s", ex)
+                    Event(
+                        ExceptionMessage(
+                            priority="debug",
+                            publisher=NS.publisher_id,
+                            payload={"message": "Given key is not present in "
+                                                "etcd .",
+                                     "exception": ex
+                                     }
+                        )
+                    )
                 interfaces = network_sync.get_node_network()
                 if len(interfaces) > 0:
                     for interface in interfaces:
@@ -189,7 +310,16 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                         except (etcd.EtcdKeyNotFound, etcd.EtcdDirNotEmpty):
                             continue
                 except etcd.EtcdKeyNotFound as ex:
-                    LOG.debug("Given key is not present in etcd . %s", ex)
+                    Event(
+                        ExceptionMessage(
+                            priority="debug",
+                            publisher=NS.publisher_id,
+                            payload={"message": "Given key is not present in "
+                                                "etcd .",
+                                     "exception": ex
+                                     }
+                        )
+                    )
                 if len(interfaces) > 0:
                     for interface in interfaces:
                         if interface["subnet"] is not "":
@@ -197,6 +327,18 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                                 **interface).save()
 
             except Exception as ex:
-                LOG.error(ex)
-
-        LOG.info("%s complete", self.__class__.__name__)
+                Event(
+                    ExceptionMessage(
+                        priority="error",
+                        publisher=NS.publisher_id,
+                        payload={"message": "error",
+                                 "exception": ex}
+                    )
+                )
+        Event(
+            Message(
+                priority="info",
+                publisher=NS.publisher_id,
+                payload={"message": "%s complete" % self.__class__.__name__}
+            )
+        )
