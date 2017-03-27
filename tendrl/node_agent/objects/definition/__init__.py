@@ -8,6 +8,7 @@ from tendrl.commons import objects
 
 
 class Definition(objects.BaseObject):
+    internal = True
     def __init__(self, *args, **kwargs):
         super(Definition, self).__init__(*args, **kwargs)
 
@@ -15,14 +16,11 @@ class Definition(objects.BaseObject):
         self.data = pkg_resources.resource_string(__name__, "node_agent.yaml")
         self._parsed_defs = yaml.safe_load(self.data)
         self._etcd_cls = _DefinitionEtcd
+        self._defs = {}
 
     def get_parsed_defs(self):
         self._parsed_defs = yaml.safe_load(self.data)
         return self._parsed_defs
-
-    def load_definition(self):
-        return {}
-
 
 class _DefinitionEtcd(etcdobj.EtcdObj):
     """A table of the Definitions, lazily updated
