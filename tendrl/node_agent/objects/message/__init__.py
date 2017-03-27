@@ -4,14 +4,12 @@ from tendrl.commons import objects
 
 
 class Message(message, objects.BaseObject):
+    internal = True
     def __init__(self, **message_arg):
+        self._defs = {}
         super(Message, self).__init__(**message_arg)
         self.value = 'Messages/events/%s'
         self._etcd_cls = _MessageEtcd
-
-    def load_definition(self):
-        return {}
-
 
 class _MessageEtcd(etcdobj.EtcdObj):
     """Message object, lazily updated
