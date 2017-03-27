@@ -1,24 +1,6 @@
 ---
 namespace.provisioning:
   objects:
-    Definition:
-        enabled: True
-        help: "Definition"
-        value: _tendrl/definitions/data
-        list: _tendrl/definitions/data
-        attrs:
-            master:
-                help: master definitions
-                type: String
-    Config:
-        enabled: True
-        help: "Config"
-        value: _tendrl/config/data
-        list: _tendrl/config/
-        attrs:
-            data:
-                help: config
-                type: String
     TendrlContext:
       enabled: True
       attrs:
