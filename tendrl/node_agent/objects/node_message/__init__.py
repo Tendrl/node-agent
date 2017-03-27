@@ -4,15 +4,13 @@ from tendrl.commons import objects
 
 
 class NodeMessage(message, objects.BaseObject):
+    internal = True
     def __init__(self, **node_message):
+        self._defs = {}
         super(NodeMessage, self).__init__(**node_message)
 
         self.value = 'nodes/%s/Messages/%s'
         self._etcd_cls = _NodeMessageEtcd
-
-    def load_definition(self):
-        return {}
-
 
 class _NodeMessageEtcd(etcdobj.EtcdObj):
     """Node message object, lazily updated

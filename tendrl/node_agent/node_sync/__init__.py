@@ -85,7 +85,8 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 NS.node_context = NS.node_context.load()
                 current_tags = json.loads(NS.node_context.tags)
                 tags += current_tags
-                NS.tendrl.objects.NodeContext(tags=list(set(tags))).save()
+                NS.node_Context.tags = list(set(tags))
+                NS.node_context.save()
                 gevent.sleep(interval)
                 # Check if Node is part of any Tendrl imported/created sds cluster
                 try:
@@ -155,7 +156,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                                 priority=priority,
                                 publisher=NS.publisher_id,
                                 payload={"message": "node_sync, Updating"
-                                                    "detected platform"
+                                                    "cluster node context"
                                          }
                             )
                         )

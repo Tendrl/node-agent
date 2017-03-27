@@ -7,6 +7,10 @@ from tendrl.commons import manager as commons_manager
 from tendrl.commons import TendrlNS
 from tendrl.commons.event import Event
 from tendrl.commons.message import Message
+from tendrl.node_agent.provisioner.ceph.manager import \
+    ProvisioningManager as CephProvisioningManager
+from tendrl.node_agent.provisioner.gluster.manager import \
+    ProvisioningManager as GlusterProvisioningManager
 
 from tendrl.integrations import ceph
 from tendrl.integrations import gluster
@@ -14,7 +18,6 @@ from tendrl import node_agent
 from tendrl.node_agent import central_store
 from tendrl.node_agent.message.handler import MessageHandler
 from tendrl.node_agent import node_sync
-from tendrl.node_agent.provisioner.ceph.manager import ProvisioningManager
 from tendrl import provisioning
 
 
@@ -39,23 +42,22 @@ def main():
     TendrlNS()
 
     # Init NS.provisioning
-    provisioning.ProvisioningNS()
+    # TODO(team) remove NS.provisioner and use NS.provisioning.{ceph, gluster}
+    #provisioning.ProvisioningNS()
 
     # Init NS.integrations.ceph
-    ceph.CephIntegrationNS()
+    # TODO(team) add all short circuited ceph(import/create) NS.tendrl.flows to NS.integrations.ceph
+    #ceph.CephIntegrationNS()
 
     # Init NS.integrations.gluster
-    gluster.GlusterIntegrationNS()
+    # TODO(team) add all short circuited ceph(import/create) NS.tendrl.flows to NS.integrations.ceph
+    #gluster.GlusterIntegrationNS()
 
     # Compile all definitions
     NS.compiled_definitions = \
         NS.node_agent.objects.CompiledDefinitions()
     NS.compiled_definitions.merge_definitions([
-        NS.tendrl.definitions, NS.node_agent.definitions,
-        NS.provisioning.definitions,
-        NS.integrations.ceph.definitions,
-        NS.integrations.gluster.definitions
-    ])
+        NS.tendrl.definitions, NS.node_agent.definitions])
     NS.node_agent.compiled_definitions = NS.compiled_definitions
 
     # Every process needs to set a NS.type
@@ -65,8 +67,6 @@ def main():
     NS.central_store_thread = central_store.NodeAgentEtcdCentralStore()
     NS.first_node_inventory_sync = True
     NS.state_sync_thread = node_sync.NodeAgentSyncThread()
-    # TODO(team) the prov plugin to read from a config file
-    NS.provisioner = ProvisioningManager("CephInstallerPlugin")
 
     NS.compiled_definitions.save()
     NS.node_context.save()
@@ -85,7 +85,14 @@ def main():
     NS.node_agent.config.save()
     NS.publisher_id = "node_agent"
     NS.message_handler_thread = MessageHandler()
+    NS.publisher_id = "node_agent"
 
+    NS.ceph_provisioner = CephProvisioningManager(
+        NS.tendrl.definitions.get_parsed_defs()["namespace.tendrl"]['ceph_provisioner']
+    )
+    NS.gluster_provisioner = GlusterProvisioningManager(
+        NS.tendrl.definitions.get_parsed_defs()["namespace.tendrl"]['gluster_provisioner']
+    )
 
     m = NodeAgentManager()
     m.start()
