@@ -86,10 +86,10 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                             )
                         )
                     except etcd.EtcdKeyNotFound:
-                    LOG.warning("Node %s is not part of any sds cluster",
-                                NS.node_context.node_id)
+                        LOG.warning("Node %s is not part of any sds cluster",
+                                    NS.node_context.node_id)
                     else:
-                        LOG.info("node_sync, updating cluster tendrl context
+                        LOG.info("node_sync, updating cluster tendrl context")
                         NS.tendrl.objects.ClusterTendrlContext(
                             integration_id=NS.tendrl_context.integration_id,
                             cluster_id=NS.tendrl_context.cluster_id,

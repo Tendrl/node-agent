@@ -13,8 +13,8 @@ namespace.node_agent:
     Config:
         enabled: True
         help: "Config"
-        value: _tendrl/config/data
-        list: _tendrl/config/
+        value: _NS/node_agent/config/data
+        list: _NS/node_agent/config
         attrs:
             data:
                 help: config
