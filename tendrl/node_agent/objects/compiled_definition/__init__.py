@@ -10,13 +10,13 @@ from tendrl.node_agent.objects.compiled_definition import definitions
 class CompiledDefinitions(objects.BaseObject):
     internal = True
     def __init__(self, *args, **kwargs):
+        self._defs = {}
         super(CompiledDefinitions, self).__init__(*args, **kwargs)
 
         self.value = '_NS/node_agent/compiled_definitions'
         self.data = definitions.data
         self._parsed_defs = yaml.safe_load(self.data)
         self._etcd_cls = _CompiledDefinitionsEtcd
-        self._defs = {}
 
     def get_parsed_defs(self):
         self._parsed_defs = yaml.safe_load(self.data)

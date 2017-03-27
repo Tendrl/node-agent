@@ -10,13 +10,13 @@ from tendrl.commons import objects
 class Definition(objects.BaseObject):
     internal = True
     def __init__(self, *args, **kwargs):
+        self._defs = {}
         super(Definition, self).__init__(*args, **kwargs)
 
         self.value = '_NS/node_agent/definitions'
         self.data = pkg_resources.resource_string(__name__, "node_agent.yaml")
         self._parsed_defs = yaml.safe_load(self.data)
         self._etcd_cls = _DefinitionEtcd
-        self._defs = {}
 
     def get_parsed_defs(self):
         self._parsed_defs = yaml.safe_load(self.data)
