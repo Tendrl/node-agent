@@ -139,6 +139,24 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                                 priority=priority,
                                 publisher=NS.publisher_id,
                                 payload={"message": "node_sync, updating "
+                                                    "tendrl context"
+                                         }
+                            )
+                        )
+
+                        _detected_cluster = NS.tendrl.objects.DetectedCluster().load()
+                        NS.tendrl_context.cluster_id = _detected_cluster.detected_cluster_id
+                        NS.tendrl_context.cluster_name =\
+                            _detected_cluster.detected_cluster_name
+                        NS.tendrl_context.sds_name = _detected_cluster.sds_pkg_name
+                        NS.tendrl_context.sds_version = _detected_cluster.sds_pkg_version
+                        NS.tendrl_context.save()
+                        
+                        Event(
+                            Message(
+                                priority=priority,
+                                publisher=NS.publisher_id,
+                                payload={"message": "node_sync, updating "
                                                     "cluster tendrl context"
                                          }
                             )
