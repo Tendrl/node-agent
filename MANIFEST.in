@@ -3,7 +3,7 @@ include AUTHORS
 include README.rst
 include ChangeLog
 include tendrl-node-agent.service
-include tendrl-message.socket
+include tendrl-node-agent.socket
 include version.py
 exclude .gitignore
 exclude .gitreview
