@@ -52,13 +52,14 @@ class MessageHandler(gevent.greenlet.Greenlet):
     def bind_unix_listener(self):
         # http://0pointer.de/blog/projects/systemd.html (search "file
         # descriptor 3")
-        socket_fd = 3
-        self.sock = socket.fromfd(socket_fd, socket.AF_UNIX,
-                                  socket.SOCK_STREAM)
-        self.sock.setblocking(0)
-        self.sock.listen(50)
-            except (TypeError, BlockingIOError, socket_error, ValueError):
+        try:
+            socket_fd = 3
+            self.sock = socket.fromfd(socket_fd, socket.AF_UNIX,
+                                      socket.SOCK_STREAM)
+            self.sock.setblocking(0)
+            self.sock.listen(50)
+            return self.sock
+        except (TypeError, BlockingIOError, socket_error, ValueError):
                 exc_type, exc_value, exc_tb = sys.exc_info()
                 traceback.print_exception(exc_type, exc_value, exc_tb,
                                           file=sys.stderr)
-        return self.sock
