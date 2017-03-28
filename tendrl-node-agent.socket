@@ -1,5 +1,6 @@
 [Unit]
 Description=Tendrl message socket for logging
+PartOf=tendrl-node-agent.service
 
 [Socket]
 ListenSequentialPacket=/var/run/tendrl/message.sock
