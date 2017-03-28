@@ -8,19 +8,19 @@ payload = {
 "parameters": {
     "Node[]": ["81720b6c-6732-49dd-ad32-15845f199c79",
                "ab003bbc-00cd-4b74-b236-f19c2c33b96b"],
-    "sds_type": "ceph",
-    "sds_version": "10.2.5",
-    "name": "MyCluster",
-        "fsid": "140cd3d5-58e4-4935-a954-d946ceff371d",
-        "public_network": "10.70.40.0/22",
-        "cluster_network": "10.70.40.0/22",
-        "ceph_conf_overrides": {
+    "TendrlContext.sds_name": "ceph",
+    "TendrlContext.sds_version": "10.2.5",
+    "TendrlContext.cluster_name": "MyCluster",
+    "TendrlContext.cluster_id": "140cd3d5-58e4-4935-a954-d946ceff371d",
+    "Cluster.public_network": "10.70.40.0/22",
+    "Cluster.cluster_network": "10.70.40.0/22",
+    "Cluster.conf_overrides": {
             "global": {
                 "osd_pool_default_pg_num": 128,
                 "pool_default_pgp_num": 1
             }
         },
-    "node_configuration": {
+    "Cluster.node_configuration": {
         "81720b6c-6732-49dd-ad32-15845f199c79": {
             "role": "ceph/mon",
             "provisioning_ip": "10.70.43.3",
