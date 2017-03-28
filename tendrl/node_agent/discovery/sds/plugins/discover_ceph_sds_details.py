@@ -68,9 +68,6 @@ class DiscoverCephStorageSystem(DiscoverSDSPlugin):
                 )
                 if "global" in raw_data:
                     ret_val['detected_cluster_id'] = raw_data['global']['fsid']
-                    ret_val['cluster_attrs'] = {
-                        'fsid': raw_data['global']['fsid'],
-                        'name': 'ceph'
-                    }
+                    ret_val['detected_cluster_name'] = cluster_name
 
             return ret_val
