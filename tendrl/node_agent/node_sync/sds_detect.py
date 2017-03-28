@@ -36,6 +36,8 @@ def load_and_execute_sds_discovery_plugins():
                 NS.tendrl.objects.DetectedCluster(
                     detected_cluster_id=sds_details.get(
                         'detected_cluster_id'),
+                    detected_cluster_name=sds_details.get(
+                        'detected_cluster_name'),
                     sds_pkg_name=sds_details.get('pkg_name'),
                     sds_pkg_version=sds_details.get('pkg_version'),
                 ).save()

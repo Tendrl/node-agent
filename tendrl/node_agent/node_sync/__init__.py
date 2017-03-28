@@ -85,11 +85,25 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 NS.node_context = NS.node_context.load()
                 current_tags = json.loads(NS.node_context.tags)
                 tags += current_tags
-                NS.node_Context.tags = list(set(tags))
+                NS.node_context.tags = list(set(tags))
                 NS.node_context.save()
                 gevent.sleep(interval)
                 # Check if Node is part of any Tendrl imported/created sds cluster
                 try:
+                    Event(
+                        Message(
+                            priority=priority,
+                            publisher=NS.publisher_id,
+                            payload={"message": "Refresh /indexes/machine_id/%s == Node %s" % (
+                                NS.node_context.machine_id,
+                                NS.node_context.node_id)
+                                     }
+                        )
+                    )
+
+                    index_key = "/indexes/machine_id/%s" % NS.node_context.machine_id
+                    NS.etcd_orm.client.write(index_key, NS.node_context.node_id)
+
                     NS.tendrl_context = NS.tendrl_context.load()
                     Event(
                         Message(
@@ -134,6 +148,24 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                             )
                         )
                     else:
+                        Event(
+                            Message(
+                                priority=priority,
+                                publisher=NS.publisher_id,
+                                payload={"message": "node_sync, updating "
+                                                    "tendrl context"
+                                         }
+                            )
+                        )
+
+                        _detected_cluster = NS.tendrl.objects.DetectedCluster().load()
+                        NS.tendrl_context.cluster_id = _detected_cluster.detected_cluster_id
+                        NS.tendrl_context.cluster_name =\
+                            _detected_cluster.detected_cluster_name
+                        NS.tendrl_context.sds_name = _detected_cluster.sds_pkg_name
+                        NS.tendrl_context.sds_version = _detected_cluster.sds_pkg_version
+                        NS.tendrl_context.save()
+                        
                         Event(
                             Message(
                                 priority=priority,
