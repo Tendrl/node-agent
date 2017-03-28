@@ -87,6 +87,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 tags += current_tags
                 NS.node_context.tags = list(set(tags))
                 NS.node_context.save()
+                NS.tendrl_context = NS.tendrl_context.load()
                 gevent.sleep(interval)
                 # Check if Node is part of any Tendrl imported/created sds cluster
                 try:
@@ -104,7 +105,6 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                     index_key = "/indexes/machine_id/%s" % NS.node_context.machine_id
                     NS.etcd_orm.client.write(index_key, NS.node_context.node_id)
 
-                    NS.tendrl_context = NS.tendrl_context.load()
                     Event(
                         Message(
                             priority=priority,
@@ -157,14 +157,6 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                                          }
                             )
                         )
-
-                        _detected_cluster = NS.tendrl.objects.DetectedCluster().load()
-                        NS.tendrl_context.cluster_id = _detected_cluster.detected_cluster_id
-                        NS.tendrl_context.cluster_name =\
-                            _detected_cluster.detected_cluster_name
-                        NS.tendrl_context.sds_name = _detected_cluster.sds_pkg_name
-                        NS.tendrl_context.sds_version = _detected_cluster.sds_pkg_version
-                        NS.tendrl_context.save()
                         
                         Event(
                             Message(
