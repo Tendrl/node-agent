@@ -30,7 +30,7 @@ payload = {
             "role": "ceph/osd",
             "provisioning_ip": "10.70.42.183",
             "journal_size": 5192,
-            "journal_colocation": "false",
+            "journal_colocation": False,
             "storage_disks": [{
                 "device": "/dev/vdb",
                 "journal": "/dev/vdc"
