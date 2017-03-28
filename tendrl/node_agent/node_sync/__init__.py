@@ -90,6 +90,20 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 gevent.sleep(interval)
                 # Check if Node is part of any Tendrl imported/created sds cluster
                 try:
+                    Event(
+                        Message(
+                            priority=priority,
+                            publisher=NS.publisher_id,
+                            payload={"message": "Refresh /indexes/machine_id/%s == Node %s" % (
+                                NS.node_context.machine_id,
+                                NS.node_context.node_id)
+                                     }
+                        )
+                    )
+
+                    index_key = "/indexes/machine_id/%s" % NS.node_context.machine_id
+                    NS.etcd_orm.client.write(index_key, NS.node_context.node_id)
+
                     NS.tendrl_context = NS.tendrl_context.load()
                     Event(
                         Message(
