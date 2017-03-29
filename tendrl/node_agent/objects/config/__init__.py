@@ -9,7 +9,7 @@ class Config(objects.BaseObject):
         self._defs = {}
         super(Config, self).__init__(*args, **kwargs)
 
-        self.value = '_tendrl/config/node-agent'
+        self.value = '_NS/node_agent/config'
         self.data = config or cmn_config.load_config(
             'node-agent', "/etc/tendrl/node-agent/node-agent.conf.yaml")
         self._etcd_cls = _ConfigEtcd
@@ -18,5 +18,5 @@ class _ConfigEtcd(etcdobj.EtcdObj):
     """Config etcd object, lazily updated
 
     """
-    __name__ = '_tendrl/config/node-agent'
+    __name__ = '_NS/node_agent/config'
     _tendrl_cls = Config
