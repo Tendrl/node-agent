@@ -1,14 +1,20 @@
+import os
+from io import BlockingIOError
+import sys
+import traceback
+
+
 import gevent.event
 import gevent.greenlet
 from gevent.server import StreamServer
 from gevent import socket
 from gevent.socket import error as socket_error
 from gevent.socket import timeout as socket_timeout
-from io import BlockingIOError
-import sys
+
+
 from tendrl.commons.message import Message
 from tendrl.commons.logger import Logger
-import traceback
+
 
 RECEIVE_DATA_SIZE = 4096
 MESSAGE_SOCK_PATH = "/var/run/tendrl/message.sock"
@@ -62,12 +68,17 @@ class MessageHandler(gevent.greenlet.Greenlet):
             exc_type, exc_value, exc_tb = sys.exc_info()
             traceback.print_exception(exc_type, exc_value, exc_tb,
                                       file=sys.stderr)
-            self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-            if os.path.exists(MESSAGE_SOCK_PATH):
-                os.remove(socket_path)
-            self.sock.setblocking(0)
-            self.sock.bind(MESSAGE_SOCK_PATH)
-            self.sock.listen(50)
+            try:
+                self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                if os.path.exists(MESSAGE_SOCK_PATH):
+                    os.remove(socket_path)
+                self.sock.setblocking(0)
+                self.sock.bind(MESSAGE_SOCK_PATH)
+                self.sock.listen(50)
+            except:
+                exc_type, exc_value, exc_tb = sys.exc_info()
+                traceback.print_exception(exc_type, exc_value, exc_tb,
+                                      file=sys.stderr)
         finally:
             return self.sock
         
