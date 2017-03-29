@@ -5,10 +5,9 @@ from gevent import socket
 from gevent.socket import error as socket_error
 from gevent.socket import timeout as socket_timeout
 from io import BlockingIOError
-import os
 import sys
 from tendrl.commons.message import Message
-from tendrl.node_agent.message.logger import Logger
+from tendrl.commons.logger import Logger
 import traceback
 
 RECEIVE_DATA_SIZE = 4096
