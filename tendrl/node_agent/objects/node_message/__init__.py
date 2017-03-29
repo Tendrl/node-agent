@@ -7,7 +7,8 @@ class NodeMessage(message, objects.BaseObject):
     internal = True
     def __init__(self, **node_message):
         self._defs = {}
-        super(NodeMessage, self).__init__(**node_message)
+        message.__init__(self, **node_message)
+        objects.BaseObject.__init__(self)
 
         self.value = 'nodes/%s/Messages/%s'
         self._etcd_cls = _NodeMessageEtcd
