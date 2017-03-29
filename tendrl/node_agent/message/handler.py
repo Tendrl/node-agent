@@ -64,21 +64,21 @@ class MessageHandler(gevent.greenlet.Greenlet):
                                       socket.SOCK_STREAM)
             self.sock.setblocking(0)
             self.sock.listen(50)
+            return self.sock
         except (TypeError, BlockingIOError, socket_error, ValueError):
             exc_type, exc_value, exc_tb = sys.exc_info()
             traceback.print_exception(exc_type, exc_value, exc_tb,
                                       file=sys.stderr)
-            try:
-                self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-                if os.path.exists(MESSAGE_SOCK_PATH):
-                    os.remove(MESSAGE_SOCK_PATH)
-                self.sock.setblocking(0)
-                self.sock.bind(MESSAGE_SOCK_PATH)
-                self.sock.listen(50)
-            except:
-                exc_type, exc_value, exc_tb = sys.exc_info()
-                traceback.print_exception(exc_type, exc_value, exc_tb,
-                                      file=sys.stderr)
-        finally:
+            pass
+        try:
+            self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            if os.path.exists(MESSAGE_SOCK_PATH):
+                os.remove(MESSAGE_SOCK_PATH)
+            self.sock.setblocking(0)
+            self.sock.bind(MESSAGE_SOCK_PATH)
+            self.sock.listen(50)
             return self.sock
-        
+        except:
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            traceback.print_exception(exc_type, exc_value, exc_tb,
+                                  file=sys.stderr)        
