@@ -85,7 +85,6 @@ def main():
     NS.node_agent.config.save()
     NS.publisher_id = "node_agent"
     NS.message_handler_thread = MessageHandler()
-    NS.publisher_id = "node_agent"
 
     NS.ceph_provisioner = CephProvisioningManager(
         NS.tendrl.definitions.get_parsed_defs()["namespace.tendrl"]['ceph_provisioner']

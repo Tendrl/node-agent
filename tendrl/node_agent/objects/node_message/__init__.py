@@ -3,20 +3,21 @@ from tendrl.commons.message import Message as message
 from tendrl.commons import objects
 
 
-class NodeMessage(message, objects.BaseObject):
+class NodeMessage(objects.BaseObject, message):
     internal = True
     def __init__(self, **node_message):
         self._defs = {}
-        super(NodeMessage, self).__init__(**node_message)
+        message.__init__(self, **node_message)
+        objects.BaseObject.__init__(self)
 
-        self.value = 'nodes/%s/Messages/%s'
+        self.value = 'nodes/%s/messages/%s'
         self._etcd_cls = _NodeMessageEtcd
 
 class _NodeMessageEtcd(etcdobj.EtcdObj):
     """Node message object, lazily updated
 
     """
-    __name__ = 'nodes/%s/Messages/%s'
+    __name__ = 'nodes/%s/messages/%s'
     _tendrl_cls = NodeMessage
 
     def render(self):

@@ -1,5 +1,4 @@
 payload = {
-"integration_id": "89604c6b-2eff-4221-96b4-e41319240240",
 "run": "tendrl.flows.CreateCluster",
 "type": "node",
 "created_from": "API",

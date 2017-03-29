@@ -1,17 +1,22 @@
+import os
+from io import BlockingIOError
+import sys
+import struct
+import traceback
+
+
 import gevent.event
 import gevent.greenlet
 from gevent.server import StreamServer
 from gevent import socket
 from gevent.socket import error as socket_error
 from gevent.socket import timeout as socket_timeout
-from io import BlockingIOError
-import os
-import sys
-from tendrl.commons.message import Message
-from tendrl.node_agent.message.logger import Logger
-import traceback
 
-RECEIVE_DATA_SIZE = 4096
+
+from tendrl.commons.message import Message
+from tendrl.commons.logger import Logger
+
+
 MESSAGE_SOCK_PATH = "/var/run/tendrl/message.sock"
 
 
@@ -25,8 +30,11 @@ class MessageHandler(gevent.greenlet.Greenlet):
 
     def read_socket(self, sock, *args):
         try:
-            self.data = sock.recv(RECEIVE_DATA_SIZE)
-            message = Message.from_json(self.data)
+            size = self._msgLength(sock)
+            data = self._read(sock, size)
+            frmt = "=%ds" % size
+            msg = struct.unpack(frmt, data)
+            message = Message.from_json(msg[0])
             Logger(message)
         except (socket_error, socket_timeout):
             exc_type, exc_value, exc_tb = sys.exc_info()
@@ -38,7 +46,21 @@ class MessageHandler(gevent.greenlet.Greenlet):
             exc_type, exc_value, exc_tb = sys.exc_info()
             traceback.print_exception(
                 exc_type, exc_value, exc_tb, file=sys.stderr)
-
+            
+    def _read(self, sock, size):
+        data = ''
+        while len(data) < size:
+            dataTmp = sock.recv(size-len(data))
+            data += dataTmp
+            if dataTmp == '':
+                raise RuntimeError("Message socket connection broken")
+        return data
+    
+    def _msgLength(self, sock):
+        d = self._read(sock, 4)
+        s = struct.unpack('=I', d)
+        return s[0]
+    
     def _run(self):
         try:
             self.server.serve_forever()
@@ -59,16 +81,21 @@ class MessageHandler(gevent.greenlet.Greenlet):
                                       socket.SOCK_STREAM)
             self.sock.setblocking(0)
             self.sock.listen(50)
+            return self.sock
         except (TypeError, BlockingIOError, socket_error, ValueError):
-                exc_type, exc_value, exc_tb = sys.exc_info()
-                traceback.print_exception(exc_type, exc_value, exc_tb,
-                                          file=sys.stderr)
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            traceback.print_exception(exc_type, exc_value, exc_tb,
+                                      file=sys.stderr)
+            pass
+        try:
             self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
             if os.path.exists(MESSAGE_SOCK_PATH):
-                os.remove(socket_path)
+                os.remove(MESSAGE_SOCK_PATH)
             self.sock.setblocking(0)
             self.sock.bind(MESSAGE_SOCK_PATH)
             self.sock.listen(50)
-        finally:
             return self.sock
-        
+        except:
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            traceback.print_exception(exc_type, exc_value, exc_tb,
+                                  file=sys.stderr)        
