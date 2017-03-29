@@ -10,14 +10,14 @@ class ClusterMessage(objects.BaseObject, message):
         message.__init__(self, **cluster_message)
         objects.BaseObject.__init__(self)
         
-        self.value = 'clusters/%s/Messages/%s'
+        self.value = 'clusters/%s/messages/%s'
         self._etcd_cls = _ClusterMessageEtcd
 
 class _ClusterMessageEtcd(etcdobj.EtcdObj):
     """Cluster message object, lazily updated
 
     """
-    __name__ = 'clusters/%s/Messages/%s'
+    __name__ = 'clusters/%s/messages/%s'
     _tendrl_cls = ClusterMessage
 
     def render(self):
