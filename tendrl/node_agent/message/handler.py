@@ -59,9 +59,9 @@ class MessageHandler(gevent.greenlet.Greenlet):
             self.sock.setblocking(0)
             self.sock.listen(50)
         except (TypeError, BlockingIOError, socket_error, ValueError):
-                exc_type, exc_value, exc_tb = sys.exc_info()
-                traceback.print_exception(exc_type, exc_value, exc_tb,
-                                          file=sys.stderr)
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            traceback.print_exception(exc_type, exc_value, exc_tb,
+                                      file=sys.stderr)
             self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
             if os.path.exists(MESSAGE_SOCK_PATH):
                 os.remove(socket_path)
