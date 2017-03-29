@@ -9,14 +9,14 @@ class Message(objects.BaseObject, message):
         self._defs = {}
         message.__init__(self, **message_arg)
         objects.BaseObject.__init__(self)
-        self.value = 'Messages/events/%s'
+        self.value = 'messages/events/%s'
         self._etcd_cls = _MessageEtcd
 
 class _MessageEtcd(etcdobj.EtcdObj):
     """Message object, lazily updated
 
     """
-    __name__ = 'Messages/events/%s'
+    __name__ = 'messages/events/%s'
     _tendrl_cls = Message
 
     def render(self):
