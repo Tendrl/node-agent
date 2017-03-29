@@ -12,6 +12,7 @@ from tendrl.node_agent.message.logger import Logger
 import traceback
 
 RECEIVE_DATA_SIZE = 4096
+MESSAGE_SOCK_PATH = "/var/run/tendrl/message.sock"
 
 
 class MessageHandler(gevent.greenlet.Greenlet):
@@ -58,8 +59,16 @@ class MessageHandler(gevent.greenlet.Greenlet):
                                       socket.SOCK_STREAM)
             self.sock.setblocking(0)
             self.sock.listen(50)
-            return self.sock
         except (TypeError, BlockingIOError, socket_error, ValueError):
                 exc_type, exc_value, exc_tb = sys.exc_info()
                 traceback.print_exception(exc_type, exc_value, exc_tb,
                                           file=sys.stderr)
+            self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            if os.path.exists(MESSAGE_SOCK_PATH):
+                os.remove(socket_path)
+            self.sock.setblocking(0)
+            self.sock.bind(MESSAGE_SOCK_PATH)
+            self.sock.listen(50)
+        finally:
+            return self.sock
+        
