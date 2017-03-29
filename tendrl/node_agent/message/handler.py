@@ -71,7 +71,7 @@ class MessageHandler(gevent.greenlet.Greenlet):
             try:
                 self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
                 if os.path.exists(MESSAGE_SOCK_PATH):
-                    os.remove(socket_path)
+                    os.remove(MESSAGE_SOCK_PATH)
                 self.sock.setblocking(0)
                 self.sock.bind(MESSAGE_SOCK_PATH)
                 self.sock.listen(50)
