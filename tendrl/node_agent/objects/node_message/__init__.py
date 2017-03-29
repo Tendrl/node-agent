@@ -3,7 +3,7 @@ from tendrl.commons.message import Message as message
 from tendrl.commons import objects
 
 
-class NodeMessage(message, objects.BaseObject):
+class NodeMessage(objects.BaseObject, message):
     internal = True
     def __init__(self, **node_message):
         self._defs = {}
