@@ -1,6 +1,7 @@
 import os
 from io import BlockingIOError
 import sys
+import struct
 import traceback
 
 
@@ -16,7 +17,6 @@ from tendrl.commons.message import Message
 from tendrl.commons.logger import Logger
 
 
-RECEIVE_DATA_SIZE = 4096
 MESSAGE_SOCK_PATH = "/var/run/tendrl/message.sock"
 
 
@@ -30,8 +30,11 @@ class MessageHandler(gevent.greenlet.Greenlet):
 
     def read_socket(self, sock, *args):
         try:
-            self.data = sock.recv(RECEIVE_DATA_SIZE)
-            message = Message.from_json(self.data)
+            size = self._msgLength(sock)
+            data = self._read(sock, size)
+            frmt = "=%ds" % size
+            msg = struct.unpack(frmt, data)
+            message = Message.from_json(msg[0])
             Logger(message)
         except (socket_error, socket_timeout):
             exc_type, exc_value, exc_tb = sys.exc_info()
@@ -43,7 +46,21 @@ class MessageHandler(gevent.greenlet.Greenlet):
             exc_type, exc_value, exc_tb = sys.exc_info()
             traceback.print_exception(
                 exc_type, exc_value, exc_tb, file=sys.stderr)
-
+            
+    def _read(self, sock, size):
+        data = ''
+        while len(data) < size:
+            dataTmp = sock.recv(size-len(data))
+            data += dataTmp
+            if dataTmp == '':
+                raise RuntimeError("Message socket connection broken")
+        return data
+    
+    def _msgLength(self, sock):
+        d = self._read(sock, 4)
+        s = struct.unpack('=I', d)
+        return s[0]
+    
     def _run(self):
         try:
             self.server.serve_forever()
