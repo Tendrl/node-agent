@@ -3,12 +3,13 @@ from tendrl.commons.message import Message as message
 from tendrl.commons import objects
 
 
-class ClusterMessage(message, objects.BaseObject):
+class ClusterMessage(objects.BaseObject, message):
     internal = True
     def __init__(self, **cluster_message):
         self._defs = {}
-        super(ClusterMessage, self).__init__(**cluster_message)
-
+        message.__init__(self, **cluster_message)
+        objects.BaseObject.__init__(self)
+        
         self.value = 'clusters/%s/Messages/%s'
         self._etcd_cls = _ClusterMessageEtcd
 
