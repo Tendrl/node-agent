@@ -25,17 +25,6 @@ TENDRL_SERVICES = [
     "ceph-osd@*"
 ]
 
-TENDRL_SERVICE_TAGS = {
-    "tendrl-node-agent": "tendrl/node",
-    "etcd": "tendrl/central-store",
-    "tendrl-apid": "tendrl/server",
-    "tendrl-gluster-integration": "tendrl/integration/gluster",
-    "tendrl-ceph-integration": "tendrl/integration/ceph",
-    "glusterd": "gluster/server",
-    "ceph-mon": "ceph/mon",
-    "ceph-osd": "ceph/osd"
-}
-
 
 class NodeAgentSyncThread(sds_sync.StateSyncThread):
     def _run(self):
@@ -68,7 +57,10 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 for service in TENDRL_SERVICES:
                     s = NS.tendrl.objects.Service(service=service)
                     if s.running:
-                        tags.append(TENDRL_SERVICE_TAGS[service.strip("@*")])
+                        service_tag = NS.compiled_definitions.get_parsed_defs()[
+                            'namespace.tendrl'
+                        ]['tags'][service.strip("@*")]
+                        tags.append(service_tag)
                     s.save()
                 gevent.sleep(interval)
 
