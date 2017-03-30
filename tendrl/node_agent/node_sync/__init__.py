@@ -38,10 +38,9 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
         while not self._complete.is_set():
             try:
                 priority = "debug"
-                interval = 10
+                interval = 2
                 if NS.first_node_inventory_sync:
                     priority = "info"
-                    interval = 2
                     NS.first_node_inventory_sync = False
 
                 gevent.sleep(interval)
