@@ -52,7 +52,6 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 interval = 2
                 if NS.first_node_inventory_sync:
                     priority = "info"
-                    interval = 2
                     NS.first_node_inventory_sync = False
 
                 gevent.sleep(interval)
