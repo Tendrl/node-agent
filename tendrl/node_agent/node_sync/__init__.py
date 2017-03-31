@@ -161,7 +161,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                             node_id=NS.node_context.node_id,
                             fqdn=NS.node_context.fqdn,
                             status=NS.node_context.status,
-                            tags=tags
+                            tags=NS.node_context.tags
                         ).save()
                         gevent.sleep(interval)
 
