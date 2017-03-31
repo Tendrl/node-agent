@@ -13,6 +13,9 @@ class ClusterMessage(objects.BaseObject, message):
         self.value = 'clusters/%s/messages/%s'
         self._etcd_cls = _ClusterMessageEtcd
 
+    def save(self):
+        super(ClusterMessage, self).save(update=False)
+
 class _ClusterMessageEtcd(etcdobj.EtcdObj):
     """Cluster message object, lazily updated
 

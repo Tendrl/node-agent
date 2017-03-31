@@ -11,7 +11,10 @@ class Message(objects.BaseObject, message):
         objects.BaseObject.__init__(self)
         self.value = 'messages/events/%s'
         self._etcd_cls = _MessageEtcd
-
+    
+    def save(self):
+        super(Message, self).save(update=False)
+        
 class _MessageEtcd(etcdobj.EtcdObj):
     """Message object, lazily updated
 

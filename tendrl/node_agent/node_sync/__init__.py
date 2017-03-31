@@ -96,7 +96,17 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                     index_key = "/indexes/machine_id/%s" % NS.node_context.machine_id
                     NS.etcd_orm.client.write(index_key, NS.node_context.node_id)
 
-                    Event(
+                except etcd.EtcdKeyNotFound:
+                    pass
+
+                if NS.tendrl_context.integration_id:
+                    try:
+                        NS.etcd_orm.client.read(
+                            "/clusters/%s" % (
+                                NS.tendrl_context.integration_id
+                            )
+                        )
+                        Event(
                         Message(
                             priority=priority,
                             publisher=NS.publisher_id,
@@ -107,26 +117,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                                      }
                         )
                     )
-                except etcd.EtcdKeyNotFound:
-                    Event(
-                        Message(
-                            priority=priority,
-                            publisher=NS.publisher_id,
-                            payload={"message": "Node %s is not part of any "
-                                                "sds cluster" %
-                                                NS.node_context.node_id
-                                     }
-                        )
-                    )
-                    pass
 
-                if NS.tendrl_context.integration_id:
-                    try:
-                        NS.etcd_orm.client.read(
-                            "/clusters/%s" % (
-                                NS.tendrl_context.integration_id
-                            )
-                        )
                     except etcd.EtcdKeyNotFound:
                         Event(
                             Message(
@@ -138,17 +129,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                                          }
                             )
                         )
-                    else:
-                        Event(
-                            Message(
-                                priority=priority,
-                                publisher=NS.publisher_id,
-                                payload={"message": "node_sync, updating "
-                                                    "tendrl context"
-                                         }
-                            )
-                        )
-                        
+                    else:                        
                         Event(
                             Message(
                                 priority=priority,
