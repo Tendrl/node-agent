@@ -106,7 +106,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                                 NS.tendrl_context.integration_id
                             )
                         )
-                    Event(
+                        Event(
                         Message(
                             priority=priority,
                             publisher=NS.publisher_id,
