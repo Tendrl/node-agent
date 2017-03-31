@@ -13,6 +13,9 @@ class NodeMessage(objects.BaseObject, message):
         self.value = 'nodes/%s/messages/%s'
         self._etcd_cls = _NodeMessageEtcd
 
+    def save(self):
+        super(NodeMessage, self).save(update=False)
+
 class _NodeMessageEtcd(etcdobj.EtcdObj):
     """Node message object, lazily updated
 
