@@ -1,5 +1,5 @@
 Name: tendrl-node-agent
-Version: 1.2.1
+Version: 1.2.2
 Release: 1%{?dist}
 BuildArch: noarch
 Summary: Module for Tendrl Node Agent
@@ -76,5 +76,8 @@ py.test -v tendrl/node-agent/tests || :
 %{_unitdir}/tendrl-node-agent.socket
 
 %changelog
+* Sat Apr 01 2017 Rohan Kanade <rkanade@redhat.com> - 1.2.2-1
+- Release tendrl-node-agent v1.2.2
+
 * Tue Nov 01 2016 Timothy Asir Jeyasingh <tjeyasin@redhat.com> - 0.0.1-1
 - Initial build.
