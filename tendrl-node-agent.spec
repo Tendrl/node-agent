@@ -76,7 +76,7 @@ py.test -v tendrl/node-agent/tests || :
 %config(noreplace) %{_sysconfdir}/tendrl/node-agent/*.yaml
 %{_unitdir}/tendrl-node-agent.service
 %{_unitdir}/tendrl-node-agent.socket
-%config(noreplace) %{_sysconfdir}/rsyslog.d/21-cloudinit.conf
+%config(noreplace) %{_sysconfdir}/rsyslog.d/tendrl-node-agent.conf
 
 %changelog
 * Sat Apr 01 2017 Rohan Kanade <rkanade@redhat.com> - 1.2.2-1
