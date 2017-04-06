@@ -60,6 +60,8 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                             'namespace.tendrl'
                         ]['tags'][service.strip("@*")]
                         tags.append(service_tag)
+                        if service_tag == "tendrl/server":
+                            tags.append("tendrl/monitor")
                     s.save()
                 gevent.sleep(interval)
 
@@ -78,6 +80,21 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 tags += current_tags
                 NS.node_context.tags = list(set(tags))
                 NS.node_context.save()
+                
+                # Update /indexes/tags/:tag = [node_ids]
+                for tag in NS.node_context.tags:
+                    index_key = "/indexes/tags/%s" % tag
+                    try:
+                        _node_ids = []
+                        _node_ids = NS.etcd_orm.client.read(index_key).value
+                        _node_ids = json.loads(_node_ids)
+                    except etcd.EtcdKeyNotFound:
+                        pass
+                    finally:
+                        _node_ids += [NS.node_context.node_id]
+                        _node_ids = list(set(_node_ids))
+                        NS.etcd_orm.client.write(index_key, json.dumps(_node_ids))
+                        
                 NS.tendrl_context = NS.tendrl_context.load()
                 gevent.sleep(interval)
                 # Check if Node is part of any Tendrl imported/created sds cluster
