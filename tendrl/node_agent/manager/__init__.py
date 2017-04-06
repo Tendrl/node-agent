@@ -108,9 +108,20 @@ def main():
         )
         complete.set()
         m.stop()
+    
+    def reload_config():
+        Event(
+            Message(
+                priority="info",
+                publisher=NS.publisher_id,
+                payload={"message": "Signal handler: SIGHUP"}
+            )
+        )
+        NS.config = NS.config.__class__()
 
     gevent.signal(signal.SIGTERM, shutdown)
     gevent.signal(signal.SIGINT, shutdown)
+    gevent.signal(signal.SIGHUP, reload_config)
 
     while not complete.is_set():
         complete.wait(timeout=1)
