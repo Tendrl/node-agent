@@ -1,6 +1,32 @@
 ---
 namespace.node_agent:
+  flows:
+    GenerateJournalMapping:
+      help: Generate journal mapping
+      enabled: true
+      inputs:
+        mandatory:
+          - TendrlContext.integration_id
+          - Cluster.node_configuration
+      run: node_agent.flows.GenerateJournalMapping
+      uuid: 3f94a48a-05d7-408c-b400-e27827f4eacc
+      type: Create
+      version: 1
   objects:
+    JournalMapping:
+      enabled: true
+      help: JournalMapping
+      value: _tmp/$TendrlContext.integration_id/journal_mapping/$node_id
+      attrs:
+        node_id:
+          help: Node Id
+          type: String
+        storage_disks:
+          help: Storage disks mapped with journals
+          type: "Dict[]"
+        unallocated_disks:
+          help: Un-allocated disks
+          type: "String[]"
     GlobalNetwork:
       attrs:
         interface:
