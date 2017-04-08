@@ -22,7 +22,8 @@ TENDRL_SERVICES = [
     "tendrl-ceph-integration",
     "glusterd",
     "ceph-mon@*",
-    "ceph-osd@*"
+    "ceph-osd@*",
+    "ceph-installer"
 ]
 
 
