@@ -67,7 +67,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                     s.save()
                     
                 if NS.tendrl_context.integration_id:
-                    integration_tag = "integration/%s" % NS.tendrl_context.integration_id
+                    integration_tag = "tendrl/integration/%s" % NS.tendrl_context.integration_id
                     tags.append(integration_tag)
                     
                 gevent.sleep(interval)
