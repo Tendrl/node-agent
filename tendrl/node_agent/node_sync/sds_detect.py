@@ -41,6 +41,13 @@ def load_and_execute_sds_discovery_plugins():
                     sds_pkg_name=sds_details.get('pkg_name'),
                     sds_pkg_version=sds_details.get('pkg_version'),
                 ).save()
+                NS.node_context = NS.node_context.load()
+                current_tags = json.loads(NS.node_context.tags)
+                detected_cluster_tag = "detected_cluster/%s" % sds_details['detected_cluster_id']
+                current_tags += [detected_cluster_tag]
+                NS.node_context.tags = list(set(tags))
+                NS.node_context.save()
+
             except etcd.EtcdException as ex:
                 Event(
                     ExceptionMessage(
