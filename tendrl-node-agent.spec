@@ -21,6 +21,7 @@ Requires: hwinfo
 Requires: python-netifaces
 Requires: python-netaddr
 Requires: python-setuptools
+Requires: rsyslog
 
 %description
 Python module for Tendrl node bridge to manage storage node in the sds cluster
@@ -48,6 +49,8 @@ install -Dm 0644 tendrl-node-agent.socket $RPM_BUILD_ROOT%{_unitdir}/tendrl-node
 install -Dm 0644 etc/tendrl/node-agent/node-agent.conf.yaml.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node-agent/node-agent.conf.yaml
 install -Dm 0644 etc/tendrl/node-agent/logging.yaml.syslog.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node-agent/node-agent_logging.yaml
 install -Dm 644 etc/tendrl/node-agent/*.sample $RPM_BUILD_ROOT%{_datadir}/tendrl/node-agent/
+mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/rsyslog.d
+install -Dm 644 etc/rsyslog.d/tendrl-node-agent.conf $RPM_BUILD_ROOT/%{_sysconfdir}/rsyslog.d/tendrl-node-agent.conf
 
 %post
 getent group tendrl >/dev/null || groupadd -r tendrl
@@ -70,10 +73,10 @@ py.test -v tendrl/node-agent/tests || :
 %doc README.rst
 %license LICENSE
 %{_datadir}/tendrl/node-agent/
-%{_sysconfdir}/tendrl/node-agent/node-agent.conf.yaml
-%{_sysconfdir}/tendrl/node-agent/node-agent_logging.yaml
+%config(noreplace) %{_sysconfdir}/tendrl/node-agent/*.yaml
 %{_unitdir}/tendrl-node-agent.service
 %{_unitdir}/tendrl-node-agent.socket
+%config(noreplace) %{_sysconfdir}/rsyslog.d/tendrl-node-agent.conf
 
 %changelog
 * Sat Apr 01 2017 Rohan Kanade <rkanade@redhat.com> - 1.2.2-1

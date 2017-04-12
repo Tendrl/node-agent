@@ -22,7 +22,8 @@ TENDRL_SERVICES = [
     "tendrl-ceph-integration",
     "glusterd",
     "ceph-mon@*",
-    "ceph-osd@*"
+    "ceph-osd@*",
+    "ceph-installer"
 ]
 
 
@@ -37,6 +38,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
         )
         while not self._complete.is_set():
             try:
+                NS.tendrl_context = NS.tendrl_context.load()
                 priority = "debug"
                 interval = 2
                 if NS.first_node_inventory_sync:
@@ -60,7 +62,12 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                             'namespace.tendrl'
                         ]['tags'][service.strip("@*")]
                         tags.append(service_tag)
-                    s.save()
+                        if "tendrl/integration" in service_tag:
+                            if NS.tendrl_context.integration_id:
+                                tags.append("tendrl/integration/%s" % NS.tendrl_context.integration_id)
+                        if service_tag == "tendrl/server":
+                            tags.append("tendrl/monitor")
+                    s.save()                    
                 gevent.sleep(interval)
 
                 # updating node context with latest tags
@@ -78,7 +85,21 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 tags += current_tags
                 NS.node_context.tags = list(set(tags))
                 NS.node_context.save()
-                NS.tendrl_context = NS.tendrl_context.load()
+                
+                # Update /indexes/tags/:tag = [node_ids]
+                for tag in NS.node_context.tags:
+                    index_key = "/indexes/tags/%s" % tag
+                    try:
+                        _node_ids = []
+                        _node_ids = NS.etcd_orm.client.read(index_key).value
+                        _node_ids = json.loads(_node_ids)
+                    except etcd.EtcdKeyNotFound:
+                        pass
+                    finally:
+                        _node_ids += [NS.node_context.node_id]
+                        _node_ids = list(set(_node_ids))
+                        NS.etcd_orm.client.write(index_key, json.dumps(_node_ids))
+                        
                 gevent.sleep(interval)
                 # Check if Node is part of any Tendrl imported/created sds cluster
                 try:
