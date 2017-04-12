@@ -1,0 +1,16 @@
+strictness: veryhigh
+
+max-line-length: 79
+
+autodetect: false
+
+ignore-paths:
+  - doc
+
+pylint:
+    options:
+        additional-builtins:
+            - NS
+
+pyroma:
+  run: true
