@@ -38,6 +38,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
         )
         while not self._complete.is_set():
             try:
+                NS.tendrl_context = NS.tendrl_context.load()
                 priority = "debug"
                 interval = 2
                 if NS.first_node_inventory_sync:
@@ -64,6 +65,11 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                         if service_tag == "tendrl/server":
                             tags.append("tendrl/monitor")
                     s.save()
+                    
+                if NS.tendrl_context.integration_id:
+                    integration_tag = "integration/%s" % NS.tendrl_context.integration_id
+                    tags.append(integration_tag)
+                    
                 gevent.sleep(interval)
 
                 # updating node context with latest tags
@@ -96,7 +102,6 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                         _node_ids = list(set(_node_ids))
                         NS.etcd_orm.client.write(index_key, json.dumps(_node_ids))
                         
-                NS.tendrl_context = NS.tendrl_context.load()
                 gevent.sleep(interval)
                 # Check if Node is part of any Tendrl imported/created sds cluster
                 try:
