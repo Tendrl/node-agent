@@ -46,7 +46,7 @@ def load_and_execute_sds_discovery_plugins():
                 current_tags = json.loads(NS.node_context.tags)
                 detected_cluster_tag = "detected_cluster/%s" % sds_details['detected_cluster_id']
                 current_tags += [detected_cluster_tag]
-                NS.node_context.tags = list(set(tags))
+                NS.node_context.tags = list(set(current_tags))
                 NS.node_context.save()
 
             except etcd.EtcdException as ex:
