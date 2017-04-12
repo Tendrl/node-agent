@@ -28,6 +28,7 @@ script:
 # reported separately.
 # See: http://borntyping.co.uk/2013/09/02/tox-and-travis/
 env:
+  - TOXENV=vulture
   - TOXENV=pep8
   - TOXENV=check_commit_msg
   - TOXENV=py27-cover-master
