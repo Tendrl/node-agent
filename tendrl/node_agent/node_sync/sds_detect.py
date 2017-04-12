@@ -1,4 +1,5 @@
 import etcd
+import json
 
 from tendrl.commons.event import Event
 from tendrl.commons.message import Message, ExceptionMessage
