@@ -1,3 +1,5 @@
+import importlib
+
 from tendrl.commons.event import Event
 from tendrl.commons.message import Message
 from tendrl.commons.utils.ssh import generate_key
@@ -23,7 +25,14 @@ except ImportError:
 
 
 class GdeployPlugin(ProvisionerBasePlugin):
+    def _reload_modules(self):
+        globals()['install_gluster'] = importlib.import_module('python_gdeploy.actions.install_gluster')
+        globals()['configure_gluster_service'] = importlib.import_module('python_gdeploy.actions.configure_gluster_service')
+        globals()['configure_gluster_firewall'] = importlib.import_module('python_gdeploy.actions.configure_gluster_firewall')
+        globals()['create_cluster'] = importlib.import_module('python_gdeploy.actions.create_cluster')
+
     def setup_gluster_node(self, hosts, packages=None, repo=None):
+        self._reload_modules()
         out, err, rc = install_gluster.install_gluster_packages(
             hosts,
             packages,
@@ -112,6 +121,7 @@ class GdeployPlugin(ProvisionerBasePlugin):
         return True
 
     def create_gluster_cluster(self, hosts):
+        self._reload_modules()
         out, err, rc = create_cluster.create_cluster(
             hosts
         )
