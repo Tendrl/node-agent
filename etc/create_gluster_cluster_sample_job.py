@@ -7,7 +7,7 @@ payload = {
     "parameters": {
         "Node[]": ["81720b6c-6732-49dd-ad32-15845f199c79",
                    "ab003bbc-00cd-4b74-b236-f19c2c33b96b"],
-        "TendrlContext.sds_name": "glusterfs",
+        "TendrlContext.sds_name": "gluster",
         "TendrlContext.sds_version": "3.2.1",
         "TendrlContext.cluster_name": "MyCluster",
         "TendrlContext.cluster_id": "140cd3d5-58e4-4935-a954-d946ceff371d",
