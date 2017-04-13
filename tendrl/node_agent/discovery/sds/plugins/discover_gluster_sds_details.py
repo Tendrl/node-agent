@@ -59,7 +59,7 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
             return ret_val
         lines = out.split('\n')
         ret_val['pkg_version'] = lines[0].split()[1]
-        ret_val['pkg_name'] = lines[0].split()[0]
+        ret_val['pkg_name'] = "gluster"
 
         # form the temporary cluster_id
         cluster_id = self._derive_cluster_id()
