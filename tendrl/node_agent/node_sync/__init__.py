@@ -40,8 +40,9 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
             try:
                 NS.tendrl_context = NS.tendrl_context.load()
                 priority = "debug"
-                interval = 2
+                interval = 8
                 if NS.first_node_inventory_sync:
+                    interval = 2
                     priority = "info"
                     NS.first_node_inventory_sync = False
 
