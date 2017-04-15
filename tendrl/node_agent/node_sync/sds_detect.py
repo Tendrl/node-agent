@@ -10,7 +10,7 @@ from tendrl.node_agent.discovery.sds import manager as sds_manager
 def load_and_execute_sds_discovery_plugins():
     Event(
         Message(
-            priority="info",
+            priority="debug",
             publisher=NS.publisher_id,
             payload={"message": "load_and_execute_sds_discovery_plugins"}
         )
