@@ -10,7 +10,7 @@ def load_and_execute_platform_discovery_plugins():
     # platform plugins
     Event(
         Message(
-            priority="info",
+            priority="debug",
             publisher=NS.publisher_id,
             payload={"message": "load_and_execute_platform_discovery_plugins, "
                                 "platform plugins"
