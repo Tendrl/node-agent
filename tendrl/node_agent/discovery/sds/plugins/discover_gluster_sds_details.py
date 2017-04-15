@@ -51,7 +51,7 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
         if err and 'command not found' in err:
             Event(
                 Message(
-                    priority="info",
+                    priority="debug",
                     publisher=NS.publisher_id,
                     payload={"message": "gluster not installed on host"}
                 )
