@@ -1,6 +1,6 @@
 [Unit]
 Description= A python agent local to every managed storage node in the sds cluster
-Requires=etcd.service tendrl-node-agent.socket 
+Requires=tendrl-node-agent.socket 
 
 [Service]
 Type=simple
