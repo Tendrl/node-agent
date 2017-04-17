@@ -349,7 +349,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                     ExceptionMessage(
                         priority="error",
                         publisher=NS.publisher_id,
-                        payload={"message": "error",
+                        payload={"message": ex.message,
                                  "exception": ex}
                     )
                 )
