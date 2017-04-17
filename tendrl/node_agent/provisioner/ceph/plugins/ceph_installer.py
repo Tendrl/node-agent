@@ -246,10 +246,7 @@ class CephInstallerPlugin(ProvisionerBasePlugin):
                 # }
 
                 res_data = json.loads(resp.data.decode('utf-8'))
-            except (TypeError, ValueError, UnicodeError) as e:
-                raise Exception(
-                    'Server response was not valid JSON: %r' % e)
-            return res_data
+                return res_data
         else:
             return None
 
