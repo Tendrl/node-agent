@@ -232,21 +232,20 @@ class CephInstallerPlugin(ProvisionerBasePlugin):
             self._MGET,
             url)
         if resp.status == 200:
-            try:
-                # Sample response from tasks/{id} api is
-                # Content-Type: application/json
-                # {
-                #     "command": "command arguments flags sample",
-                #     "ended": "2016-01-27T15:03:23.438172",
-                #     "endpoint": "/api/rgw/configure",
-                #     "id": "2207bde6-4346-4a83-984a-40a5c00056c1",
-                #     "started": "2016-01-27T15:03:22.638173",
-                #     "stderr": "command stderr",
-                #     "stdout": "command stdout"
-                # }
+            # Sample response from tasks/{id} api is
+            # Content-Type: application/json
+            # {
+            #     "command": "command arguments flags sample",
+            #     "ended": "2016-01-27T15:03:23.438172",
+            #     "endpoint": "/api/rgw/configure",
+            #     "id": "2207bde6-4346-4a83-984a-40a5c00056c1",
+            #     "started": "2016-01-27T15:03:22.638173",
+            #     "stderr": "command stderr",
+            #     "stdout": "command stdout"
+            # }
 
-                res_data = json.loads(resp.data.decode('utf-8'))
-                return res_data
+            res_data = json.loads(resp.data.decode('utf-8'))
+            return res_data
         else:
             return None
 
