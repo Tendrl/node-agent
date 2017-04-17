@@ -49,12 +49,12 @@ def load_and_execute_sds_discovery_plugins():
                 NS.node_context.tags = list(set(current_tags))
                 NS.node_context.save()
 
-            except etcd.EtcdException as ex:
+            except (etcd.EtcdException, KeyError) as ex:
                 Event(
                     ExceptionMessage(
                         priority="error",
                         publisher=NS.publisher_id,
-                        payload={"message": "Failed to update etcd .",
+                        payload={"message": "Failed to update sds_discovery",
                                  "exception": ex
                                  }
                     )
