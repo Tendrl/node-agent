@@ -33,6 +33,3 @@ class NodeAgentEtcdCentralStore(central_store.EtcdCentralStore):
 
     def save_globalnetwork(self, network):
         NS.etcd_orm.save(network)
-
-    def save_journalmapping(self, mapping):
-        NS.etcd_orm.save(mapping)
