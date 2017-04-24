@@ -1,5 +1,18 @@
 ---
 namespace.node_agent:
+  flows:
+    GenerateJournalMapping:
+      tags:
+        - tendrl/monitor
+      help: Generate journal mapping
+      enabled: true
+      inputs:
+        mandatory:
+          - Cluster.node_configuration
+      run: node_agent.flows.GenerateJournalMapping
+      uuid: 3f94a48a-05d7-408c-b400-e27827f4eacc
+      type: Create
+      version: 1
   objects:
     GlobalNetwork:
       attrs:
