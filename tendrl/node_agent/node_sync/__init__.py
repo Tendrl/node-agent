@@ -97,7 +97,10 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                     except etcd.EtcdKeyNotFound:
                         pass
                     finally:
-                        _node_ids += [NS.node_context.node_id]
+                        if _node_ids is not None:
+                            _node_ids += [NS.node_context.node_id]
+                        else:
+                            _node_ids = [NS.node_context.node_id]
                         _node_ids = list(set(_node_ids))
                         NS.etcd_orm.client.write(index_key, json.dumps(_node_ids))
                         
