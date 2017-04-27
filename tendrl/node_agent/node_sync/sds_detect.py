@@ -32,31 +32,32 @@ def load_and_execute_sds_discovery_plugins():
     # Execute the SDS discovery plugins and tag the nodes with data
     for plugin in sds_discovery_manager.get_available_plugins():
         sds_details = plugin.discover_storage_system()
-        if sds_details:
-            try:
-                NS.tendrl.objects.DetectedCluster(
-                    detected_cluster_id=sds_details.get(
-                        'detected_cluster_id'),
-                    detected_cluster_name=sds_details.get(
-                        'detected_cluster_name'),
-                    sds_pkg_name=sds_details.get('pkg_name'),
-                    sds_pkg_version=sds_details.get('pkg_version'),
-                ).save()
-                NS.node_context = NS.node_context.load()
-                current_tags = json.loads(NS.node_context.tags)
-                detected_cluster_tag = "detected_cluster/%s" % sds_details['detected_cluster_id']
-                current_tags += [detected_cluster_tag]
-                NS.node_context.tags = list(set(current_tags))
-                NS.node_context.save()
+        if 'detected_cluster_id' in sds_details:
+            if sds_details:
+                try:
+                    NS.tendrl.objects.DetectedCluster(
+                        detected_cluster_id=sds_details.get(
+                            'detected_cluster_id'),
+                        detected_cluster_name=sds_details.get(
+                            'detected_cluster_name'),
+                        sds_pkg_name=sds_details.get('pkg_name'),
+                        sds_pkg_version=sds_details.get('pkg_version'),
+                    ).save()
+                    NS.node_context = NS.node_context.load()
+                    current_tags = json.loads(NS.node_context.tags)
+                    detected_cluster_tag = "detected_cluster/%s" % sds_details['detected_cluster_id']
+                    current_tags += [detected_cluster_tag]
+                    NS.node_context.tags = list(set(current_tags))
+                    NS.node_context.save()
 
-            except (etcd.EtcdException, KeyError) as ex:
-                Event(
-                    ExceptionMessage(
-                        priority="error",
-                        publisher=NS.publisher_id,
-                        payload={"message": "Failed to update sds_discovery",
-                                 "exception": ex
-                                 }
+                except (etcd.EtcdException, KeyError) as ex:
+                    Event(
+                        ExceptionMessage(
+                            priority="error",
+                            publisher=NS.publisher_id,
+                            payload={"message": "Failed to update sds_discovery",
+                                     "exception": ex
+                                     }
+                        )
                     )
-                )
-            break
+                break
