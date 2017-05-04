@@ -32,7 +32,8 @@ def load_and_execute_sds_discovery_plugins():
     # Execute the SDS discovery plugins and tag the nodes with data
     for plugin in sds_discovery_manager.get_available_plugins():
         sds_details = plugin.discover_storage_system()
-        if 'detected_cluster_id' in sds_details:
+        if ('detected_cluster_id' in sds_details and
+            sds_details['detected_cluster_id'] != ""):
             if sds_details:
                 try:
                     NS.tendrl.objects.DetectedCluster(
