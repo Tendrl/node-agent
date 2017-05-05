@@ -11,6 +11,7 @@ try:
     from python_gdeploy.actions import configure_gluster_service
     from python_gdeploy.actions import configure_gluster_firewall
     from python_gdeploy.actions import create_cluster
+    from python_gdeploy.actions import remove_host
 except ImportError:
     Event(
         Message(
@@ -30,6 +31,7 @@ class GdeployPlugin(ProvisionerBasePlugin):
         globals()['configure_gluster_service'] = importlib.import_module('python_gdeploy.actions.configure_gluster_service')
         globals()['configure_gluster_firewall'] = importlib.import_module('python_gdeploy.actions.configure_gluster_firewall')
         globals()['create_cluster'] = importlib.import_module('python_gdeploy.actions.create_cluster')
+        globals()['remove_host'] = importlib.import_module('python_gdeploy.actions.remove_host')
 
     def setup_gluster_node(self, hosts, packages=None, repo=None):
         self._reload_modules()
@@ -143,6 +145,68 @@ class GdeployPlugin(ProvisionerBasePlugin):
                     publisher=NS.publisher_id,
                     payload={
                         "message": "Error while creating gluster cluster"
+                        ". Details: %s" % str(out)
+                    },
+                    cluster_id=NS.tendrl_context.integration_id,
+                )
+            )
+            return False
+        return True
+
+    def expand_gluster_cluster(self, host):
+        self._reload_modules()
+        out, err, rc = create_cluster.create_cluster(
+            [host]
+        )
+        if rc == 0:
+            Event(
+                Message(
+                    priority="info",
+                    publisher=NS.publisher_id,
+                    payload={
+                        "message": "gluster cluster expandeded successfully"
+                    },
+                    cluster_id=NS.tendrl_context.integration_id,
+                )
+            )
+        else:
+            Event(
+                Message(
+                    priority="error",
+                    publisher=NS.publisher_id,
+                    payload={
+                        "message": "Error while expanding gluster cluster"
+                        ". Details: %s" % str(out)
+                    },
+                    cluster_id=NS.tendrl_context.integration_id,
+                )
+            )
+            return False
+        return True
+
+    def shrink_gluster_cluster(self, host):
+        self._reload_modules()
+        out, err, rc = remove_host.remove_host(
+            [host]
+        )
+        if rc == 0:
+            Event(
+                Message(
+                    priority="info",
+                    publisher=NS.publisher_id,
+                    payload={
+                        "message": "gluster cluster shrinked successfully"
+                    },
+                    cluster_id=NS.tendrl_context.integration_id,
+                )
+            )
+        else:
+            Event(
+                Message(
+                    priority="error",
+                    publisher=NS.publisher_id,
+                    payload={
+                        "message": "Error while shrinking gluster cluster"
                         ". Details: %s" % str(out)
                     },
                     cluster_id=NS.tendrl_context.integration_id,
