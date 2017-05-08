@@ -17,12 +17,12 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
             stderr=subprocess.PIPE
         )
         out, err = cmd.communicate()
-        if err:
+        if err or out is None or "Connection failed" in out:
             Event(
                 Message(
                     priority="error",
                     publisher=NS.publisher_id,
-                    payload={"message": "Error formulating cluster_id"}
+                    payload={"message": "Could not detect SDS:Gluster installation"}
                 )
             )
             return ""
@@ -41,6 +41,11 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
         ret_val = {}
 
         # get the gluster version details
+                        # form the temporary cluster_id
+        cluster_id = self._derive_cluster_id()
+        ret_val['detected_cluster_id'] = cluster_id
+        ret_val['detected_cluster_name'] = "gluster-%s" % cluster_id
+
         cmd = subprocess.Popen(
             "gluster --version",
             shell=True,
@@ -58,12 +63,9 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
             )
             return ret_val
         lines = out.split('\n')
-        ret_val['pkg_version'] = lines[0].split()[1]
-        ret_val['pkg_name'] = "gluster"
+        if cluster_id:
+            ret_val['pkg_version'] = lines[0].split()[1]
+            ret_val['pkg_name'] = "gluster"
 
-        # form the temporary cluster_id
-        cluster_id = self._derive_cluster_id()
-        ret_val['detected_cluster_id'] = cluster_id
-        ret_val['detected_cluster_name'] = "gluster-%s" % cluster_id
 
         return ret_val
