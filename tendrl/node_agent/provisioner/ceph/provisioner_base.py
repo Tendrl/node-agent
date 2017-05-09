@@ -35,7 +35,8 @@ class ProvisionerBasePlugin(object):
         ip_address,
         cluster_network,
         public_network,
-        monitors
+        monitors,
+        mon_secret=None
     ):
         raise NotImplementedError()
 
