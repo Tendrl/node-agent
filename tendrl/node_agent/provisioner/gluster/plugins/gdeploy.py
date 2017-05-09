@@ -155,8 +155,9 @@ class GdeployPlugin(ProvisionerBasePlugin):
 
     def expand_gluster_cluster(self, host):
         self._reload_modules()
+        current_host = NS.node_context.fqdn
         out, err, rc = create_cluster.create_cluster(
-            [host]
+            [current_host, host]
         )
         if rc == 0:
             Event(
@@ -186,8 +187,9 @@ class GdeployPlugin(ProvisionerBasePlugin):
 
     def shrink_gluster_cluster(self, host):
         self._reload_modules()
+        current_host = NS.node_context.fqdn
         out, err, rc = remove_host.remove_host(
-            [host]
+            [current_host, host]
         )
         if rc == 0:
             Event(

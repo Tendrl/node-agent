@@ -30,3 +30,10 @@ class ProvisionerBasePlugin(object):
     def setup(self):
         raise NotImplementedError()
 
+    @abstractmethod
+    def expand_gluster_cluster(self, hosts):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def shrink_gluster_cluster(self, hosts):
+        raise NotImplementedError()
