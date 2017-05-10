@@ -247,10 +247,32 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                         payload={"message": "node_sync, Updating disks"}
                     )
                 )
+                disks = disk_sync.get_node_disks()
                 try:
-                    NS.etcd_orm.client.delete(
-                        ("nodes/%s/Disks") % NS.node_context.node_id,
-                        recursive=True)
+                    all_disk_id = []
+                    all_disk_id.extend(disks["used_disks_id"])
+                    all_disk_id.extend(disks["free_disks_id"])
+                    all_disk = NS.etcd_orm.client.read(
+                        ("nodes/%s/Disks/all") % NS.node_context.node_id)
+                    for disk in all_disk.leaves:
+                        did = disk.key.split('/')[-1]
+                        if did not in all_disk_id:
+                            NS.etcd_orm.client.delete(
+                                ("nodes/%s/Disks/all/%s") %
+                                    (NS.node_context.node_id, did), recursive=True)
+                            try:
+                                NS.etcd_orm.client.delete(
+                                ("nodes/%s/Disks/used/%s") %
+                                    (NS.node_context.node_id, did))
+                            except etcd.EtcdKeyNotFound as ex:
+                                pass
+
+                            try:
+                                NS.etcd_orm.client.delete(
+                                ("nodes/%s/Disks/free/%s") %
+                                    (NS.node_context.node_id, did))
+                            except etcd.EtcdKeyNotFound as ex:
+                                pass
                 except etcd.EtcdKeyNotFound as ex:
                     Event(
                         ExceptionMessage(
@@ -262,7 +284,6 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                                      }
                         )
                     )
-                disks = disk_sync.get_node_disks()
                 if "disks" in disks:
                     for disk in disks['disks']:
                         NS.tendrl.objects.Disk(**disk).save()
