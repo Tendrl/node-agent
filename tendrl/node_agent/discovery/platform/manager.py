@@ -19,7 +19,7 @@ class PlatformManager(object):
     def load_plugins(self):
         try:
 
-            path = os.path.dirname(os.path.abspath(__file__)) + '/plugins'
+            path = os.path.join(os.path.dirname(os.path.abspath(__file__)),"plugins")
             pkg = 'tendrl.node_agent.discovery.platform.plugins'
             for py in [f[:-3] for f in os.listdir(path)
                        if f.endswith('.py') and f != '__init__.py']:
