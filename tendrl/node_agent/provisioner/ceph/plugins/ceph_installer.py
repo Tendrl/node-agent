@@ -102,7 +102,8 @@ class CephInstallerPlugin(ProvisionerBasePlugin):
         ip_address,
         cluster_network,
         public_network,
-        monitors
+        monitors,
+        mon_secret=None
     ):
         url = 'http://localhost:%s/api/mon/configure' % \
             self._CEPH_INSTALLER_API_PORT
@@ -134,7 +135,7 @@ class CephInstallerPlugin(ProvisionerBasePlugin):
             "host": host,
             "address": ip_address,
             "fsid": cluster_id,
-            "monitor_secret": self.monitor_secret,
+            "monitor_secret": mon_secret or self.monitor_secret,
             "cluster_name": cluster_name,
             "cluster_network": cluster_network,
             "public_network": public_network,
