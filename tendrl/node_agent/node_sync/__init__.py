@@ -252,27 +252,28 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                     all_disk_id = []
                     all_disk_id.extend(disks["used_disks_id"])
                     all_disk_id.extend(disks["free_disks_id"])
-                    all_disk = NS.etcd_orm.client.read(
-                        ("nodes/%s/Disks/all") % NS.node_context.node_id)
-                    for disk in all_disk.leaves:
-                        did = disk.key.split('/')[-1]
-                        if did not in all_disk_id:
-                            NS.etcd_orm.client.delete(
-                                ("nodes/%s/Disks/all/%s") %
-                                    (NS.node_context.node_id, did), recursive=True)
-                            try:
+                    if all_disk_id:
+                        all_disk = NS.etcd_orm.client.read(
+                            ("nodes/%s/Disks/all") % NS.node_context.node_id)
+                        for disk in all_disk.leaves:
+                            did = disk.key.split('/')[-1]
+                            if did not in all_disk_id:
                                 NS.etcd_orm.client.delete(
-                                ("nodes/%s/Disks/used/%s") %
-                                    (NS.node_context.node_id, did))
-                            except etcd.EtcdKeyNotFound as ex:
-                                pass
+                                    ("nodes/%s/Disks/all/%s") %
+                                        (NS.node_context.node_id, did), recursive=True)
+                                try:
+                                    NS.etcd_orm.client.delete(
+                                    ("nodes/%s/Disks/used/%s") %
+                                        (NS.node_context.node_id, did))
+                                except etcd.EtcdKeyNotFound as ex:
+                                    pass
 
-                            try:
-                                NS.etcd_orm.client.delete(
-                                ("nodes/%s/Disks/free/%s") %
-                                    (NS.node_context.node_id, did))
-                            except etcd.EtcdKeyNotFound as ex:
-                                pass
+                                try:
+                                    NS.etcd_orm.client.delete(
+                                    ("nodes/%s/Disks/free/%s") %
+                                        (NS.node_context.node_id, did))
+                                except etcd.EtcdKeyNotFound as ex:
+                                    pass
                 except etcd.EtcdKeyNotFound as ex:
                     Event(
                         ExceptionMessage(
