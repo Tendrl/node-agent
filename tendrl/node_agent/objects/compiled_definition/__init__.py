@@ -1,5 +1,5 @@
 from ruamel import yaml
-from tendrl.commons import etcdobj
+
 from tendrl.commons import objects
 
 # Definitions need there own special init and have to be present in the NS
@@ -9,14 +9,14 @@ from tendrl.node_agent.objects.compiled_definition import definitions
 
 class CompiledDefinitions(objects.BaseObject):
     internal = True
+
     def __init__(self, *args, **kwargs):
         self._defs = {}
         super(CompiledDefinitions, self).__init__(*args, **kwargs)
 
-        self.value = '_NS/node_agent/compiled_definitions'
         self.data = definitions.data
         self._parsed_defs = yaml.safe_load(self.data)
-        self._etcd_cls = _CompiledDefinitionsEtcd
+        self.value = '_NS/node_agent/compiled_definitions'
 
     def get_parsed_defs(self):
         self._parsed_defs = yaml.safe_load(self.data)
@@ -28,11 +28,3 @@ class CompiledDefinitions(objects.BaseObject):
             compiled_defs.update(definition.get_parsed_defs())
         self.data = yaml.safe_dump(compiled_defs, default_flow_style=False)
         definitions.data = self.data
-
-
-class _CompiledDefinitionsEtcd(etcdobj.EtcdObj):
-    """A table of the CompiledDefinitions, lazily updated
-
-    """
-    __name__ = '_NS/node_agent/compiled_definitions'
-    _tendrl_cls = CompiledDefinitions
