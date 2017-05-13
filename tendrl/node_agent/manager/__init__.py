@@ -15,7 +15,6 @@ from tendrl.node_agent.provisioner.gluster.manager import \
 from tendrl.integrations import ceph
 from tendrl.integrations import gluster
 from tendrl import node_agent
-from tendrl.node_agent import central_store
 from tendrl.node_agent.message.handler import MessageHandler
 from tendrl.node_agent import node_sync
 from tendrl import provisioning
@@ -27,8 +26,7 @@ class NodeAgentManager(commons_manager.Manager):
         # node details and pushes the same to etcd
         super(NodeAgentManager, self).__init__(
             NS.state_sync_thread,
-            NS.central_store_thread,
-            NS.message_handler_thread
+            message_handler_thread=NS.message_handler_thread
         )
 
         node_sync.platform_detect.load_and_execute_platform_discovery_plugins()
@@ -64,7 +62,6 @@ def main():
     # Allowed types are "node", "integration", "monitoring"
     NS.type = "node"
 
-    NS.central_store_thread = central_store.NodeAgentEtcdCentralStore()
     NS.first_node_inventory_sync = True
     NS.state_sync_thread = node_sync.NodeAgentSyncThread()
 
