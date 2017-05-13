@@ -92,7 +92,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                     index_key = "/indexes/tags/%s" % tag
                     try:
                         _node_ids = []
-                        _node_ids = NS.etcd_orm.client.read(index_key).value
+                        _node_ids = NS._int.client.read(index_key).value
                         _node_ids = json.loads(_node_ids)
                     except etcd.EtcdKeyNotFound:
                         pass
@@ -102,7 +102,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                         else:
                             _node_ids = [NS.node_context.node_id]
                         _node_ids = list(set(_node_ids))
-                        NS.etcd_orm.client.write(index_key, json.dumps(_node_ids))
+                        NS._int.wclient.write(index_key, json.dumps(_node_ids))
                         
                 gevent.sleep(interval)
                 # Check if Node is part of any Tendrl imported/created sds cluster
@@ -119,14 +119,14 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                     )
 
                     index_key = "/indexes/machine_id/%s" % NS.node_context.machine_id
-                    NS.etcd_orm.client.write(index_key, NS.node_context.node_id)
+                    NS._int.wclient.write(index_key, NS.node_context.node_id)
 
                 except etcd.EtcdKeyNotFound:
                     pass
 
                 if NS.tendrl_context.integration_id:
                     try:
-                        NS.etcd_orm.client.read(
+                        NS._int.client.read(
                             "/clusters/%s" % (
                                 NS.tendrl_context.integration_id
                             )
@@ -253,23 +253,23 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                     all_disk_id.extend(disks["used_disks_id"])
                     all_disk_id.extend(disks["free_disks_id"])
                     if all_disk_id:
-                        all_disk = NS.etcd_orm.client.read(
+                        all_disk = NS._int.client.read(
                             ("nodes/%s/Disks/all") % NS.node_context.node_id)
                         for disk in all_disk.leaves:
                             did = disk.key.split('/')[-1]
                             if did not in all_disk_id:
-                                NS.etcd_orm.client.delete(
+                                NS._int.wclient.delete(
                                     ("nodes/%s/Disks/all/%s") %
                                         (NS.node_context.node_id, did), recursive=True)
                                 try:
-                                    NS.etcd_orm.client.delete(
+                                    NS._int.wclient.delete(
                                     ("nodes/%s/Disks/used/%s") %
                                         (NS.node_context.node_id, did))
                                 except etcd.EtcdKeyNotFound as ex:
                                     pass
 
                                 try:
-                                    NS.etcd_orm.client.delete(
+                                    NS._int.wclient.delete(
                                     ("nodes/%s/Disks/free/%s") %
                                         (NS.node_context.node_id, did))
                                 except etcd.EtcdKeyNotFound as ex:
@@ -290,12 +290,12 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                         NS.tendrl.objects.Disk(**disk).save()
                 if "used_disks_id" in disks:
                     for disk in disks['used_disks_id']:
-                        NS.etcd_orm.client.write(
+                        NS._int.wclient.write(
                             ("nodes/%s/Disks/used/%s") % (
                                 NS.node_context.node_id, disk), "")
                 if "free_disks_id" in disks:
                     for disk in disks['free_disks_id']:
-                        NS.etcd_orm.client.write(
+                        NS._int.wclient.write(
                             ("nodes/%s/Disks/free/%s") % (
                                 NS.node_context.node_id, disk), "")
 
@@ -308,7 +308,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 )
                 # node wise network
                 try:
-                    NS.etcd_orm.client.delete(
+                    NS._int.wclient.delete(
                         ("nodes/%s/Network") % NS.node_context.node_id,
                         recursive=True)
                 except etcd.EtcdKeyNotFound as ex:
@@ -329,7 +329,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                         if interface['ipv4']:
                             for ipv4 in interface['ipv4']:
                                 index_key = "/indexes/ip/%s" % ipv4
-                                NS.etcd_orm.client.write(
+                                NS._int.wclient.write(
                                     index_key, NS.node_context.node_id)
                         # TODO(team) add ipv6 support
                         # if interface['ipv6']:
@@ -337,19 +337,19 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                         #        index_key = "/indexes/ip/%s/%s" % (ipv6,
                         #
                                 # NS.node_context.node_id)
-                        #        NS.etcd_orm.client.write(index_key, 1)
+                        #        NS._int.wclient.write(index_key, 1)
 
                 # global network
                 try:
-                    networks = NS.etcd_orm.client.read("/networks")
+                    networks = NS._int.client.read("/networks")
                     for network in networks.leaves:
                         try:
-                            NS.etcd_orm.client.delete(("%s/%s") % (
+                            NS._int.wclient.delete(("%s/%s") % (
                                 network.key, NS.node_context.node_id),
                                 recursive=True)
                             # it will delete subnet dir when it is empty
                             # if one entry present then deletion never happen
-                            NS.etcd_orm.client.delete(network.key, dir=True)
+                            NS._int.wclient.delete(network.key, dir=True)
                         except (etcd.EtcdKeyNotFound, etcd.EtcdDirNotEmpty):
                             continue
                 except etcd.EtcdKeyNotFound as ex:
