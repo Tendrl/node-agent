@@ -47,6 +47,8 @@ def load_and_execute_sds_discovery_plugins():
                     NS.node_context = NS.node_context.load()
                     current_tags = json.loads(NS.node_context.tags)
                     detected_cluster_tag = "detected_cluster/%s" % sds_details['detected_cluster_id']
+                    if detected_cluster_tag in current_tags:
+                        continue
                     current_tags += [detected_cluster_tag]
                     NS.node_context.tags = list(set(current_tags))
                     NS.node_context.save()
