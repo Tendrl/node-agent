@@ -127,7 +127,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                     NS._int.wclient.write(index_key, NS.node_context.node_id,
                                           prevExist=False)
 
-                except etcd.EtcdKeyNotFound:
+                except etcd.EtcdAlreadyExist:
                     pass
 
                 if NS.tendrl_context.integration_id:
@@ -335,9 +335,12 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                         if interface['ipv4']:
                             for ipv4 in interface['ipv4']:
                                 index_key = "/indexes/ip/%s" % ipv4
-                                NS._int.wclient.write(
-                                    index_key, NS.node_context.node_id,
-                                    prevExist=False)
+                                try:
+                                    NS._int.wclient.write(
+                                        index_key, NS.node_context.node_id,
+                                        prevExist=False)
+                                except etcd.EtcdAlreadyExist:
+                                    pass
                         # TODO(team) add ipv6 support
                         # if interface['ipv6']:
                         #    for ipv6 in interface['ipv6']:
