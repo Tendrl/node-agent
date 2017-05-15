@@ -1,4 +1,3 @@
-from tendrl.commons.etcdobj import EtcdObj
 from tendrl.commons import objects
 
 
@@ -11,8 +10,6 @@ class GlobalNetwork(objects.BaseObject):
                  driver=None, drive=None, hw_address=None, link_detected=None,
                  *args, **kwargs):
         super(GlobalNetwork, self).__init__(*args, **kwargs)
-        # networks/<subnet>/<node_id>/<interface_id>
-        self.value = 'networks/%s/%s/%s'
         self.interface = interface
         self.interface_id = interface_id
         self.ipv4 = ipv4
@@ -29,20 +26,12 @@ class GlobalNetwork(objects.BaseObject):
         self.driver = driver
         self.hw_address = hw_address
         self.link_detected = link_detected
-        self._etcd_cls = _GlobalNetworkEtcd
-
-
-class _GlobalNetworkEtcd(EtcdObj):
-    """A table of the Global Network, lazily updated
-
-    """
-    __name__ = 'networks/%s/%s/%s'
-    _tendrl_cls = GlobalNetwork
+        # networks/<subnet>/<node_id>/<interface_id>
+        self.value = 'networks/{0}/{1}/{2}'
 
     def render(self):
-        self.__name__ = self.__name__ % (
-            self.subnet.replace("/", "_"),
-            NS.node_context.node_id,
-            self.interface_id
-        )
-        return super(_GlobalNetworkEtcd, self).render()
+        self.value = self.value.format(self.subnet.replace("/", "_"),
+                                       NS.node_context.node_id,
+                                       self.interface_id
+                                       )
+        return super(GlobalNetwork, self).render()
