@@ -82,7 +82,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                     )
                 )
                 NS.node_context = NS.node_context.load()
-                current_tags = json.loads(NS.node_context.tags)
+                current_tags = list(NS.node_context.tags)
                 tags += current_tags
                 NS.node_context.tags = list(set(tags))
                 if NS.node_context.tags != current_tags:
