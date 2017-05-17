@@ -82,27 +82,32 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                     )
                 )
                 NS.node_context = NS.node_context.load()
-                current_tags = json.loads(NS.node_context.tags)
+                current_tags = list(NS.node_context.tags)
                 tags += current_tags
                 NS.node_context.tags = list(set(tags))
-                NS.node_context.save()
+                if NS.node_context.tags != current_tags:
+                    NS.node_context.save()
                 
                 # Update /indexes/tags/:tag = [node_ids]
                 for tag in NS.node_context.tags:
                     index_key = "/indexes/tags/%s" % tag
+                    _node_ids = []
                     try:
-                        _node_ids = []
                         _node_ids = NS._int.client.read(index_key).value
                         _node_ids = json.loads(_node_ids)
                     except etcd.EtcdKeyNotFound:
                         pass
-                    finally:
-                        if _node_ids is not None:
-                            _node_ids += [NS.node_context.node_id]
+
+                    if _node_ids:
+                        if NS.node_context.node_id in _node_ids:
+                            continue
                         else:
-                            _node_ids = [NS.node_context.node_id]
-                        _node_ids = list(set(_node_ids))
-                        NS._int.wclient.write(index_key, json.dumps(_node_ids))
+                            _node_ids += [NS.node_context.node_id]
+                    else:
+                        _node_ids = [NS.node_context.node_id]
+                    _node_ids = list(set(_node_ids))
+                    NS._int.wclient.write(index_key,
+                                          json.dumps(_node_ids))
                         
                 gevent.sleep(interval)
                 # Check if Node is part of any Tendrl imported/created sds cluster
@@ -119,9 +124,10 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                     )
 
                     index_key = "/indexes/machine_id/%s" % NS.node_context.machine_id
-                    NS._int.wclient.write(index_key, NS.node_context.node_id)
+                    NS._int.wclient.write(index_key, NS.node_context.node_id,
+                                          prevExist=False)
 
-                except etcd.EtcdKeyNotFound:
+                except etcd.EtcdAlreadyExist:
                     pass
 
                 if NS.tendrl_context.integration_id:
@@ -329,8 +335,12 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                         if interface['ipv4']:
                             for ipv4 in interface['ipv4']:
                                 index_key = "/indexes/ip/%s" % ipv4
-                                NS._int.wclient.write(
-                                    index_key, NS.node_context.node_id)
+                                try:
+                                    NS._int.wclient.write(
+                                        index_key, NS.node_context.node_id,
+                                        prevExist=False)
+                                except etcd.EtcdAlreadyExist:
+                                    pass
                         # TODO(team) add ipv6 support
                         # if interface['ipv6']:
                         #    for ipv6 in interface['ipv6']:
