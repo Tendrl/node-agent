@@ -254,57 +254,36 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                     )
                 )
                 disks = disk_sync.get_node_disks()
-                try:
-                    all_disk_id = []
-                    all_disk_id.extend(disks["used_disks_id"])
-                    all_disk_id.extend(disks["free_disks_id"])
-                    if all_disk_id:
-                        all_disk = NS._int.client.read(
-                            ("nodes/%s/Disks/all") % NS.node_context.node_id)
-                        for disk in all_disk.leaves:
-                            did = disk.key.split('/')[-1]
-                            if did not in all_disk_id:
-                                NS._int.wclient.delete(
-                                    ("nodes/%s/Disks/all/%s") %
-                                        (NS.node_context.node_id, did), recursive=True)
-                                try:
-                                    NS._int.wclient.delete(
-                                    ("nodes/%s/Disks/used/%s") %
-                                        (NS.node_context.node_id, did))
-                                except etcd.EtcdKeyNotFound as ex:
-                                    pass
-
-                                try:
-                                    NS._int.wclient.delete(
-                                    ("nodes/%s/Disks/free/%s") %
-                                        (NS.node_context.node_id, did))
-                                except etcd.EtcdKeyNotFound as ex:
-                                    pass
-                except etcd.EtcdKeyNotFound as ex:
-                    Event(
-                        ExceptionMessage(
-                            priority="debug",
-                            publisher=NS.publisher_id,
-                            payload={"message": "Given key is not present in "
-                                                "etcd .",
-                                                "exception": ex
-                                     }
-                        )
+                disk_map = {}
+                for disk in disks:
+                    NS.tendrl.objects.Disk(**disks[disk]).save(ttl=200)
+                    # Creating dict with disk name as key and disk_id as value
+                    # It will help populate block device disk_id attribute
+                    disk_map[disks[disk]['disk_name']] = disks[disk]['disk_id']
+                block_devices = disk_sync.get_node_block_devices(disk_map)
+                for device in block_devices['all']:
+                    NS.tendrl.objects.BlockDevice(**device).save(ttl=200)
+                for device_id in block_devices['used']:
+                    NS._int.wclient.write(
+                        ("nodes/%s/BlockDevices/used/%s") %
+                        (NS.node_context.node_id,
+                         device_id.replace("/", "_").replace("_", "", 1)),
+                         device_id, ttl=200
                     )
-                if "disks" in disks:
-                    for disk in disks['disks']:
-                        NS.tendrl.objects.Disk(**disk).save()
-                if "used_disks_id" in disks:
-                    for disk in disks['used_disks_id']:
-                        NS._int.wclient.write(
-                            ("nodes/%s/Disks/used/%s") % (
-                                NS.node_context.node_id, disk), "")
-                if "free_disks_id" in disks:
-                    for disk in disks['free_disks_id']:
-                        NS._int.wclient.write(
-                            ("nodes/%s/Disks/free/%s") % (
-                                NS.node_context.node_id, disk), "")
-
+                for device_id in block_devices['free']:
+                    NS._int.wclient.write(
+                        ("nodes/%s/BlockDevices/free/%s") %
+                        (NS.node_context.node_id,
+                         device_id.replace("/", "_").replace("_", "", 1)),
+                         device_id, ttl=200
+                    )
+                raw_reference = disk_sync.get_raw_reference()
+                NS._int.wclient.write(
+                    ("nodes/%s/Disks/RawReference") %
+                    (NS.node_context.node_id),
+                    raw_reference,
+                    ttl=200,
+                )
                 Event(
                     Message(
                         priority=priority,
