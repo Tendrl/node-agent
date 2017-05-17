@@ -1,21 +1,20 @@
 ---
 namespace.integrations.ceph:
   flows:
-    ImportCephCluster:
-      atoms:
-        - tendrl.node_agent.objects.Package.atoms.install
-        - tendrl.node_agent.ceph_integration.objects.Config.atoms.generate
-        - tendrl.node_agent.objects.File.atoms.write
-        - tendrl.node_agent.objects.Node.atoms.cmd
-      help: "Import existing Ceph Cluster"
+    AddOsds:
+      tags:
+        - "provisioner/$TendrlContext.sds_name"
+      help: "Expands a cluster with osds"
       enabled: true
       inputs:
         mandatory:
-          - "Node[]"
-          - TendrlContext.sds_name
-          - TendrlContext.sds_version
           - TendrlContext.integration_id
-      run: integrations.ceph.flows.ImportCephCluster
+          - TendrlContext.cluster_id
+          - TendrlContext.cluster_name
+          - Cluster.public_network
+          - Cluster.cluster_network
+          - Cluster.node_configuration
+      run: integrations.ceph.flows.AddOsds
       type: Create
-      uuid: 5a48d43b-a163-496c-b01d-9c600ea0a5db
+      uuid: 2f94a48a-05d7-408c-b400-e27827f4edcd
       version: 1
