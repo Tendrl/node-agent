@@ -45,7 +45,7 @@ def main():
 
     # Init NS.integrations.ceph
     # TODO(team) add all short circuited ceph(import/create) NS.tendrl.flows to NS.integrations.ceph
-    #ceph.CephIntegrationNS()
+    ceph.CephIntegrationNS()
 
     # Init NS.integrations.gluster
     # TODO(team) add all short circuited ceph(import/create) NS.tendrl.flows to NS.integrations.ceph
@@ -55,7 +55,8 @@ def main():
     NS.compiled_definitions = \
         NS.node_agent.objects.CompiledDefinitions()
     NS.compiled_definitions.merge_definitions([
-        NS.tendrl.definitions, NS.node_agent.definitions])
+        NS.tendrl.definitions, NS.node_agent.definitions,
+        NS.integrations.ceph.definitions])
     NS.node_agent.compiled_definitions = NS.compiled_definitions
 
     # Every process needs to set a NS.type
@@ -79,6 +80,7 @@ def main():
         pass
     NS.tendrl_context.save()
     NS.node_agent.definitions.save()
+    NS.integrations.ceph.definitions.save()
     NS.node_agent.config.save()
     NS.publisher_id = "node_agent"
     NS.message_handler_thread = MessageHandler()
