@@ -2,7 +2,6 @@ from tendrl.commons.event import Event
 from tendrl.commons.message import Message
 
 from tendrl.commons.utils import cmd_utils
-import re
 import os
 
 def get_node_disks():
@@ -161,9 +160,12 @@ def get_disk_details():
                 devlist["disk_id"] = (devlist["vendor"] + "_" +
                     devlist["device"] + "_" + devlist["serial_no"])
             elif "virtio" in devlist["driver"]:
-                reg = re.compile(".+\/by-id\/(virtio-.+,).")
-                disk_id = reg.findall(devlist['device_files'])[0]
-                devlist["disk_id"] = disk_id.replace('-', '_').replace(',', '')
+                # split from:
+                # /dev/vdc, /dev/disk/by-id/virtio-0200f64e-5892-40ee-8,
+                #    /dev/disk/by-path/virtio-pci-0000:00:08.0
+                for entry in devlist['device_files'].split(','):
+                    if "by-id" in entry:
+                        devlist['disk_id'] = entry.split('/')[-1]
             else:
                 err = "Unable to create disk id for disk: %s" % devlist["disk_name"]
             if not err:
