@@ -20,7 +20,7 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
         if err or out is None or "Connection failed" in out:
             Event(
                 Message(
-                    priority="error",
+                    priority="debug",
                     publisher=NS.publisher_id,
                     payload={"message": "Could not detect SDS:Gluster installation"}
                 )
