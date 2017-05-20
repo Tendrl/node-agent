@@ -33,7 +33,8 @@ class PlatformManager(object):
                 ExceptionMessage(
                     priority="error",
                     publisher=NS.publisher_id,
-                    payload={"message": "Failed to load the platform plugins.",
+                    payload={"message": "Failed to load the platform "
+                                        "detection plugins.",
                              "exception": ex
                              }
                 )
