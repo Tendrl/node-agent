@@ -49,6 +49,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 gevent.sleep(interval)
                 tags = []
                 # update node agent service details
+
                 Event(
                     Message(
                         priority=priority,
