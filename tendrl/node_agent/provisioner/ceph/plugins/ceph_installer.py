@@ -38,7 +38,7 @@ class CephInstallerPlugin(ProvisionerBasePlugin):
         #     "redhat_use_cdn": true,
         #     "verbose": false,
         # }
-
+        res_data = None
         data = {
             "calamari": False,
             "hosts": mons,
@@ -59,7 +59,12 @@ class CephInstallerPlugin(ProvisionerBasePlugin):
                     'Server response was not valid JSON: %r' % e)
             return res_data['identifier']
         else:
-            return None
+            _msg = "ceph-installer task install_mon %s failed, response: " %\
+                   mons
+            if res_data:
+                _msg += "'{0}'".format(res_data.get("message"))
+
+            raise Exception(_msg)
 
     def install_osd(self, osds):
         url = 'http://localhost:%s/api/osd/install' % \
@@ -74,6 +79,7 @@ class CephInstallerPlugin(ProvisionerBasePlugin):
         #     "verbose": false,
         # }
 
+        res_data = None
         data = {
             "hosts": osds,
             "redhat_storage": False,
@@ -92,7 +98,12 @@ class CephInstallerPlugin(ProvisionerBasePlugin):
                 raise Exception('Server response was not valid JSON: %r' % e)
             return res_data['identifier']
         else:
-            return None
+            _msg = "ceph-installer task install_osd %s failed, response: " %\
+                   osds
+            if res_data:
+                _msg += "'{0}'".format(res_data.get("message"))
+
+            raise Exception(_msg)
 
     def configure_mon(
         self,
@@ -129,7 +140,7 @@ class CephInstallerPlugin(ProvisionerBasePlugin):
         # other monitors currently exist in the cluster. If you are configuring
         # a mon for an existing cluster, provide a list of objects representing
         # the monitor host and its interface or address.
-
+        res_data = None
         data = {
             "calamari": False,
             "host": host,
@@ -157,7 +168,12 @@ class CephInstallerPlugin(ProvisionerBasePlugin):
                     'Server response was not valid JSON: %r' % e)
             return res_data['identifier']
         else:
-            return None
+            _msg = "ceph-installer task configure_mon {mon: %s, " \
+                   "fsid: %s} failed, response: " % (host, cluster_id)
+            if res_data:
+                _msg += "'{0}'".format(res_data.get("message"))
+
+            raise Exception(_msg)
 
     def configure_osd(
         self,
@@ -198,7 +214,7 @@ class CephInstallerPlugin(ProvisionerBasePlugin):
         # Journal like device: {"device": "journal"} (when the journal is
         # separate from the OSD) or ["/dev/sdb", "/dev/sdc"] for collocated
         # OSDs and Journals.
-
+        res_data = None
         data = {
             "devices": devices,
             "host": host,
@@ -224,7 +240,12 @@ class CephInstallerPlugin(ProvisionerBasePlugin):
                     'Server response was not valid JSON: %r' % e)
             return res_data['identifier']
         else:
-            return None
+            _msg = "ceph-installer task configure_osd {osd: %s, " \
+                   "fsid: %s} failed, response: " % (host, cluster_id)
+            if res_data:
+                _msg += "'{0}'".format(res_data.get("message"))
+
+            raise Exception(_msg)
 
     def task_status(self, task_id):
         url = 'http://localhost:%s/api/tasks/%s' % (
