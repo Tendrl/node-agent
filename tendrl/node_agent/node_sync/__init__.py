@@ -226,26 +226,11 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                         payload={"message": "node_sync, Updating networks"}
                     )
                 )
-                # node wise network
-                try:
-                    NS._int.wclient.delete(
-                        ("nodes/%s/Network") % NS.node_context.node_id,
-                        recursive=True)
-                except etcd.EtcdKeyNotFound as ex:
-                    Event(
-                        ExceptionMessage(
-                            priority="debug",
-                            publisher=NS.publisher_id,
-                            payload={"message": "Given key is not present in "
-                                                "etcd .",
-                                     "exception": ex
-                                     }
-                        )
-                    )
+                # node network
                 interfaces = network_sync.get_node_network()
                 if len(interfaces) > 0:
                     for interface in interfaces:
-                        NS.tendrl.objects.NodeNetwork(**interface).save()
+                        NS.tendrl.objects.NodeNetwork(**interface).save(ttl=200)
                         if interface['ipv4']:
                             for ipv4 in interface['ipv4']:
                                 index_key = "/indexes/ip/%s" % ipv4
@@ -264,14 +249,20 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                         #        NS._int.wclient.write(index_key, 1)
 
                 # global network
+                if len(interfaces) > 0:
+                    for interface in interfaces:
+                        if interface["subnet"] is not "":
+                            NS.node_agent.objects.GlobalNetwork(
+                                **interface).save(ttl=200)
                 try:
                     networks = NS._int.client.read("/networks")
                     for network in networks.leaves:
                         try:
-                            NS._int.wclient.delete(("%s/%s") % (
-                                network.key, NS.node_context.node_id),
-                                recursive=True)
-                            # it will delete subnet dir when it is empty
+                            # it will delete any node with empty network detail in subnet
+                            # if one entry present then deletion never happen
+                            NS._int.wclient.delete(("%s/%s") %
+                                (network.key, NS.node_context.node_id), dir=True)
+                            # it will delete any subnet dir when it is empty
                             # if one entry present then deletion never happen
                             NS._int.wclient.delete(network.key, dir=True)
                         except (etcd.EtcdKeyNotFound, etcd.EtcdDirNotEmpty):
@@ -287,11 +278,6 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                                      }
                         )
                     )
-                if len(interfaces) > 0:
-                    for interface in interfaces:
-                        if interface["subnet"] is not "":
-                            NS.node_agent.objects.GlobalNetwork(
-                                **interface).save()
                 
                 if NS.tendrl_context.integration_id:
                     try:
