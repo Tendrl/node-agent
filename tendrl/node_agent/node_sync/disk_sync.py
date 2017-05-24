@@ -163,9 +163,12 @@ def get_disk_details():
                 # split from:
                 # /dev/vdc, /dev/disk/by-id/virtio-0200f64e-5892-40ee-8,
                 #    /dev/disk/by-path/virtio-pci-0000:00:08.0
-                for entry in devlist['device_files'].split(','):
-                    if "by-id" in entry:
-                        devlist['disk_id'] = entry.split('/')[-1]
+                if "by-id" in devlist['device_files']:
+                    for entry in devlist['device_files'].split(','):
+                        if "by-id" in entry:
+                            devlist['disk_id'] = entry.split('/')[-1]
+                else:
+                    devlist['disk_id'] = devlist['disk_name']
             else:
                 err = "Unable to create disk id for disk: %s" % devlist["disk_name"]
             if not err:

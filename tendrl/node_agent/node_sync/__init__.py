@@ -191,7 +191,12 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 disks = disk_sync.get_node_disks()
                 disk_map = {}
                 for disk in disks:
-                    NS.tendrl.objects.Disk(**disks[disk]).save(ttl=200)
+                    if "virtio" in disks[disk]["driver"]:
+                        # Virtual disk
+                        NS.tendrl.objects.VirtualDisk(**disks[disk]).save(ttl=200)
+                    else:
+                        # physical disk
+                        NS.tendrl.objects.Disk(**disks[disk]).save(ttl=200)
                     # Creating dict with disk name as key and disk_id as value
                     # It will help populate block device disk_id attribute
                     disk_map[disks[disk]['disk_name']] = disks[disk]['disk_id']
@@ -200,21 +205,21 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                     NS.tendrl.objects.BlockDevice(**device).save(ttl=200)
                 for device_id in block_devices['used']:
                     NS._int.wclient.write(
-                        ("nodes/%s/BlockDevices/used/%s") %
+                        ("nodes/%s/LocalStorage/BlockDevices/used/%s") %
                         (NS.node_context.node_id,
                          device_id.replace("/", "_").replace("_", "", 1)),
                          device_id, ttl=200
                     )
                 for device_id in block_devices['free']:
                     NS._int.wclient.write(
-                        ("nodes/%s/BlockDevices/free/%s") %
+                        ("nodes/%s/LocalStorage/BlockDevices/free/%s") %
                         (NS.node_context.node_id,
                          device_id.replace("/", "_").replace("_", "", 1)),
                          device_id, ttl=200
                     )
                 raw_reference = disk_sync.get_raw_reference()
                 NS._int.wclient.write(
-                    ("nodes/%s/Disks/RawReference") %
+                    ("nodes/%s/LocalStorage/Disks/RawReference") %
                     (NS.node_context.node_id),
                     raw_reference,
                     ttl=200,
