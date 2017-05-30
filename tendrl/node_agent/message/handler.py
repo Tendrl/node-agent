@@ -4,7 +4,7 @@ import sys
 import struct
 import traceback
 
-
+import gevent
 import gevent.event
 import gevent.greenlet
 from gevent.server import StreamServer
@@ -35,6 +35,7 @@ class MessageHandler(gevent.greenlet.Greenlet):
             frmt = "=%ds" % size
             msg = struct.unpack(frmt, data)
             message = Message.from_json(msg[0])
+            gevent.sleep(3)
             Logger(message)
         except (socket_error, socket_timeout):
             exc_type, exc_value, exc_tb = sys.exc_info()
