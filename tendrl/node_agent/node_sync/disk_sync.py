@@ -155,12 +155,12 @@ def get_disk_details():
                     devlist["config_status"] = \
                         disk.split(':')[1].lstrip()
             if ("virtio" in devlist["driver"] and
-                "by-id" in devlist['device_files']):
+                "by-id/virtio" in devlist['device_files']):
                 # split from:
                 # /dev/vdc, /dev/disk/by-id/virtio-0200f64e-5892-40ee-8,
                 #    /dev/disk/by-path/virtio-pci-0000:00:08.0
                 for entry in devlist['device_files'].split(','):
-                    if "by-id" in entry:
+                    if "by-id/virtio" in entry:
                         devlist['disk_id'] = entry.split('/')[-1]
                         break
             elif (devlist["vendor"] != "" and
