@@ -154,31 +154,26 @@ def get_disk_details():
                 elif key.strip() == "Config Status":
                     devlist["config_status"] = \
                         disk.split(':')[1].lstrip()
-            if (devlist["vendor"] != "" and
-                devlist["device"] != "" and
-                devlist["serial_no"] != ""):
-                devlist["disk_id"] = (devlist["vendor"] + "_" +
-                    devlist["device"] + "_" + devlist["serial_no"])
-            elif "virtio" in devlist["driver"]:
+            if ("virtio" in devlist["driver"] and
+                "by-id/virtio" in devlist['device_files']):
                 # split from:
                 # /dev/vdc, /dev/disk/by-id/virtio-0200f64e-5892-40ee-8,
                 #    /dev/disk/by-path/virtio-pci-0000:00:08.0
                 for entry in devlist['device_files'].split(','):
-                    if "by-id" in entry:
+                    if "by-id/virtio" in entry:
                         devlist['disk_id'] = entry.split('/')[-1]
+                        break
+            elif (devlist["vendor"] != "" and
+                devlist["device"] != "" and
+                devlist["serial_no"] != ""):
+                devlist["disk_id"] = (devlist["vendor"] + "_" +
+                        devlist["device"] + "_" + devlist["serial_no"])
             else:
-                err = "Unable to create disk id for disk: %s" % devlist["disk_name"]
-            if not err:
-                disks[devlist["disk_id"]] = devlist
-                disks_map[devlist['hardware_id']] = devlist["disk_id"]
-            else:
-                Event(
-                    Message(
-                            priority="error",
-                            publisher=NS.publisher_id,
-                            payload={"message": err}
-                        )
-                )
+                devlist['disk_id'] = devlist['disk_name']
+
+            disks[devlist["disk_id"]] = devlist
+            disks_map[devlist['hardware_id']] = devlist["disk_id"]
+
     return disks, disks_map, err
 
 
