@@ -1,0 +1,25 @@
+From 04a6f332205cb937f0ca89159176a3ff5c34fcee Mon Sep 17 00:00:00 2001
+From: nnDarshan <darshan.n.2024@gmail.com>
+Date: Wed, 31 May 2017 16:43:44 +0530
+Subject: [PATCH] Subject: [PATCH] remove the glusterfs_repo var from conf file
+
+Bug-URL: https://bugzilla.redhat.com/1456453
+Signed-off-by: nnDarshan <darshan.n.2024@gmail.com>
+---
+ etc/tendrl/node-agent/node-agent.conf.yaml.sample | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/etc/tendrl/node-agent/node-agent.conf.yaml.sample b/etc/tendrl/node-agent/node-agent.conf.yaml.sample
+index d84bef8..afd387b 100644
+--- a/etc/tendrl/node-agent/node-agent.conf.yaml.sample
++++ b/etc/tendrl/node-agent/node-agent.conf.yaml.sample
+@@ -6,6 +6,5 @@ log_level: DEBUG
+ package_source_type: rpm
+ logging_socket_path: /var/run/tendrl/message.sock
+ message_retention_time: 172800 # default 2 days(2*24*60*60)
+-glusterfs_repo: https://buildlogs.centos.org/centos/7/storage/x86_64/gluster-3.9/
+ tags:
+   - tendrl/node
+-- 
+1.8.3.1
+
