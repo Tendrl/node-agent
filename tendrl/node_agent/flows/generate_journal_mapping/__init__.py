@@ -9,7 +9,8 @@ class GenerateJournalMapping(flows.BaseFlow):
     def run(self):
         # Generate the journal mapping for the nodes
         mapping = utils.generate_journal_mapping(
-            self.parameters['Cluster.node_configuration']
+            self.parameters['Cluster.node_configuration'],
+            integration_id=self.parameters.get("TendrlContext.integration_id")
         )
 
         # Update output dict

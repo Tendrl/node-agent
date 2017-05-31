@@ -1,3 +1,4 @@
+import json
 import os
 import struct
 import time
@@ -27,7 +28,7 @@ def generate_auth_key():
     return base64.b64encode(header + key).decode('utf-8')
 
 
-def generate_journal_mapping(node_configuration):
+def generate_journal_mapping(node_configuration, integration_id=None):
 
     """This fuction works based on a simple algorithm which maps
     smaller sized disks as journal for bigger sized disks.
@@ -94,6 +95,20 @@ def generate_journal_mapping(node_configuration):
 
     mapping = {}
     for node_id in node_configuration.keys():
+
+        # Get the node specific journal details from central store
+        # if integration_id is passed. This is the case when this
+        # utility is called during expand cluster. We should check
+        # if pre-existing journal details available for the node
+        # and consider any SSD disk available for journal mapping
+        if integration_id and NS.integrations.ceph.objects.Journal(
+            integration_id=integration_id,
+            node_id=node_id).exists():
+            journal_details = json.loads(NS.integrations.ceph.objects.Journal(
+                integration_id=integration_id,
+                node_id=node_id
+            ).load().data)
+
         ssd_count = hdd_count = osd_count = 0
         storage_disks = node_configuration[node_id]['storage_disks']
         for storage_disk in storage_disks:
@@ -139,7 +154,24 @@ def generate_journal_mapping(node_configuration):
             ]['size']
             for index in range(0, len(sorted_disks) - journal_disk_idx - 2):
                 ssd_disk_size = ssd_disk_size - DEFAULT_JOURNAL_SIZE
+
+                # If already max possible journals mapped on SSD continue
+                if integration_id and journal_details:
+                    mapped_disk_count_for_journal = journal_details[
+                        sorted_disks[
+                            len(sorted_disks) - journal_disk_idx - 1
+                        ]['device']
+                    ]['journal_count']
+                    if mapped_disk_count_for_journal == MAX_JOURNALS_ON_SSDS:
+                        continue
+
                 mapped_disk_count_for_journal += 1
+                if integration_id and journal_details:
+                    journal_details[
+                        sorted_disks[
+                            len(sorted_disks) - journal_disk_idx - 1
+                        ]['device']
+                    ]['journal_count'] = mapped_disk_count_for_journal
                 osd_count += 1
                 mapped_storage_disks.append(
                     {
@@ -180,7 +212,20 @@ def generate_journal_mapping(node_configuration):
                 ssd_disk_size = ssd_disks[journal_disk_idx]['size'] - \
                     DEFAULT_JOURNAL_SIZE * \
                     (mapped_disk_count_for_journal + 1)
+
+                # If already max possible journals mapped on SSD continue
+                if integration_id and journal_details:
+                    mapped_disk_count_for_journal = journal_details[
+                        ssd_disks[journal_disk_idx]['device']
+                    ]['journal_count']
+                    if mapped_disk_count_for_journal == MAX_JOURNALS_ON_SSDS:
+                        continue
+
                 mapped_disk_count_for_journal += 1
+                if integration_id and journal_details:
+                    journal_details[
+                        ssd_disks[journal_disk_idx]['device']
+                    ]['journal_count'] = mapped_disk_count_for_journal
                 osd_count += 1
                 mapped_storage_disks.append(
                     {
@@ -208,7 +253,24 @@ def generate_journal_mapping(node_configuration):
             ]['size']
             for index1 in range(0, len(sorted_disks) - journal_disk_idx - 1):
                 ssd_disk_size = ssd_disk_size - DEFAULT_JOURNAL_SIZE
+
+                # If already max possible journals mapped on SSD continue
+                if integration_id and journal_details:
+                    mapped_disk_count_for_journal = journal_details[
+                        sorted_disks[
+                            len(sorted_disks) - journal_disk_idx - 1
+                        ]['device']
+                    ]['journal_count']
+                    if mapped_disk_count_for_journal == MAX_JOURNALS_ON_SSDS:
+                        continue
+
                 mapped_disk_count_for_journal += 1
+                if integration_id and journal_details:
+                    journal_details[
+                        sorted_disks[
+                            len(sorted_disks) - journal_disk_idx - 1
+                        ]['device']
+                    ]['journal_count'] = mapped_disk_count_for_journal
                 osd_count += 1
                 mapped_storage_disks.append(
                     {
@@ -263,6 +325,12 @@ def generate_journal_mapping(node_configuration):
                 "unallocated_disks": unallocated_disks
             }
             continue
+
+        mapping[node_id] = {
+            "storage_disks": mapped_storage_disks,
+            "unallocated_disks": unallocated_disks
+        }
+
 
     return mapping
 
