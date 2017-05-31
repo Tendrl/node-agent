@@ -15,7 +15,7 @@ try:
 except ImportError:
     Event(
         Message(
-            priority="info",
+            priority="debug",
             publisher=NS.publisher_id,
             payload={
                 "message": "python-gdeploy is not installed in this node"
