@@ -9,6 +9,8 @@ namespace.node_agent:
       inputs:
         mandatory:
           - Cluster.node_configuration
+        optional:
+          - TendrlContext.integration_id
       run: node_agent.flows.GenerateJournalMapping
       uuid: 3f94a48a-05d7-408c-b400-e27827f4eacc
       type: Create

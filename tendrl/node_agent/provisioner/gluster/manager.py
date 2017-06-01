@@ -50,7 +50,7 @@ class ProvisioningManager(object):
         except (SyntaxError, ValueError, ImportError) as ex:
             Event(
                 ExceptionMessage(
-                    priority="info",
+                    priority="debug",
                     publisher=NS.publisher_id,
                     payload={"message": "Failed to load the gluster "
                                         "provisioner plugins",

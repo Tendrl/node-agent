@@ -15,7 +15,7 @@ try:
 except ImportError:
     Event(
         Message(
-            priority="info",
+            priority="debug",
             publisher=NS.publisher_id,
             payload={
                 "message": "python-gdeploy is not installed in this node"
@@ -93,33 +93,36 @@ class GdeployPlugin(ProvisionerBasePlugin):
             )
             return False
 
-        out, err, rc = configure_gluster_firewall.configure_gluster_firewall(
-            hosts
-        )
-        if rc == 0:
-            Event(
-                Message(
-                    priority="info",
-                    publisher=NS.publisher_id,
-                    payload={
-                        "message": "gluster firewall configured successfully"
-                    },
-                    cluster_id=NS.tendrl_context.integration_id,
-                )
-            )
-        else:
-            Event(
-                Message(
-                    priority="error",
-                    publisher=NS.publisher_id,
-                    payload={
-                        "message": "Error while configuring gluster firewall"
-                        ". Details: %s" % str(out)
-                    },
-                    cluster_id=NS.tendrl_context.integration_id,
-                )
-            )
-            return False
+        # TODO (team) fix firewall configuration, after we have a clear idea of
+        # firewall settings needed for tendrl. Till then this section will be commented
+
+        #out, err, rc = configure_gluster_firewall.configure_gluster_firewall(
+        #    hosts
+        #)
+        #if rc == 0:
+        #    Event(
+        #        Message(
+        #            priority="info",
+        #            publisher=NS.publisher_id,
+        #            payload={
+        #                "message": "gluster firewall configured successfully"
+        #            },
+        #            cluster_id=NS.tendrl_context.integration_id,
+        #        )
+        #    )
+        #else:
+        #    Event(
+        #        Message(
+        #            priority="error",
+        #            publisher=NS.publisher_id,
+        #            payload={
+        #                "message": "Error while configuring gluster firewall"
+        #                ". Details: %s" % str(out)
+        #            },
+        #            cluster_id=NS.tendrl_context.integration_id,
+        #        )
+        #    )
+        #    return False
         return True
 
     def create_gluster_cluster(self, hosts):
