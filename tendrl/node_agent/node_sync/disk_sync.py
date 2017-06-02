@@ -38,8 +38,9 @@ def get_node_disks():
                         devlist["model"] = \
                             partition.split(':')[1].lstrip().replace('"', "")
                     if key.strip() == "Device File":
+                        _name = partition.split(':')[1].lstrip()
                         devlist["partition_name"] = \
-                            partition.split(':')[1].lstrip()
+                            "".join(_name.split(" ")[0])
                     if key.strip() == "Device Files":
                         devlist["device_files"] = \
                             partition.split(':')[1].lstrip()
@@ -125,8 +126,9 @@ def get_disk_details():
                     devlist["driver_modules"] = \
                         disk.split(':')[1].lstrip().replace('"', "")
                 elif key.strip() == "Device File":
+                    _name = disk.split(':')[1].lstrip()
                     devlist["disk_name"] = \
-                        disk.split(':')[1].lstrip()
+                        "".join(_name.split(" ")[0])
                 elif key.strip() == "Device Files":
                     devlist["device_files"] = \
                         disk.split(':')[1].lstrip()
