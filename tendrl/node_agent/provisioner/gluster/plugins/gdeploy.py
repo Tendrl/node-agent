@@ -54,7 +54,7 @@ class GdeployPlugin(ProvisionerBasePlugin):
         else:
             Event(
                 Message(
-                    priority="error",
+                    priority="info",
                     publisher=NS.publisher_id,
                     payload={
                         "message": "Error while installing glusterfs packages"
@@ -71,7 +71,7 @@ class GdeployPlugin(ProvisionerBasePlugin):
         if rc == 0:
             Event(
                 Message(
-                    priority="info",
+                    priority="debug",
                     publisher=NS.publisher_id,
                     payload={
                         "message": "glusterd service started successfully"
@@ -82,7 +82,7 @@ class GdeployPlugin(ProvisionerBasePlugin):
         else:
             Event(
                 Message(
-                    priority="error",
+                    priority="debug",
                     publisher=NS.publisher_id,
                     payload={
                         "message": "Error while starting glusterd service"
@@ -144,7 +144,7 @@ class GdeployPlugin(ProvisionerBasePlugin):
         else:
             Event(
                 Message(
-                    priority="error",
+                    priority="debug",
                     publisher=NS.publisher_id,
                     payload={
                         "message": "Error while creating gluster cluster"
@@ -176,7 +176,7 @@ class GdeployPlugin(ProvisionerBasePlugin):
         else:
             Event(
                 Message(
-                    priority="error",
+                    priority="debug",
                     publisher=NS.publisher_id,
                     payload={
                         "message": "Error while expanding gluster cluster"
@@ -208,7 +208,7 @@ class GdeployPlugin(ProvisionerBasePlugin):
         else:
             Event(
                 Message(
-                    priority="error",
+                    priority="debug",
                     publisher=NS.publisher_id,
                     payload={
                         "message": "Error while shrinking gluster cluster"
