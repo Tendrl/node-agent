@@ -306,7 +306,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                     except etcd.EtcdKeyNotFound:
                         Event(
                             Message(
-                                priority="warning",
+                                priority="debug",
                                 publisher=NS.publisher_id,
                                 payload={"message": "Node %s is not part of "
                                                     "any sds cluster" %

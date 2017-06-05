@@ -20,7 +20,7 @@ def load_and_execute_sds_discovery_plugins():
     except ValueError as ex:
         Event(
             ExceptionMessage(
-                priority="error",
+                priority="debug",
                 publisher=NS.publisher_id,
                 payload={"message": "Failed to init SDSDiscoveryManager.",
                          "exception": ex
@@ -55,7 +55,7 @@ def load_and_execute_sds_discovery_plugins():
                 except (etcd.EtcdException, KeyError) as ex:
                     Event(
                         ExceptionMessage(
-                            priority="error",
+                            priority="debug",
                             publisher=NS.publisher_id,
                             payload={"message": "Failed to update sds_discovery",
                                      "exception": ex

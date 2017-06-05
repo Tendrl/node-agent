@@ -22,7 +22,7 @@ def load_and_execute_platform_discovery_plugins():
     except ValueError as ex:
         Event(
             ExceptionMessage(
-                priority="error",
+                priority="debug",
                 publisher=NS.publisher_id,
                 payload={
                     "message": 'Failed to init PlatformManager. \Error %s',
@@ -47,7 +47,7 @@ def load_and_execute_platform_discovery_plugins():
             except etcd.EtcdException as ex:
                 Event(
                     ExceptionMessage(
-                        priority="error",
+                        priority="debug",
                         publisher=NS.publisher_id,
                         payload={
                             "message": "Failed to update etcd . \Error %s",
