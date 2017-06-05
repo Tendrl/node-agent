@@ -17,7 +17,7 @@ from tendrl.node_agent.node_sync import sds_detect
 TENDRL_SERVICES = [
     "tendrl-node-agent",
     "etcd",
-    "tendrl-apid",
+    "tendrl-api",
     "tendrl-gluster-integration",
     "tendrl-ceph-integration",
     "glusterd",
