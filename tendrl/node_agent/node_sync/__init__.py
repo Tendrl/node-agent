@@ -191,16 +191,24 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 disks = disk_sync.get_node_disks()
                 disk_map = {}
                 for disk in disks:
+                    # Creating dict with disk name as key and disk_id as value
+                    # It will help populate block device disk_id attribute
+                    _map = dict(disk_id=disks[disk]['disk_id'], ssd=False)
+                    disk_map[disks[disk]['disk_name']] = _map
+                block_devices = disk_sync.get_node_block_devices(disk_map)
+
+                for disk in disks:
+                    if disk_map[disks[disk]['disk_name']]:
+                        disks[disk]['ssd'] = disk_map[disks[disk][
+                            'disk_name']]['ssd']
+
                     if "virtio" in disks[disk]["driver"]:
                         # Virtual disk
                         NS.tendrl.objects.VirtualDisk(**disks[disk]).save(ttl=200)
                     else:
                         # physical disk
                         NS.tendrl.objects.Disk(**disks[disk]).save(ttl=200)
-                    # Creating dict with disk name as key and disk_id as value
-                    # It will help populate block device disk_id attribute
-                    disk_map[disks[disk]['disk_name']] = disks[disk]['disk_id']
-                block_devices = disk_sync.get_node_block_devices(disk_map)
+
                 for device in block_devices['all']:
                     NS.tendrl.objects.BlockDevice(**device).save(ttl=200)
                 for device_id in block_devices['used']:

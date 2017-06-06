@@ -245,12 +245,13 @@ def get_node_block_devices(disks_map):
 
             if dev_info['TYPE'] == 'part':
                 device['used'] = True
-                device['disk_id'] = disks_map[dev_info['PKNAME']]
+                device['disk_id'] = disks_map[dev_info['PKNAME']]['disk_id']
                 block_devices['all'].append(device)
                 block_devices['used'].append(device['device_name'])
 
             if dev_info['TYPE'] == 'disk':
-                device['disk_id'] = disks_map[dev_info['NAME']]
+                device['disk_id'] = disks_map[dev_info['NAME']]['disk_id']
+                disks_map[dev_info['NAME']]['ssd'] = device['ssd']
                 all_parents.append(device)
             else:
                 parent_ids.append(dev_info['PKNAME'])
