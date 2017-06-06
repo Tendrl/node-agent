@@ -31,7 +31,7 @@ class PlatformManager(object):
         except (SyntaxError, ValueError, ImportError) as ex:
             Event(
                 ExceptionMessage(
-                    priority="error",
+                    priority="debug",
                     publisher=NS.publisher_id,
                     payload={"message": "Failed to load the platform "
                                         "detection plugins.",

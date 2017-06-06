@@ -79,7 +79,7 @@ def get_node_network():
     else:
         Event(
             Message(
-                priority="error",
+                priority="debug",
                 publisher=NS.publisher_id,
                 payload={"message": err}
             )
@@ -124,7 +124,7 @@ def get_node_interface():
             else:
                 Event(
                     Message(
-                        priority="error",
+                        priority="debug",
                         publisher=NS.publisher_id,
                         payload={"message": err}
                     )

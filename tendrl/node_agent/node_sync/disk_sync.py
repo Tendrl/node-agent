@@ -265,7 +265,7 @@ def get_node_block_devices(disks_map):
     else:
         Event(
             Message(
-                priority="error",
+                priority="debug",
                 publisher=NS.publisher_id,
                 payload={"message": err}
             )
@@ -295,7 +295,7 @@ def get_raw_reference():
         else:
             Event(
                 Message(
-                    priority="error",
+                    priority="debug",
                     publisher=NS.publisher_id,
                     payload={"message": err}
                 )

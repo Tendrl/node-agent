@@ -17,7 +17,7 @@ from tendrl.node_agent.node_sync import sds_detect
 TENDRL_SERVICES = [
     "tendrl-node-agent",
     "etcd",
-    "tendrl-apid",
+    "tendrl-api",
     "tendrl-gluster-integration",
     "tendrl-ceph-integration",
     "glusterd",
@@ -306,7 +306,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                     except etcd.EtcdKeyNotFound:
                         Event(
                             Message(
-                                priority="warning",
+                                priority="debug",
                                 publisher=NS.publisher_id,
                                 payload={"message": "Node %s is not part of "
                                                     "any sds cluster" %
