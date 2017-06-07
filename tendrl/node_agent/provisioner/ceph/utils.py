@@ -95,6 +95,7 @@ def generate_journal_mapping(node_configuration, integration_id=None):
 
     mapping = {}
     for node_id in node_configuration.keys():
+        journal_details = None
 
         # Get the node specific journal details from central store
         # if integration_id is passed. This is the case when this
