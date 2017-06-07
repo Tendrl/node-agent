@@ -1,6 +1,6 @@
 Name: tendrl-node-agent
-Version: 1.4.0
-Release: 2%{?dist}
+Version: 1.4.1
+Release: 1%{?dist}
 BuildArch: noarch
 Summary: Module for Tendrl Node Agent
 Source0: %{name}-%{version}.tar.gz
@@ -82,6 +82,9 @@ py.test -v tendrl/node-agent/tests || :
 %config(noreplace) %{_sysconfdir}/rsyslog.d/tendrl-node-agent.conf
 
 %changelog
+* Thu Jun 08 2017 Rohan Kanade <rkanade@redhat.com> - 1.4.1-1
+- Release tendrl-node-agent v1.4.1
+
 * Fri Jun 02 2017 Rohan Kanade <rkanade@redhat.com> - 1.4.0-2
 - Fixes https://github.com/Tendrl/node-agent/issues/481
 
