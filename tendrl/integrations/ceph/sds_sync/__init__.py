@@ -25,7 +25,7 @@ class CephIntegrtaionsSyncThread(sds_sync.StateSyncThread):
                 try:
                     # Sync the OSD journal details
                     logger.log(
-                        "info",
+                        "debug",
                         NS.get("publisher_id", None),
                         {"message": "ceph_integrations_sync, osd journal details"}
                     )
