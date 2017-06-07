@@ -19,6 +19,9 @@ from tendrl.node_agent.message.handler import MessageHandler
 from tendrl.node_agent import node_sync
 from tendrl import provisioning
 
+from tendrl.integrations.ceph import sds_sync as \
+    ceph_integrations_sds_sync
+
 
 class NodeAgentManager(commons_manager.Manager):
     def __init__(self):
@@ -95,6 +98,12 @@ def main():
     m = NodeAgentManager()
     m.start()
 
+    if NS.tendrl_context.sds_name == "ceph" and \
+        NS.tendrl_context.integration_id is not None:
+        NS.ceph_integrations_sync_thread = \
+            ceph_integrations_sds_sync.CephIntegrtaionsSyncThread()
+        NS.ceph_integrations_sync_thread.start()
+
     complete = gevent.event.Event()
 
     def shutdown():
@@ -107,6 +116,9 @@ def main():
         )
         complete.set()
         m.stop()
+        if NS.tendrl_context.sds_name == "ceph" and \
+            NS.tendrl_context.integration_id is not None:
+            NS.ceph_integrations_sync_thread.stop()
     
     def reload_config():
         Event(
