@@ -57,6 +57,8 @@ getent group tendrl >/dev/null || groupadd -r tendrl
 getent passwd tendrl-user >/dev/null || \
     useradd -r -g tendrl -d /var/lib/tendrl -s /sbin/nologin \
     -c "Tendrl node user" tendrl-user
+systemctl enable tendrl-node-agent
+
 %systemd_post tendrl-node-agent.service
 
 %preun
