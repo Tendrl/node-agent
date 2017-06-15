@@ -23,6 +23,26 @@ class CephIntegrtaionsSyncThread(sds_sync.StateSyncThread):
                 # as this data doesnt change very frequently in cluster
                 gevent.sleep(30)
                 try:
+                    # Sync the OSD device path details
+
+                    # A sample output from df command would be as below
+                    # /dev/vdb1 10474476 3547584 6926892 34% /var/lib/ceph/osd/ceph_20175131497330322341-3
+                    # /dev/vdc1 10474476 1036704 9437772 10% /var/lib/ceph/osd/ceph_20175131497330322341-2
+
+                    pattern = "/var/lib/ceph/osd/%s-" % NS.tendrl_context.cluster_name
+                    out, err ,rc = cmd_utils.Command(('df')).run()
+                    if not err and rc == 0 and out != "":
+                        for line in out.split('\n'):
+                            splitted_line = line.split()
+                            if pattern in splitted_line[5]:
+                                device_path = splitted_line[0]
+                                osd_id = splitted_line[5].split('-')[1]
+                                fetched_osd = NS.integrations.ceph.objects.Osd(
+                                    id=osd_id
+                                ).load()
+                                fetched_osd.device_path = device_path
+                                fetched_osd.save()
+
                     # Sync the OSD journal details
                     logger.log(
                         "debug",
