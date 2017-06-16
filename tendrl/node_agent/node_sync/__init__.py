@@ -64,9 +64,13 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                             'namespace.tendrl'
                         ]['tags'][service.strip("@*")]
                         tags.append(service_tag)
+                        if "tendrl/node" in service_tag:
+                            tags.append("tendrl/node_%s" % NS.node_context.node_id)
+
                         if "tendrl/integration" in service_tag:
                             if NS.tendrl_context.integration_id:
                                 tags.append("tendrl/integration/%s" % NS.tendrl_context.integration_id)
+
                         if service_tag == "tendrl/server":
                             tags.append("tendrl/monitor")
                     s.save()                    
