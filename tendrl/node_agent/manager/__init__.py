@@ -94,7 +94,10 @@ def main():
     NS.gluster_provisioner = GlusterProvisioningManager(
         NS.tendrl.definitions.get_parsed_defs()["namespace.tendrl"]['gluster_provisioner']
     )
-
+    if NS.config.data.get("with_internal_profiling", False):
+        from tendrl.commons import profiler
+        profiler.start()
+        
     m = NodeAgentManager()
     m.start()
 
