@@ -131,7 +131,7 @@ Configuration
 
    ::
 
-       $ cp etc/tendrl/node-agent/node-agent-dev.conf.yaml /etc/tendrl/node-agent/node-agent.conf.yaml
+       $ cp node-agent/etc/tendrl/node-agent/node-agent-dev.conf.yaml /etc/tendrl/node-agent/node-agent.conf.yaml
 
    * Configure the following ``etcd_port`` and ``etcd_connection``
      directives in ``/etc/tendrl/node-agent/node-agent.conf.yaml`` to point to the etcd
@@ -142,8 +142,8 @@ Configuration
 
    ::
 
-       $ cp node-agent/etc/tendrl/node-agent/logging.yaml.timedrotation.sample \
-         /etc/tendrl/node-agent_logging.yaml
+       $ cp node-agent/etc/tendrl/node-agent/logging.yaml.syslog.sample \
+         /etc/tendrl/node-agent/node-agent_logging.yaml
 
    .. note::
 
