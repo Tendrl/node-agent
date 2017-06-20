@@ -142,7 +142,7 @@ Configuration
 
    ::
 
-       $ cp node-agent/etc/tendrl/node-agent/logging.yaml.timedrotation.sample \
+       $ cp node-agent/etc/tendrl/node-agent/logging.yaml.syslog.sample \
          /etc/tendrl/node-agent/node-agent_logging.yaml
 
    .. note::
