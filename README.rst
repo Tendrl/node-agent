@@ -75,9 +75,9 @@ System Setup
    ::
 
        $ sudo mkdir -p /etc/tendrl/node-agent \
-         /etc/tendrl/{ceph,gluster}_integration \
+         /etc/tendrl/{ceph,gluster}-integration \
          /var/log/tendrl/node-agent \
-         /var/log/tendrl/{ceph,gluster}_integration
+         /var/log/tendrl/{ceph,gluster}-integration
 
 Environment Setup
 -----------------
