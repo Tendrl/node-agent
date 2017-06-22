@@ -1,16 +1,15 @@
 
-from tendrl.commons.message import Message as message
+from tendrl.commons.message import Message as CommonMessage
 from tendrl.commons import objects
 
 
-class ClusterMessage(objects.BaseObject, message):
+class ClusterMessage(objects.BaseObject, CommonMessage):
     internal = True
 
     def __init__(self, **cluster_message):
         self._defs = {}
-        message.__init__(self, **cluster_message)
+        CommonMessage.__init__(self, **cluster_message)
         objects.BaseObject.__init__(self)
-        
         self.value = 'clusters/{0}/messages/{1}'
 
     def save(self):

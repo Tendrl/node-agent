@@ -8,6 +8,7 @@ else:
 from tendrl.commons import TendrlNS
 from tendrl.node_agent import log
 
+
 class NodeAgentNS(TendrlNS):
     def __init__(self, ns_name="node_agent",
                  ns_src="tendrl.node_agent"):

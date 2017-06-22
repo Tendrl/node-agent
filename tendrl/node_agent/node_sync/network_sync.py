@@ -1,8 +1,77 @@
+import etcd
 import netaddr
 import netifaces as ni
+
 from tendrl.commons.event import Event
+from tendrl.commons.message import ExceptionMessage
 from tendrl.commons.message import Message
 from tendrl.commons.utils import cmd_utils
+
+
+def sync():
+    try:
+        interfaces = get_node_network()
+        if len(interfaces) > 0:
+            for interface in interfaces:
+                NS.tendrl.objects.NodeNetwork(**interface).save(ttl=200)
+                if interface['ipv4']:
+                    for ipv4 in interface['ipv4']:
+                        index_key = "/indexes/ip/%s" % ipv4
+                        try:
+                            NS._int.wclient.write(
+                                index_key, NS.node_context.node_id,
+                                prevExist=False)
+                        except etcd.EtcdAlreadyExist:
+                            pass
+                            # TODO(team) add ipv6 support
+                            # if interface['ipv6']:
+                            #    for ipv6 in interface['ipv6']:
+                            #        index_key = "/indexes/ip/%s/%s" % (ipv6,
+                            #
+                            # NS.node_context.node_id)
+                            #        NS._int.wclient.write(index_key, 1)
+
+        # global network
+        if len(interfaces) > 0:
+            for interface in interfaces:
+                if interface["subnet"] is not "":
+                    NS.node_agent.objects.GlobalNetwork(
+                        **interface).save(ttl=200)
+        try:
+            networks = NS._int.client.read("/networks")
+            for network in networks.leaves:
+                try:
+                    # it will delete any node with empty network detail in
+                    # subnet, if one entry present then deletion never happen
+                    NS._int.wclient.delete("%s/%s" % (network.key,
+                                                      NS.node_context.node_id),
+                                           dir=True)
+                    # it will delete any subnet dir when it is empty
+                    # if one entry present then deletion never happen
+                    NS._int.wclient.delete(network.key, dir=True)
+                except (etcd.EtcdKeyNotFound, etcd.EtcdDirNotEmpty):
+                    continue
+        except etcd.EtcdKeyNotFound as ex:
+            Event(
+                ExceptionMessage(
+                    priority="debug",
+                    publisher=NS.publisher_id,
+                    payload={"message": "Given key is not present in "
+                                        "etcd .",
+                             "exception": ex
+                             }
+                )
+            )
+    except Exception as ex:
+        _msg = "node_sync networks sync failed: " + ex.message
+        Event(
+            ExceptionMessage(
+                priority="error",
+                publisher=NS.publisher_id,
+                payload={"message": _msg,
+                         "exception": ex}
+            )
+        )
 
 
 def get_node_network():
@@ -89,7 +158,6 @@ def get_node_network():
 
 
 def get_node_interface():
-
     """returns structure
 
     {"interface_name": {"ipv4": ["ipv4address", ...],
@@ -105,22 +173,22 @@ def get_node_interface():
     invalid = 'lo'
     for interface in interfaces:
         if interface != invalid:
-            IPv4 = []
-            IPv6 = []
+            ipv4 = []
+            ipv6 = []
             netmask = []
             subnet = ""
-            status, err = Check_interface_status(interface)
+            status, err = check_interface_status(interface)
             if not err:
                 if is_ipv4_present(interface):
                     ipv4_addr_list = ni.ifaddresses(interface)[ni.AF_INET]
                     for ipv4_addr_detail in ipv4_addr_list:
-                        IPv4.append(ipv4_addr_detail['addr'])
+                        ipv4.append(ipv4_addr_detail['addr'])
                         netmask.append(ipv4_addr_detail['netmask'])
-                    subnet = get_subnet(IPv4[0], netmask[0])
+                    subnet = get_subnet(ipv4[0], netmask[0])
                 if is_ipv6_present(interface):
                     ipv6_addr_list = ni.ifaddresses(interface)[ni.AF_INET6]
                     for ipv6_addr_detail in ipv6_addr_list:
-                        IPv6.append(ipv6_addr_detail['addr'])
+                        ipv6.append(ipv6_addr_detail['addr'])
             else:
                 Event(
                     Message(
@@ -132,8 +200,8 @@ def get_node_interface():
 
             rv[interface] = (
                 {
-                    "ipv4": IPv4,
-                    "ipv6": IPv6,
+                    "ipv4": ipv4,
+                    "ipv6": ipv6,
                     "netmask": netmask,
                     "subnet": subnet,
                     "status": status
@@ -153,11 +221,11 @@ def is_ipv6_present(interface):
 
 def get_subnet(ipv4, netmask):
     cidr = netaddr.IPNetwork('%s/%s' % (ipv4, netmask))
-    network = ("%s/%s") % (str(cidr.network), str(cidr).split('/')[-1])
+    network = "%s/%s" % (str(cidr.network), str(cidr).split('/')[-1])
     return network
 
 
-def Check_interface_status(interface):
+def check_interface_status(interface):
     status = "unknown"
     err = None
     try:
