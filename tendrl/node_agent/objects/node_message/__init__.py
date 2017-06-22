@@ -1,14 +1,14 @@
 
-from tendrl.commons.message import Message as message
+from tendrl.commons.message import Message as CommonMessage
 from tendrl.commons import objects
 
 
-class NodeMessage(objects.BaseObject, message):
+class NodeMessage(objects.BaseObject, CommonMessage):
     internal = True
 
     def __init__(self, **node_message):
         self._defs = {}
-        message.__init__(self, **node_message)
+        CommonMessage.__init__(self, **node_message)
         objects.BaseObject.__init__(self)
 
         self.value = 'nodes/{0}/messages/{1}'

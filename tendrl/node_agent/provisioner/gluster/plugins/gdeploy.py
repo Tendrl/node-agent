@@ -7,10 +7,10 @@ from tendrl.node_agent.provisioner.gluster.provisioner_base import\
     ProvisionerBasePlugin
 
 try:
-    from python_gdeploy.actions import install_gluster
+    from python_gdeploy.actions import configure_gluster_firewall # noqa
     from python_gdeploy.actions import configure_gluster_service
-    from python_gdeploy.actions import configure_gluster_firewall
     from python_gdeploy.actions import create_cluster
+    from python_gdeploy.actions import install_gluster
     from python_gdeploy.actions import remove_host
 except ImportError:
     Event(
@@ -27,11 +27,16 @@ except ImportError:
 
 class GdeployPlugin(ProvisionerBasePlugin):
     def _reload_modules(self):
-        globals()['install_gluster'] = importlib.import_module('python_gdeploy.actions.install_gluster')
-        globals()['configure_gluster_service'] = importlib.import_module('python_gdeploy.actions.configure_gluster_service')
-        globals()['configure_gluster_firewall'] = importlib.import_module('python_gdeploy.actions.configure_gluster_firewall')
-        globals()['create_cluster'] = importlib.import_module('python_gdeploy.actions.create_cluster')
-        globals()['remove_host'] = importlib.import_module('python_gdeploy.actions.remove_host')
+        globals()['install_gluster'] = importlib.import_module(
+            'python_gdeploy.actions.install_gluster')
+        globals()['configure_gluster_service'] = importlib.import_module(
+            'python_gdeploy.actions.configure_gluster_service')
+        globals()['configure_gluster_firewall'] = importlib.import_module(
+            'python_gdeploy.actions.configure_gluster_firewall')
+        globals()['create_cluster'] = importlib.import_module(
+            'python_gdeploy.actions.create_cluster')
+        globals()['remove_host'] = importlib.import_module(
+            'python_gdeploy.actions.remove_host')
 
     def setup_gluster_node(self, hosts, packages=None, repo=None):
         self._reload_modules()
@@ -93,13 +98,14 @@ class GdeployPlugin(ProvisionerBasePlugin):
             )
             return False
 
-        # TODO (team) fix firewall configuration, after we have a clear idea of
-        # firewall settings needed for tendrl. Till then this section will be commented
+        # TODO(team) fix firewall configuration, after we have a clear idea of
+        # firewall settings needed for tendrl. Till then this section will be
+        # commented
 
-        #out, err, rc = configure_gluster_firewall.configure_gluster_firewall(
+        # out, err, rc = configure_gluster_firewall.configure_gluster_firewall(
         #    hosts
-        #)
-        #if rc == 0:
+        # )
+        # if rc == 0:
         #    Event(
         #        Message(
         #            priority="info",
@@ -110,7 +116,7 @@ class GdeployPlugin(ProvisionerBasePlugin):
         #            cluster_id=NS.tendrl_context.integration_id,
         #        )
         #    )
-        #else:
+        # else:
         #    Event(
         #        Message(
         #            priority="error",

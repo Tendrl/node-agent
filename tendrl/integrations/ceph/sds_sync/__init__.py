@@ -2,10 +2,8 @@ import gevent
 import json
 import os
 
-from tendrl.commons.event import Event
-from tendrl.commons.message import Message, ExceptionMessage
-from tendrl.commons.utils import cmd_utils
 from tendrl.commons import sds_sync
+from tendrl.commons.utils import cmd_utils
 from tendrl.commons.utils import log_utils as logger
 from tendrl.node_agent.node_sync import disk_sync
 
@@ -26,11 +24,14 @@ class CephIntegrtaionsSyncThread(sds_sync.StateSyncThread):
                     # Sync the OSD device path details
 
                     # A sample output from df command would be as below
-                    # /dev/vdb1 10474476 3547584 6926892 34% /var/lib/ceph/osd/ceph_20175131497330322341-3
-                    # /dev/vdc1 10474476 1036704 9437772 10% /var/lib/ceph/osd/ceph_20175131497330322341-2
+                    # /dev/vdb1 10474476 3547584 6926892 34%
+                    # /var/lib/ceph/osd/ceph_20175131497330322341-3
+                    # /dev/vdc1 10474476 1036704 9437772 10%
+                    # /var/lib/ceph/osd/ceph_20175131497330322341-2
 
-                    pattern = "/var/lib/ceph/osd/%s-" % NS.tendrl_context.cluster_name
-                    out, err ,rc = cmd_utils.Command(('df')).run()
+                    pattern = "/var/lib/ceph/osd/%s-" % \
+                              NS.tendrl_context.cluster_name
+                    out, err, rc = cmd_utils.Command('df').run()
                     if not err and rc == 0 and out != "":
                         for line in out.split('\n'):
                             splitted_line = line.split()
@@ -47,7 +48,8 @@ class CephIntegrtaionsSyncThread(sds_sync.StateSyncThread):
                     logger.log(
                         "debug",
                         NS.get("publisher_id", None),
-                        {"message": "ceph_integrations_sync, osd journal details"}
+                        {"message": "ceph_integrations_sync, osd journal "
+                                    "details"}
                     )
                     journal_details = {}
                     osd_path = "/var/lib/ceph/osd"
@@ -60,22 +62,25 @@ class CephIntegrtaionsSyncThread(sds_sync.StateSyncThread):
                                 "lsblk -o PKNAME,ROTA -n %s" % journal_path
                             ).run()
                             if rc != 0:
-                                logger.log(
-                                    "error",
-                                    NS.get("publisher_id", None),
-                                    {"message": "Error getting journal details for OSD. Error: %s" % err}
-                                )
+                                logger.log("error",
+                                           NS.get("publisher_id", None),
+                                           {"message": "Error getting journal "
+                                                       "details for OSD. "
+                                                       "Error: %s" % err}
+                                           )
                             else:
                                 journal_disk, rotational = out.split()
-                                if ("/dev/%s" % journal_disk) in journal_details.keys():
+                                if ("/dev/%s" % journal_disk) in \
+                                    journal_details.keys():
                                     journal_details[
                                         "/dev/%s" % journal_disk
-                                    ]['journal_count'] += 1
+                                        ]['journal_count'] += 1
                                     journal_details[
                                         "/dev/%s" % journal_disk
-                                    ]['ssd'] = disk_sync.is_ssd(rotational)
+                                        ]['ssd'] = disk_sync.is_ssd(rotational)
                                 else:
-                                    journal_details["/dev/%s" % journal_disk] = {
+                                    journal_details["/dev/%s" %
+                                                    journal_disk] = {
                                         'journal_count': 1,
                                         'ssd': disk_sync.is_ssd(rotational)
                                     }
@@ -86,11 +91,12 @@ class CephIntegrtaionsSyncThread(sds_sync.StateSyncThread):
                             data=json.dumps(journal_details)
                         ).save(update=False)
                 except Exception as ex:
+                    _msg = "ceph integrations sync failed: " + ex.message
                     logger.log(
                         "error",
                         NS.get("publisher_id", None),
                         {
-                            "message": "ceph integrations sync failed: " + ex.message,
+                            "message": _msg,
                             "exception": ex
                         }
                     )

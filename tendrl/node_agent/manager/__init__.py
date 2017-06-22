@@ -1,23 +1,22 @@
 import etcd
 import gevent
+from gevent.event import Event as GEvent
 import signal
 import sys
 
-from tendrl.commons import manager as commons_manager
-from tendrl.commons import TendrlNS
 from tendrl.commons.event import Event
+from tendrl.commons import manager as commons_manager
 from tendrl.commons.message import Message
+from tendrl.commons import TendrlNS
 from tendrl.node_agent.provisioner.ceph.manager import \
     ProvisioningManager as CephProvisioningManager
 from tendrl.node_agent.provisioner.gluster.manager import \
     ProvisioningManager as GlusterProvisioningManager
 
 from tendrl.integrations import ceph
-from tendrl.integrations import gluster
 from tendrl import node_agent
 from tendrl.node_agent.message.handler import MessageHandler
 from tendrl.node_agent import node_sync
-from tendrl import provisioning
 
 from tendrl.integrations.ceph import sds_sync as \
     ceph_integrations_sds_sync
@@ -32,8 +31,9 @@ class NodeAgentManager(commons_manager.Manager):
             message_handler_thread=NS.message_handler_thread
         )
 
-        node_sync.platform_detect.load_and_execute_platform_discovery_plugins()
-        node_sync.sds_detect.load_and_execute_sds_discovery_plugins()
+        node_sync.platform_detect.sync()
+        node_sync.sds_detect.sync()
+
 
 def main():
     # NS.node_agent contains the config object,
@@ -44,15 +44,17 @@ def main():
 
     # Init NS.provisioning
     # TODO(team) remove NS.provisioner and use NS.provisioning.{ceph, gluster}
-    #provisioning.ProvisioningNS()
+    # provisioning.ProvisioningNS()
 
     # Init NS.integrations.ceph
-    # TODO(team) add all short circuited ceph(import/create) NS.tendrl.flows to NS.integrations.ceph
+    # TODO(team) add all short circuited ceph(import/create) NS.tendrl.flows
+    #  to NS.integrations.ceph
     ceph.CephIntegrationNS()
 
     # Init NS.integrations.gluster
-    # TODO(team) add all short circuited ceph(import/create) NS.tendrl.flows to NS.integrations.ceph
-    #gluster.GlusterIntegrationNS()
+    # TODO(team) add all short circuited ceph(import/create) NS.tendrl.flows
+    #  to NS.integrations.ceph
+    # gluster.GlusterIntegrationNS()
 
     # Compile all definitions
     NS.compiled_definitions = \
@@ -89,25 +91,27 @@ def main():
     NS.message_handler_thread = MessageHandler()
 
     NS.ceph_provisioner = CephProvisioningManager(
-        NS.tendrl.definitions.get_parsed_defs()["namespace.tendrl"]['ceph_provisioner']
+        NS.tendrl.definitions.get_parsed_defs()["namespace.tendrl"][
+            'ceph_provisioner']
     )
     NS.gluster_provisioner = GlusterProvisioningManager(
-        NS.tendrl.definitions.get_parsed_defs()["namespace.tendrl"]['gluster_provisioner']
+        NS.tendrl.definitions.get_parsed_defs()["namespace.tendrl"][
+            'gluster_provisioner']
     )
     if NS.config.data.get("with_internal_profiling", False):
         from tendrl.commons import profiler
         profiler.start()
-        
+
     m = NodeAgentManager()
     m.start()
 
     if NS.tendrl_context.sds_name == "ceph" and \
-        NS.tendrl_context.integration_id is not None:
+        NS.tendrl_context.integration_id:
         NS.ceph_integrations_sync_thread = \
             ceph_integrations_sds_sync.CephIntegrtaionsSyncThread()
         NS.ceph_integrations_sync_thread.start()
 
-    complete = gevent.event.Event()
+    complete = GEvent()
 
     def shutdown():
         Event(
@@ -120,9 +124,9 @@ def main():
         complete.set()
         m.stop()
         if NS.tendrl_context.sds_name == "ceph" and \
-            NS.tendrl_context.integration_id is not None:
+            NS.tendrl_context.integration_id:
             NS.ceph_integrations_sync_thread.stop()
-    
+
     def reload_config():
         Event(
             Message(

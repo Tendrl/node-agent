@@ -1,3 +1,8 @@
+import json
+import uuid
+
+import etcd
+
 payload = {
     "run": "tendrl.flows.CreateCluster",
     "type": "node",
@@ -25,10 +30,6 @@ payload = {
     "tags": ["provisioner/gluster"]
 }
 
-import json
-import uuid
-
-import etcd
 
 job_id1 = str(uuid.uuid4())
 

@@ -20,6 +20,5 @@ class Definition(objects.BaseObject):
     def get_parsed_defs(self):
         if self._parsed_defs:
             return self._parsed_defs
-        
         self._parsed_defs = yaml.safe_load(self.data)
         return self._parsed_defs

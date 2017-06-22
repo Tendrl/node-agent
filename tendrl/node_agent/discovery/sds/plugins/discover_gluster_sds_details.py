@@ -18,11 +18,12 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
         )
         out, err = cmd.communicate()
         if err or out is None or "Connection failed" in out:
+            _msg = "Could not detect SDS:Gluster installation"
             Event(
                 Message(
                     priority="debug",
                     publisher=NS.publisher_id,
-                    payload={"message": "Could not detect SDS:Gluster installation"}
+                    payload={"message": _msg}
                 )
             )
             return ""
@@ -41,7 +42,7 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
         ret_val = {}
 
         # get the gluster version details
-                        # form the temporary cluster_id
+        # form the temporary cluster_id
         cluster_id = self._derive_cluster_id()
         ret_val['detected_cluster_id'] = cluster_id
         ret_val['detected_cluster_name'] = "gluster-%s" % cluster_id
@@ -66,6 +67,5 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
         if cluster_id:
             ret_val['pkg_version'] = lines[0].split()[1]
             ret_val['pkg_name'] = "gluster"
-
 
         return ret_val

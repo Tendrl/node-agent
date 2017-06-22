@@ -1,7 +1,7 @@
-import os
 from io import BlockingIOError
-import sys
+import os
 import struct
+import sys
 import traceback
 
 import gevent
@@ -13,8 +13,8 @@ from gevent.socket import error as socket_error
 from gevent.socket import timeout as socket_timeout
 
 
-from tendrl.commons.message import Message
 from tendrl.commons.logger import Logger
+from tendrl.commons.message import Message
 
 
 MESSAGE_SOCK_PATH = "/var/run/tendrl/message.sock"
@@ -28,9 +28,9 @@ class MessageHandler(gevent.greenlet.Greenlet):
             self.read_socket
         )
 
-    def read_socket(self, sock, *args):
+    def read_socket(self, sock):
         try:
-            size = self._msgLength(sock)
+            size = self._msg_length(sock)
             data = self._read(sock, size)
             frmt = "=%ds" % size
             msg = struct.unpack(frmt, data)
@@ -47,21 +47,21 @@ class MessageHandler(gevent.greenlet.Greenlet):
             exc_type, exc_value, exc_tb = sys.exc_info()
             traceback.print_exception(
                 exc_type, exc_value, exc_tb, file=sys.stderr)
-            
+
     def _read(self, sock, size):
         data = ''
         while len(data) < size:
-            dataTmp = sock.recv(size-len(data))
-            data += dataTmp
-            if dataTmp == '':
+            data_tmp = sock.recv(size - len(data))
+            data += data_tmp
+            if data_tmp == '':
                 raise RuntimeError("Message socket connection broken")
         return data
-    
-    def _msgLength(self, sock):
+
+    def _msg_length(self, sock):
         d = self._read(sock, 4)
         s = struct.unpack('=I', d)
         return s[0]
-    
+
     def _run(self):
         try:
             self.server.serve_forever()
@@ -96,7 +96,7 @@ class MessageHandler(gevent.greenlet.Greenlet):
             self.sock.bind(MESSAGE_SOCK_PATH)
             self.sock.listen(50)
             return self.sock
-        except:
+        except Exception:
             exc_type, exc_value, exc_tb = sys.exc_info()
             traceback.print_exception(exc_type, exc_value, exc_tb,
-                                  file=sys.stderr)        
+                                      file=sys.stderr)
