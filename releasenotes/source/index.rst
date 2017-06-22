@@ -1,6 +1,6 @@
-================================
- tendrl_node-agent Release Notes
-================================
+===============================
+tendrl_node-agent Release Notes
+===============================
 
 .. toctree::
    :maxdepth: 1

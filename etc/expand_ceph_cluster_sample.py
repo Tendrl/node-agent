@@ -13,7 +13,8 @@ job = {
         "TendrlContext.cluster_name": "MyCluster",
         "TendrlContext.cluster_id": "140cd3d5-58e4-4935-a954-d946ceff371d",
         "TendrlContext.sds_name": "ceph",
-        "Node[]": ["9a811957-94fa-43f4-9605-efd40335b31a", "d41d073f-db4e-4abf-8018-02b30254b912"],
+        "Node[]": ["9a811957-94fa-43f4-9605-efd40335b31a",
+                   "d41d073f-db4e-4abf-8018-02b30254b912"],
         "Cluster.public_network": "10.70.40.0/22",
         "Cluster.cluster_network": "10.70.40.0/22",
         "Cluster.node_configuration": {
@@ -21,7 +22,7 @@ job = {
                 "role": "ceph/mon",
                 "provisioning_ip": "{ip-1}",
                 "monitor_interface": "eth0"
-            }
+            },
             "d41d073f-db4e-4abf-8018-02b30254b912": {
                 "role": "ceph/osd",
                 "provisioning_ip": "{ip-2}",

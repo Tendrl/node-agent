@@ -14,6 +14,6 @@ class GenerateJournalMapping(flows.BaseFlow):
         )
 
         # Update output dict
-        job= Job(job_id=self.job_id).load()
+        job = Job(job_id=self.job_id).load()
         job.output[self.__class__.__name__] = json.dumps(mapping)
         job.save()

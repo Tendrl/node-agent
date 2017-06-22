@@ -1,8 +1,8 @@
 .. vim: tw=79
 
-==================
- Tendrl Node Agent
-==================
+=================
+Tendrl Node Agent
+=================
 
 Tendrl node agent resides on every node managed by tendlr. It is
 responsible for operating system level operations such as hardware

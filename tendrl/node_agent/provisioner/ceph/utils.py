@@ -1,20 +1,20 @@
+import base64
 import json
 import os
 import struct
 import time
-import base64
 
 DEFAULT_JOURNAL_SIZE = 5 * 1024 * 1024 * 1024
 MAX_JOURNALS_ON_SSDS = 4
 
 
 def generate_auth_key():
-    """
-    Generates a secret key to be used in ceph cluster keyring.
+    """Generates a secret key to be used in ceph cluster keyring.
 
     It generates a base64 encoded string out of a byte string
     created by packing random data into struct. This is used
-    while cluster creation as keyring secret key
+    while cluster creation as keyring secret key.
+
     """
 
     key = os.urandom(16)
@@ -30,14 +30,13 @@ def generate_auth_key():
 
 def generate_journal_mapping(node_configuration, integration_id=None):
 
-    """This fuction works based on a simple algorithm which maps
-    smaller sized disks as journal for bigger sized disks.
+    """Maps smaller sized disks as journal for bigger sized disks.
+
     To achieve this, it first sorts the list of disks based on
     size in descending order and then start the mapping of disks
     with their journal disks.
 
     There are below listed four scenarios to be handled
-
     CASE-1: All the disks are rotational
     RESTRICTION: In this case one disk can be used as journal
     for one disk only
@@ -47,7 +46,6 @@ def generate_journal_mapping(node_configuration, integration_id=None):
     (no of disks - 1) / 2. Now in sorted list of disks on descending
     size, first half set of disks get mapped to second half set of
     disks to use them as journals.
-
     CASE-2: All the disks are SSDs
     RESTRICTION: In this case one disk can be used as journal for
     upto 4 disks
@@ -59,8 +57,8 @@ def generate_journal_mapping(node_configuration, integration_id=None):
     journals. Also while mapping disks to their journal, if no more
     space available on journal disk, it moves mapping to the next
     higher sized disk from last.
-    The below diagram explains the logic well
 
+    The below diagram explains the logic well
     ----------------------------------------------------
     |    -----------------------------------------------
     |    |    ------------------------------------------
@@ -74,7 +72,6 @@ def generate_journal_mapping(node_configuration, integration_id=None):
     ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ----
     |0|  |1|  |2|  |3|  |4|  |5|  |6|  |7|  |8|  |9|  |10|
     ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ----
-
     CASE-3: Few disks are rotational and few are SSDs
     RESTRICTION: First SSDs should be used as journals and a maximum
     of 4 disks can use one SSD as journal.
@@ -83,14 +80,14 @@ def generate_journal_mapping(node_configuration, integration_id=None):
     rotational disk. Once already 4 disks marked to use an SSD as
     journal or no space available in the selected SSD, it moves to
     next SSD to use as journal.
+
     After this mapping done, we might end up in a situation where
     more rotational or SSDs disks are left
-
     SUB CASE-3a: More rotational disks left
     LOGIC: Logic in case-1 is repeated for the left out disks
-
     SUB CASE-3b: More SSDs are left
-    LOGIC: Logic in case-2 is repeated for the left out disks
+    LOGIC: Logic in case-2 is repeated for the left out disks.
+
     """
 
     mapping = {}
@@ -103,8 +100,7 @@ def generate_journal_mapping(node_configuration, integration_id=None):
         # if pre-existing journal details available for the node
         # and consider any SSD disk available for journal mapping
         if integration_id and NS.integrations.ceph.objects.Journal(
-            integration_id=integration_id,
-            node_id=node_id).exists():
+                integration_id=integration_id, node_id=node_id).exists():
             journal_details = json.loads(NS.integrations.ceph.objects.Journal(
                 integration_id=integration_id,
                 node_id=node_id
@@ -183,7 +179,7 @@ def generate_journal_mapping(node_configuration, integration_id=None):
                     }
                 )
                 if mapped_disk_count_for_journal == MAX_JOURNALS_ON_SSDS or \
-                    ssd_disk_size < DEFAULT_JOURNAL_SIZE:
+                        ssd_disk_size < DEFAULT_JOURNAL_SIZE:
                     mapped_disk_count_for_journal = 0
                     journal_disk_idx += 1
                     ssd_disk_size = sorted_disks[
@@ -235,7 +231,7 @@ def generate_journal_mapping(node_configuration, integration_id=None):
                     }
                 )
                 if mapped_disk_count_for_journal == MAX_JOURNALS_ON_SSDS \
-                    or ssd_disk_size < DEFAULT_JOURNAL_SIZE:
+                        or ssd_disk_size < DEFAULT_JOURNAL_SIZE:
                     mapped_disk_count_for_journal = 0
                     journal_disk_idx += 1
             else:
@@ -282,7 +278,7 @@ def generate_journal_mapping(node_configuration, integration_id=None):
                     }
                 )
                 if mapped_disk_count_for_journal == MAX_JOURNALS_ON_SSDS or \
-                    ssd_disk_size < DEFAULT_JOURNAL_SIZE:
+                        ssd_disk_size < DEFAULT_JOURNAL_SIZE:
                     mapped_disk_count_for_journal = 0
                     journal_disk_idx += 1
                     ssd_disk_size = sorted_disks[
@@ -332,7 +328,6 @@ def generate_journal_mapping(node_configuration, integration_id=None):
             "unallocated_disks": unallocated_disks
         }
 
-
     return mapping
 
 
@@ -367,6 +362,7 @@ def merge(left, right):
             result.append(right[0])
             right = right[1:]
     return result
+
 
 def get_unallocated_disks(full_list, mapped_disks):
     old_list = []
