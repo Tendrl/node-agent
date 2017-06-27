@@ -47,7 +47,7 @@ def sync():
             )
         raw_reference = get_raw_reference()
         NS._int.wclient.write(
-            "nodes/%s/LocalStorage/Disks/RawReference" %
+            "nodes/%s/LocalStorage/DiskRawReference" %
             NS.node_context.node_id,
             raw_reference,
             ttl=200,
