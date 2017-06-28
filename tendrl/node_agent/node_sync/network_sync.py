@@ -10,10 +10,11 @@ from tendrl.commons.utils import cmd_utils
 
 def sync():
     try:
+        _keep_alive_for = int(NS.config.data.get("sync_interval", 10)) + 250
         interfaces = get_node_network()
         if len(interfaces) > 0:
             for interface in interfaces:
-                NS.tendrl.objects.NodeNetwork(**interface).save(ttl=200)
+                NS.tendrl.objects.NodeNetwork(**interface).save(ttl=_keep_alive_for)
                 if interface['ipv4']:
                     for ipv4 in interface['ipv4']:
                         index_key = "/indexes/ip/%s" % ipv4
@@ -36,7 +37,7 @@ def sync():
             for interface in interfaces:
                 if interface["subnet"] is not "":
                     NS.node_agent.objects.GlobalNetwork(
-                        **interface).save(ttl=200)
+                        **interface).save(ttl=_keep_alive_for)
         try:
             networks = NS._int.client.read("/networks")
             for network in networks.leaves:
