@@ -28,7 +28,7 @@ class MessageHandler(gevent.greenlet.Greenlet):
             self.read_socket
         )
 
-    def read_socket(self, sock):
+    def read_socket(self, sock, *args):
         try:
             size = self._msg_length(sock)
             data = self._read(sock, size)
