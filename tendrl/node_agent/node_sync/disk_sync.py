@@ -1,8 +1,69 @@
-from tendrl.commons.event import Event
-from tendrl.commons.message import Message
-
-from tendrl.commons.utils import cmd_utils
 import os
+
+from tendrl.commons.event import Event
+from tendrl.commons.message import ExceptionMessage
+from tendrl.commons.message import Message
+from tendrl.commons.utils import cmd_utils
+
+
+def sync():
+    try:
+        _keep_alive_for = int(NS.config.data.get("sync_interval", 10)) + 250
+        disks = get_node_disks()
+        disk_map = {}
+        for disk in disks:
+            # Creating dict with disk name as key and disk_id as value
+            # It will help populate block device disk_id attribute
+            _map = dict(disk_id=disks[disk]['disk_id'], ssd=False)
+            disk_map[disks[disk]['disk_name']] = _map
+        block_devices = get_node_block_devices(disk_map)
+
+        for disk in disks:
+            if disk_map[disks[disk]['disk_name']]:
+                disks[disk]['ssd'] = disk_map[disks[disk][
+                    'disk_name']]['ssd']
+
+            if "virtio" in disks[disk]["driver"]:
+                # Virtual disk
+                NS.tendrl.objects.VirtualDisk(**disks[disk]).save(ttl=_keep_alive_for)
+            else:
+                # physical disk
+                NS.tendrl.objects.Disk(**disks[disk]).save(ttl=_keep_alive_for)
+
+        for device in block_devices['all']:
+            NS.tendrl.objects.BlockDevice(**device).save(ttl=_keep_alive_for)
+        for device_id in block_devices['used']:
+            NS._int.wclient.write(
+                "nodes/%s/LocalStorage/BlockDevices/used/%s" %
+                (NS.node_context.node_id,
+                 device_id.replace("/", "_").replace("_", "", 1)),
+                device_id, ttl=_keep_alive_for
+            )
+        for device_id in block_devices['free']:
+            NS._int.wclient.write(
+                "nodes/%s/LocalStorage/BlockDevices/free/%s" %
+                (NS.node_context.node_id,
+                 device_id.replace("/", "_").replace("_", "", 1)),
+                device_id, ttl=_keep_alive_for
+            )
+        raw_reference = get_raw_reference()
+        NS._int.wclient.write(
+            "nodes/%s/LocalStorage/DiskRawReference" %
+            NS.node_context.node_id,
+            raw_reference,
+            ttl=_keep_alive_for,
+        )
+    except Exception as ex:
+        _msg = "node_sync disks sync failed: " + ex.message
+        Event(
+            ExceptionMessage(
+                priority="error",
+                publisher=NS.publisher_id,
+                payload={"message": _msg,
+                         "exception": ex}
+            )
+        )
+
 
 def get_node_disks():
     disks, disks_map, err = get_disk_details()
@@ -10,7 +71,7 @@ def get_node_disks():
         cmd = cmd_utils.Command('hwinfo --partition')
         out, err, rc = cmd.run()
         if not err:
-           for partitions in out.split('\n\n'):
+            for partitions in out.split('\n\n'):
                 devlist = {"hardware_id": "",
                            "parent_hardware_id": "",
                            "sysfs_id": "",
@@ -68,7 +129,7 @@ def get_disk_details():
                        "sysfs_id": "",
                        "sysfs_busid": "",
                        "sysfs_device_link": "",
-                       "hardware_class": "", 
+                       "hardware_class": "",
                        "model": "",
                        "vendor": "",
                        "device": "",
@@ -157,7 +218,7 @@ def get_disk_details():
                     devlist["config_status"] = \
                         disk.split(':')[1].lstrip()
             if ("virtio" in devlist["driver"] and
-                "by-id/virtio" in devlist['device_files']):
+                    "by-id/virtio" in devlist['device_files']):
                 # split from:
                 # /dev/vdc, /dev/disk/by-id/virtio-0200f64e-5892-40ee-8,
                 #    /dev/disk/by-path/virtio-pci-0000:00:08.0
@@ -166,10 +227,11 @@ def get_disk_details():
                         devlist['disk_id'] = entry.split('/')[-1]
                         break
             elif (devlist["vendor"] != "" and
-                devlist["device"] != "" and
-                devlist["serial_no"] != ""):
+                    devlist["device"] != "" and
+                    devlist["serial_no"] != ""):
                 devlist["disk_id"] = (devlist["vendor"] + "_" +
-                        devlist["device"] + "_" + devlist["serial_no"])
+                                      devlist["device"] + "_" + devlist[
+                    "serial_no"])
             else:
                 devlist['disk_id'] = devlist['disk_name']
 
@@ -180,10 +242,7 @@ def get_disk_details():
 
 
 def get_node_block_devices(disks_map):
-    block_devices = {}
-    block_devices['all'] = []
-    block_devices['free'] = []
-    block_devices['used'] = []
+    block_devices = dict(all=list(), free=list(), used=list())
     columns = 'NAME,KNAME,PKNAME,MAJ:MIN,FSTYPE,MOUNTPOINT,LABEL,' \
               'UUID,RA,RO,RM,SIZE,STATE,OWNER,GROUP,MODE,ALIGNMENT,' \
               'MIN-IO,OPT-IO,PHY-SEC,LOG-SEC,ROTA,SCHED,RQ-SIZE,' \
@@ -202,7 +261,7 @@ def get_node_block_devices(disks_map):
         all_parents = []
         parent_ids = []
         for dev_info in devlist:
-            device = {}
+            device = dict()
             device['device_name'] = dev_info['NAME']
             device['device_kernel_name'] = dev_info['KNAME']
             device['parent_name'] = dev_info['PKNAME']
@@ -302,7 +361,7 @@ def get_raw_reference():
                 )
             )
     return raw_reference
-    
+
 
 def is_ssd(rotational):
     if rotational == '0':

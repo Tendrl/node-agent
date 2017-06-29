@@ -1,8 +1,8 @@
 .. vim: tw=79
 
-==================
- Tendrl Node Agent
-==================
+=================
+Tendrl Node Agent
+=================
 
 Tendrl node agent resides on every node managed by tendlr. It is
 responsible for operating system level operations such as hardware
@@ -75,9 +75,9 @@ System Setup
    ::
 
        $ sudo mkdir -p /etc/tendrl/node-agent \
-         /etc/tendrl/{ceph,gluster}_integration \
+         /etc/tendrl/{ceph,gluster}-integration \
          /var/log/tendrl/node-agent \
-         /var/log/tendrl/{ceph,gluster}_integration
+         /var/log/tendrl/{ceph,gluster}-integration
 
 Environment Setup
 -----------------
@@ -131,7 +131,7 @@ Configuration
 
    ::
 
-       $ cp etc/tendrl/node-agent/node-agent-dev.conf.yaml /etc/tendrl/node-agent/node-agent.conf.yaml
+       $ cp node-agent/etc/tendrl/node-agent/node-agent-dev.conf.yaml /etc/tendrl/node-agent/node-agent.conf.yaml
 
    * Configure the following ``etcd_port`` and ``etcd_connection``
      directives in ``/etc/tendrl/node-agent/node-agent.conf.yaml`` to point to the etcd
@@ -142,8 +142,8 @@ Configuration
 
    ::
 
-       $ cp node-agent/etc/tendrl/node-agent/logging.yaml.timedrotation.sample \
-         /etc/tendrl/node-agent_logging.yaml
+       $ cp node-agent/etc/tendrl/node-agent/logging.yaml.syslog.sample \
+         /etc/tendrl/node-agent/node-agent_logging.yaml
 
    .. note::
 

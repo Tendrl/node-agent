@@ -92,14 +92,14 @@ class StrictConfigParser(ConfigParser):
                 if isinstance(val, list):
                     options[name] = '\n'.join(val)
 
-    def dget(self, section, option, default=None, type=str):
+    def dget(self, section, option, default=None, i_type=str):
         if not self.has_option(section, option):
             return default
-        if type is str:
+        if i_type is str:
             return self.get(section, option)
-        elif type is int:
+        elif i_type is int:
             return self.getint(section, option)
-        elif type is bool:
+        elif i_type is bool:
             return self.getboolean(section, option)
         else:
             raise NotImplementedError()

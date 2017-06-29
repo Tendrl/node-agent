@@ -48,9 +48,9 @@ class BumpVersionCommand(Command):
 
         old = "__version__ = '%s'" % metadata['version']
         new = "__version__ = '%s'" % self.version
-        module_file = read_module_contents()
+        module_content = read_module_contents()
         with open('version.py', 'w') as fileh:
-            fileh.write(module_file.replace(old, new))
+            fileh.write(module_content.replace(old, new))
 
         old = 'Version: %s' % metadata['version']
         new = 'Version: %s' % self.version

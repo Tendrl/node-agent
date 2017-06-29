@@ -6,14 +6,14 @@ from tendrl.node_agent.discovery.platform import manager
 
 
 class TestPlatformManager(object):
-    def test_PlatformManager_error(self, monkeypatch):
-        def Mock_listdir(param):
+    def test_platform_manager_error(self, monkeypatch):
+        def mock_listdir():
             return ["pytest.py"]
-        monkeypatch.setattr(os, "listdir", Mock_listdir)
+        monkeypatch.setattr(os, "listdir", mock_listdir)
         with pytest.raises(ValueError):
             self.manager = manager.PlatformManager()
 
-    def test_PlatformManager(self):
+    def test_platform_manager(self):
         sys.modules[
             'tendrl.node_agent.discovery.platform.plugins'
             ] = MagicMock()
