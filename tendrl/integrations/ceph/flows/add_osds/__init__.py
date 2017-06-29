@@ -28,7 +28,7 @@ class AddOsds(flows.BaseFlow):
             new_params['Node[]'] = [node_id]
             new_params['ssh_setup_script'] = ssh_setup_script
             payload = {
-                "node_ids": [node_id],
+                "tags": ["tendrl/node_%s" % node_id],
                 "run": "tendrl.flows.SetupSsh",
                 "status": "new",
                 "parameters": new_params,
