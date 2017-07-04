@@ -25,7 +25,9 @@ def sync():
 
             if "virtio" in disks[disk]["driver"]:
                 # Virtual disk
-                NS.tendrl.objects.VirtualDisk(**disks[disk]).save(ttl=_keep_alive_for)
+                NS.tendrl.objects.VirtualDisk(**disks[disk]).save(
+                    ttl=_keep_alive_for
+                )
             else:
                 # physical disk
                 NS.tendrl.objects.Disk(**disks[disk]).save(ttl=_keep_alive_for)
