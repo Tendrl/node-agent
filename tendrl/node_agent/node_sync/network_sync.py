@@ -14,7 +14,9 @@ def sync():
         interfaces = get_node_network()
         if len(interfaces) > 0:
             for interface in interfaces:
-                NS.tendrl.objects.NodeNetwork(**interface).save(ttl=_keep_alive_for)
+                NS.tendrl.objects.NodeNetwork(**interface).save(
+                    ttl=_keep_alive_for
+                )
                 if interface['ipv4']:
                     for ipv4 in interface['ipv4']:
                         index_key = "/indexes/ip/%s" % ipv4

@@ -25,7 +25,9 @@ def sync():
 
             if "virtio" in disks[disk]["driver"]:
                 # Virtual disk
-                NS.tendrl.objects.VirtualDisk(**disks[disk]).save(ttl=_keep_alive_for)
+                NS.tendrl.objects.VirtualDisk(**disks[disk]).save(
+                    ttl=_keep_alive_for
+                )
             else:
                 # physical disk
                 NS.tendrl.objects.Disk(**disks[disk]).save(ttl=_keep_alive_for)
@@ -170,16 +172,16 @@ def get_disk_details():
                         disk.split(':')[1].lstrip().replace('"', "")
                 elif key.strip() == "Vendor":
                     devlist["vendor"] = \
-                        disk.split(':')[1].lstrip().replace('"', "")
+                        disk.split(':')[1].replace(" ", "").replace('"', "")
                 elif key.strip() == "Device":
                     devlist["device"] = \
-                        disk.split(':')[1].lstrip().replace('"', "")
+                        disk.split(':')[1].replace(" ", "").replace('"', "")
                 elif key.strip() == "Revision":
                     devlist["rmversion"] = \
                         disk.split(':')[1].lstrip().replace('"', "")
                 elif key.strip() == "Serial ID":
                     devlist["serial_no"] = \
-                        disk.split(':')[1].lstrip().replace('"', "")
+                        disk.split(':')[1].replace(" ", "").replace('"', "")
                 elif key.strip() == "Driver":
                     devlist["driver"] = \
                         disk.split(':')[1].lstrip().replace('"', "")
