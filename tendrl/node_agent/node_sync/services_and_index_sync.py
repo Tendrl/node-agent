@@ -90,15 +90,6 @@ def sync():
             NS._int.wclient.write(index_key,
                                   json.dumps(_node_ids))
 
-        # Check if Node is part of any Tendrl imported/created sds cluster
-        try:
-            index_key = "/indexes/machine_id/%s" % NS.node_context.machine_id
-            NS._int.wclient.write(index_key, NS.node_context.node_id,
-                                  prevExist=False)
-
-        except etcd.EtcdAlreadyExist:
-            pass
-
         Event(
             Message(
                 priority="debug",
