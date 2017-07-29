@@ -8,5 +8,5 @@ logging_socket_path: /var/run/tendrl/message.sock
 message_retention_time: 172800 # default 2 days(2*24*60*60)
 glusterfs_repo: https://buildlogs.centos.org/centos/7/storage/x86_64/gluster-3.9/
 with_internal_profiling: False
-tags:
-  - tendrl/node
+graphite_host: '0.0.0.0'
+graphite_port: '2003'
