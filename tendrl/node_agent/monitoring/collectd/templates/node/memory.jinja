@@ -1,0 +1,16 @@
+LoadPlugin memory
+
+<Plugin "memory">
+  ValuesPercentage true
+</Plugin>
+
+<Plugin "aggregation">
+  <Aggregation>
+    Plugin "memory"
+    Type "memory"
+
+    GroupBy "Host"
+
+    CalculateSum true
+  </Aggregation>
+</Plugin>
