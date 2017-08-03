@@ -1,0 +1,15 @@
+LoadPlugin "write_graphite"
+
+<Plugin write_graphite>
+    <Node "{{ hostname }}">
+        Host "{{ graphite_host }}"
+        Port "{{ graphite_port }}"
+        Protocol "tcp"
+        LogSendErrors true
+        Prefix "tendrl.clusters.{{ integration_id }}.nodes"
+        StoreRates true
+        AlwaysAppendDS false
+        EscapeCharacter "_"
+    </Node>
+</Plugin>
+

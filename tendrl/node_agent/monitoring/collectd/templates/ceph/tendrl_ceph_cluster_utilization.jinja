@@ -1,0 +1,12 @@
+<Plugin "python">
+    ModulePath "/usr/lib64/collectd/"
+
+    Import "tendrl_ceph_utilization"
+
+    <Module "tendrl_ceph_utilization">
+        Verbose "True"
+        integration_id "{{ integration_id }}"
+        cluster_name "{{cluster_name}}"
+        Interval 30
+    </Module>
+</Plugin>
