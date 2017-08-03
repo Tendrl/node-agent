@@ -1,7 +1,7 @@
-import importlib
 import gevent
-import pkgutil
+import importlib
 import os
+import pkgutil
 import six
 import traceback
 

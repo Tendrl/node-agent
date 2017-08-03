@@ -4,14 +4,16 @@ import shlex
 import subprocess
 from subprocess import Popen
 import traceback
-import tendrl_glusterfs_base
+
+
+import tendrl_gluster
 
 
 class TendrlGlusterfsBrickUtilization(
-    tendrl_glusterfs_base.TendrlGlusterfsMonitoringBase
+    tendrl_gluster.TendrlGlusterfsMonitoringBase
 ):
     def __init__(self):
-        tendrl_glusterfs_base.TendrlGlusterfsMonitoringBase.__init__(self)
+        tendrl_gluster.TendrlGlusterfsMonitoringBase.__init__(self)
 
     def _get_mount_point(self, path):
         mount = os.path.realpath(path)
@@ -104,7 +106,8 @@ class TendrlGlusterfsBrickUtilization(
             mount_list = map(self._get_mount_point, mount_path)
             mount_points = self._parse_proc_mounts()
             outList = set(mount_points).intersection(set(mount_list))
-            # list comprehension to build dictionary does not work in python 2.6.6
+            # list comprehension to build dictionary does not work in
+            # python 2.6.6
             mounts = {}
             for k in outList:
                 mounts[k] = mount_points[k]
@@ -134,10 +137,12 @@ class TendrlGlusterfsBrickUtilization(
                     lvs[thinpool]['LVM2_METADATA_PERCENT'])
                 out['thinpool_free'] = out['thinpool_size'] * (
                     1 - out['thinpool_used_percent'] / 100.0)
-                out['thinpool_used'] = out['thinpool_size'] - out['thinpool_free']
+                out['thinpool_used'] = \
+                    out['thinpool_size'] - out['thinpool_free']
                 out['metadata_free'] = out['metadata_size'] * (
                     1 - out['metadata_used_percent'] / 100.0)
-                out['metadata_used'] = out['metadata_size'] - out['metadata_free']
+                out['metadata_used'] = \
+                    out['metadata_size'] - out['metadata_free']
             return out
 
         mount_points = _get_mounts(mount_path)
@@ -155,24 +160,43 @@ class TendrlGlusterfsBrickUtilization(
 
     def brick_utilization(self, path):
         """{
+
              'used_percent': 0.6338674168297445,
+
              'used': 0.0316314697265625,
+
              'free_inode': 2621390,
+
              'used_inode': 50,
+
              'free': 4.9586029052734375,
+
              'total_inode': 2621440,
+
              'mount_point': u'/bricks/brick2',
+
              'metadata_used_percent': None,
+
              'total': 4.990234375,
+
              'thinpool_free': None,
+
              'metadata_used': None,
+
              'thinpool_used_percent': None,
+
              'used_percent_inode': 0.0019073486328125,
+
              'thinpool_used': None,
+
              'metadata_size': None,
+
              'metadata_free': None,
+
              'thinpool_size': None
-        }"""
+
+        }
+        """
         # Below logic will find mount_path from path
         mount_stats = self.get_mount_stats(path)
         if not mount_stats:
@@ -221,166 +245,210 @@ class TendrlGlusterfsBrickUtilization(
         stats = self.get_brick_utilization()
         for vol, brick_usages in stats.iteritems():
             for brick_usage in brick_usages:
+                t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s." \
+                    "utilization.gauge-used"
                 ret_val[
-                    "clusters.%s.volumes.%s.nodes.%s.bricks.%s.utilization.gauge-used" % (
+                    t_name % (
                         self.CONFIG['integration_id'],
                         vol,
                         brick_usage.get('hostname').replace(".", "_"),
                         brick_usage.get('brick_path').replace("/", "|")
                     )
                 ] = brick_usage.get('used')
+                t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s." \
+                    "utilization.gauge-total"
                 ret_val[
-                    "clusters.%s.volumes.%s.nodes.%s.bricks.%s.utilization.gauge-total" % (
+                    t_name % (
                         self.CONFIG['integration_id'],
                         vol,
                         brick_usage.get('hostname').replace(".", "_"),
                         brick_usage.get('brick_path').replace("/", "|")
                     )
                 ] = brick_usage.get('total')
+                t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s." \
+                    "utilization.percent-percent_bytes"
                 ret_val[
-                    "clusters.%s.volumes.%s.nodes.%s.bricks.%s.utilization.percent-percent_bytes" % (
+                    t_name % (
                         self.CONFIG['integration_id'],
                         vol,
                         brick_usage.get('hostname').replace(".", "_"),
                         brick_usage.get('brick_path').replace("/", "|")
                     )
                 ] = brick_usage.get('used_percent')
+                t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s." \
+                    "thin_pool_utilization.percent-percent_bytes"
                 ret_val[
-                    "clusters.%s.volumes.%s.nodes.%s.bricks.%s.thin_pool_utilization.percent-percent_bytes" % (
+                    t_name % (
                         self.CONFIG['integration_id'],
                         vol,
                         brick_usage.get('hostname').replace(".", "_"),
                         brick_usage.get('brick_path').replace("/", "|")
                     )
                 ] = brick_usage.get('thinpool_used_percent')
+                t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s" \
+                    ".thin_pool_meta_data_utilization.percent-percent_bytes"
                 ret_val[
-                    "clusters.%s.volumes.%s.nodes.%s.bricks.%s.thin_pool_meta_data_utilization.percent-percent_bytes" % (
+                    t_name % (
                         self.CONFIG['integration_id'],
                         vol,
                         brick_usage.get('hostname').replace(".", "_"),
                         brick_usage.get('brick_path').replace("/", "|")
                     )
                 ] = brick_usage.get('metadata_used_percent')
+                t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s." \
+                    "thin_pool_meta_data_utilization.gauge-used"
                 ret_val[
-                    "clusters.%s.volumes.%s.nodes.%s.bricks.%s.thin_pool_meta_data_utilization.gauge-used" % (
+                    t_name % (
                         self.CONFIG['integration_id'],
                         vol,
                         brick_usage.get('hostname').replace(".", "_"),
                         brick_usage.get('brick_path').replace("/", "|")
                     )
                 ] = brick_usage.get('metadata_used')
+                t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s." \
+                    "inode_utilization.gauge-used"
                 ret_val[
-                    "clusters.%s.volumes.%s.nodes.%s.bricks.%s.inode_utilization.gauge-used" % (
+                    t_name % (
                         self.CONFIG['integration_id'],
                         vol,
                         brick_usage.get('hostname').replace(".", "_"),
                         brick_usage.get('brick_path').replace("/", "|")
                     )
                 ] = brick_usage.get('used_inode')
+                t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s." \
+                    "inode_utilization.gauge-total"
                 ret_val[
-                    "clusters.%s.volumes.%s.nodes.%s.bricks.%s.inode_utilization.gauge-total" % (
+                    t_name % (
                         self.CONFIG['integration_id'],
                         vol,
                         brick_usage.get('hostname').replace(".", "_"),
                         brick_usage.get('brick_path').replace("/", "|")
                     )
                 ] = brick_usage.get('total_inode')
+                t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s." \
+                    "inode_utilization.percent-percent_bytes"
                 ret_val[
-                    "clusters.%s.volumes.%s.nodes.%s.bricks.%s.inode_utilization.percent-percent_bytes" % (
+                    t_name % (
                         self.CONFIG['integration_id'],
                         vol,
                         brick_usage.get('hostname').replace(".", "_"),
                         brick_usage.get('brick_path').replace("/", "|")
                     )
                 ] = brick_usage.get('used_percent_inode')
+                t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s." \
+                    "thin_pool_utilization.gauge-used"
                 ret_val[
-                    "clusters.%s.volumes.%s.nodes.%s.bricks.%s.thin_pool_utilization.gauge-used" % (
+                    t_name % (
                         self.CONFIG['integration_id'],
                         vol,
                         brick_usage.get('hostname').replace(".", "_"),
                         brick_usage.get('brick_path').replace("/", "|")
                     )
                 ] = brick_usage.get('thinpool_used')
+                t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s." \
+                    "thin_pool_utilization.gauge-total"
                 ret_val[
-                    "clusters.%s.volumes.%s.nodes.%s.bricks.%s.thin_pool_utilization.gauge-total" % (
+                    t_name % (
                         self.CONFIG['integration_id'],
                         vol,
                         brick_usage.get('hostname').replace(".", "_"),
                         brick_usage.get('brick_path').replace("/", "|")
                     )
                 ] = brick_usage.get('thinpool_size')
+                t_name = "clusters.%s.nodes.%s.bricks.%s.utilization." \
+                    "gauge-used"
                 ret_val[
-                    "clusters.%s.nodes.%s.bricks.%s.utilization.gauge-used" % (
+                    t_name % (
                         self.CONFIG['integration_id'],
                         brick_usage.get('hostname').replace(".", "_"),
                         brick_usage.get('brick_path').replace("/", "|")
                     )
                 ] = brick_usage.get('used')
+                t_name = "clusters.%s.nodes.%s.bricks.%s.utilization." \
+                    "gauge-total"
                 ret_val[
-                    "clusters.%s.nodes.%s.bricks.%s.utilization.gauge-total" % (
+                    t_name % (
                         self.CONFIG['integration_id'],
                         brick_usage.get('hostname').replace(".", "_"),
                         brick_usage.get('brick_path').replace("/", "|")
                     )
                 ] = brick_usage.get('total')
+                t_name = "clusters.%s.nodes.%s.bricks.%s.utilization." \
+                    "percent-percent_bytes"
                 ret_val[
-                    "clusters.%s.nodes.%s.bricks.%s.utilization.percent-percent_bytes" % (
+                    t_name % (
                         self.CONFIG['integration_id'],
                         brick_usage.get('hostname').replace(".", "_"),
                         brick_usage.get('brick_path').replace("/", "|")
                     )
                 ] = brick_usage.get('used_percent')
+                t_name = "clusters.%s.nodes.%s.bricks.%s." \
+                    "thin_pool_utilization.percent-percent_bytes"
                 ret_val[
-                    "clusters.%s.nodes.%s.bricks.%s.thin_pool_utilization.percent-percent_bytes" % (
+                    t_name % (
                         self.CONFIG['integration_id'],
                         brick_usage.get('hostname').replace(".", "_"),
                         brick_usage.get('brick_path').replace("/", "|")
                     )
                 ] = brick_usage.get('thinpool_used_percent')
+                t_name = "clusters.%s.nodes.%s.bricks.%s." \
+                    "thin_pool_meta_data_utilization.percent-percent_bytes"
                 ret_val[
-                    "clusters.%s.nodes.%s.bricks.%s.thin_pool_meta_data_utilization.percent-percent_bytes" % (
+                    t_name % (
                         self.CONFIG['integration_id'],
                         brick_usage.get('hostname').replace(".", "_"),
                         brick_usage.get('brick_path').replace("/", "|")
                     )
                 ] = brick_usage.get('metadata_used_percent')
+                t_name = "clusters.%s.nodes.%s.bricks.%s." \
+                    "thin_pool_meta_data_utilization.gauge-used"
                 ret_val[
-                    "clusters.%s.nodes.%s.bricks.%s.thin_pool_meta_data_utilization.gauge-used" % (
+                    t_name % (
                         self.CONFIG['integration_id'],
                         brick_usage.get('hostname').replace(".", "_"),
                         brick_usage.get('brick_path').replace("/", "|")
                     )
                 ] = brick_usage.get('metadata_used')
+                t_name = "clusters.%s.nodes.%s.bricks.%s.inode_utilization." \
+                    "gauge-used"
                 ret_val[
-                    "clusters.%s.nodes.%s.bricks.%s.inode_utilization.gauge-used" % (
+                    t_name % (
                         self.CONFIG['integration_id'],
                         brick_usage.get('hostname').replace(".", "_"),
                         brick_usage.get('brick_path').replace("/", "|")
                     )
                 ] = brick_usage.get('used_inode')
+                t_name = "clusters.%s.nodes.%s.bricks.%s.inode_utilization." \
+                    "gauge-total"
                 ret_val[
-                    "clusters.%s.nodes.%s.bricks.%s.inode_utilization.gauge-total" % (
+                    t_name % (
                         self.CONFIG['integration_id'],
                         brick_usage.get('hostname').replace(".", "_"),
                         brick_usage.get('brick_path').replace("/", "|")
                     )
                 ] = brick_usage.get('total_inode')
+                t_name = "clusters.%s.nodes.%s.bricks.%s.inode_utilization." \
+                    "percent-percent_bytes"
                 ret_val[
-                    "clusters.%s.nodes.%s.bricks.%s.inode_utilization.percent-percent_bytes" % (
+                    t_name % (
                         self.CONFIG['integration_id'],
                         brick_usage.get('hostname').replace(".", "_"),
                         brick_usage.get('brick_path').replace("/", "|")
                     )
                 ] = brick_usage.get('used_percent_inode')
+                t_name = "clusters.%s.nodes.%s.bricks.%s." \
+                    "thin_pool_utilization.gauge-used"
                 ret_val[
-                    "clusters.%s.nodes.%s.bricks.%s.thin_pool_utilization.gauge-used" % (
+                    t_name % (
                         self.CONFIG['integration_id'],
                         brick_usage.get('hostname').replace(".", "_"),
                         brick_usage.get('brick_path').replace("/", "|")
                     )
                 ] = brick_usage.get('thinpool_used')
+                t_name = "clusters.%s.nodes.%s.bricks.%s." \
+                    "thin_pool_utilization.gauge-total"
                 ret_val[
-                    "clusters.%s.nodes.%s.bricks.%s.thin_pool_utilization.gauge-total" % (
+                    t_name % (
                         self.CONFIG['integration_id'],
                         brick_usage.get('hostname').replace(".", "_"),
                         brick_usage.get('brick_path').replace("/", "|")

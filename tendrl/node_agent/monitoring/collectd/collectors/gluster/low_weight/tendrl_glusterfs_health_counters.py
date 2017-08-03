@@ -1,18 +1,18 @@
 import collectd
 import traceback
 
-import tendrl_glusterfs_base
-import glusterfs.utils as tendrl_glusterfs_utils
+import tendrl_gluster
+import utils as tendrl_glusterfs_utils
 
 
 PEER_IN_CLUSTER = ['Peer', 'in', 'Cluster']
 
 
 class TendrlGlusterfsHealthCounters(
-    tendrl_glusterfs_base.TendrlGlusterfsMonitoringBase
+    tendrl_gluster.TendrlGlusterfsMonitoringBase
 ):
     def __init__(self):
-        tendrl_glusterfs_base.TendrlGlusterfsMonitoringBase.__init__(self)
+        tendrl_gluster.TendrlGlusterfsMonitoringBase.__init__(self)
 
     def get_peer_count(self):
         peer_down_cnt = 0
@@ -60,11 +60,12 @@ class TendrlGlusterfsHealthCounters(
             for brick in sub_volume_bricks:
                 if 'status' in brick:
                     brick_statuses = ret_val.get(brick['hostname'], [])
+                    b_path = tendrl_glusterfs_utils.get_brick_state_mapping(
+                        brick['status']
+                    )
                     brick_statuses.append(
                         {
-                            brick['path']: tendrl_glusterfs_utils.get_brick_state_mapping(
-                                brick['status']
-                            )
+                            brick['path']: b_path
                         }
                     )
                     ret_val['hostname'] = brick_statuses

@@ -2,7 +2,7 @@ import netifaces
 import socket
 import time
 
-import tendrl_glusterfs_base
+import tendrl_gluster
 
 
 # Working Procedure:
@@ -19,10 +19,10 @@ CONFIG = None
 
 
 class TendrlGlusterfsNWThroughput(
-    tendrl_glusterfs_base.TendrlGlusterfsMonitoringBase
+    tendrl_gluster.TendrlGlusterfsMonitoringBase
 ):
     def __init__(self):
-        tendrl_glusterfs_base.TendrlGlusterfsMonitoringBase.__init__(self)
+        tendrl_gluster.TendrlGlusterfsMonitoringBase.__init__(self)
 
     def get_interface_name(self, peer_name):
         infs = netifaces.interfaces()
@@ -53,8 +53,10 @@ class TendrlGlusterfsNWThroughput(
 
     def get_metrics(self):
         ret_val = {}
+        t_name = 'clusters.%s.nodes.%s.network_throughput-cluster_network.' \
+            'gauge-used'
         ret_val[
-            'clusters.%s.nodes.%s.network_throughput-cluster_network.gauge-used' % (
+            t_name % (
                 self.CONFIG['integration_id'],
                 socket.getfqdn(self.CONFIG['peer_name']).replace(".", "_")
             )

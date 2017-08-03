@@ -5,15 +5,15 @@ try:
 except ImportError:
     import xml.etree.ElementTree as ElementTree
 
-import tendrl_glusterfs_base
-import glusterfs.utils as tendrl_glusterfs_utils
+import tendrl_gluster
+import utils as tendrl_glusterfs_utils
 
 
 class TendrlGlusterfsProfileInfo(
-    tendrl_glusterfs_base.TendrlGlusterfsMonitoringBase
+    tendrl_gluster.TendrlGlusterfsMonitoringBase
 ):
     def __init__(self):
-        tendrl_glusterfs_base.TendrlGlusterfsMonitoringBase.__init__(self)
+        tendrl_gluster.TendrlGlusterfsMonitoringBase.__init__(self)
 
     def _parseVolumeProfileInfo(self, tree, nfs=False):
         bricks = []
@@ -71,16 +71,26 @@ class TendrlGlusterfsProfileInfo(
                     'cumulativeStats': {
                         'blockStats': blkCumulative,
                         'fopStats': fopCumulative,
-                        'duration': brick.find('cumulativeStats/duration').text,
-                        'totalRead': brick.find('cumulativeStats/totalRead').text,
-                        'totalWrite': brick.find('cumulativeStats/totalWrite').text
+                        'duration': brick.find(
+                            'cumulativeStats/duration'
+                        ).text,
+                        'totalRead': brick.find(
+                            'cumulativeStats/totalRead'
+                        ).text,
+                        'totalWrite': brick.find(
+                            'cumulativeStats/totalWrite'
+                        ).text
                     },
                     'intervalStats': {
                         'blockStats': blkInterval,
                         'fopStats': fopInterval,
                         'duration': brick.find('intervalStats/duration').text,
-                        'totalRead': brick.find('intervalStats/totalRead').text,
-                        'totalWrite': brick.find('intervalStats/totalWrite').text
+                        'totalRead': brick.find(
+                            'intervalStats/totalRead'
+                        ).text,
+                        'totalWrite': brick.find(
+                            'intervalStats/totalWrite'
+                        ).text
                     }
                 }
             )
@@ -134,16 +144,20 @@ class TendrlGlusterfsProfileInfo(
             vol_iops = self.get_volume_profile_info(volName)
             for brick_det in vol_iops.get('bricks'):
                 brickName = brick_det.get('brick')
+                t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s.iops." \
+                    "gauge-read"
                 ret_val[
-                    "clusters.%s.volumes.%s.nodes.%s.bricks.%s.iops.gauge-read" % (
+                    t_name % (
                         self.CONFIG['integration_id'],
                         volName,
                         brickName.split(':')[0].replace('.', '_'),
                         brickName.split(':')[1].replace('/', '|')
                     )
                 ] = brick_det.get('cumulativeStats').get('totalRead')
+                t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s.iops." \
+                    "gauge-write"
                 ret_val[
-                    "clusters.%s.volumes.%s.nodes.%s.bricks.%s.iops.gauge-write" % (
+                    t_name % (
                         self.CONFIG['integration_id'],
                         volName,
                         brickName.split(':')[0].replace('.', '_'),

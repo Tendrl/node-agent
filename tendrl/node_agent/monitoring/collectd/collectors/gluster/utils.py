@@ -14,7 +14,8 @@ import collectd
 from tendrl.commons.utils import ini2json
 
 
-GLUSTERD_ERROR_MSG = 'Connection failed. Please check if gluster daemon is operational.'
+GLUSTERD_ERROR_MSG = 'Connection failed. '\
+    'Please check if gluster daemon is operational.'
 
 
 def get_brick_state_mapping(status):
