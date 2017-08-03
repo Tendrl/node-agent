@@ -67,13 +67,17 @@ def main():
     conf_name = argv[1]
     data = json.loads(argv[2])
     TendrlMonitoringConfigManager(conf_name, data).generate_config_file()
-    return Service(
+    err, success = Service(
         'collectd',
         publisher_id='node_agent',
         node_id=data['node_id'],
         socket_path=data['logging_socket_path'],
         enabled=True
     ).restart()
+    if success:
+        return 0
+    else:
+        return 1
 
 
 if __name__ == '__main__':
