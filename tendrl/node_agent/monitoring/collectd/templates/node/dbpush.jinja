@@ -6,7 +6,7 @@ LoadPlugin "write_graphite"
         Port "{{ graphite_port }}"
         Protocol "tcp"
         LogSendErrors true
-        Prefix "tendrl.clusters.{{ integration_id }}.nodes"
+        Prefix "tendrl.clusters.{{ integration_id }}.nodes."
         StoreRates true
         AlwaysAppendDS false
         EscapeCharacter "_"
