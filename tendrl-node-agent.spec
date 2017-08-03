@@ -15,6 +15,7 @@ BuildRequires: python-mock
 BuildRequires: python-setuptools
 
 Requires: collectd
+Requires: collectd-ping
 Requires: python-jinja2
 Requires: tendrl-commons
 Requires: hwinfo 
@@ -44,6 +45,9 @@ install -m  0755  --directory $RPM_BUILD_ROOT%{_var}/log/tendrl/node-agent
 install -m  0755  --directory $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node-agent
 install -m  0755  --directory $RPM_BUILD_ROOT%{_datadir}/tendrl/node-agent
 install -m  0755  --directory $RPM_BUILD_ROOT%{_sharedstatedir}/tendrl
+install -m  0755  --directory $RPM_BUILD_ROOT%{_libdir}/collectd/gluster/low_weight
+install -m  0755  --directory $RPM_BUILD_ROOT%{_libdir}/collectd/gluster/heavy_weight
+install -m  0755  --directory $RPM_BUILD_ROOT%{_sysconfdir}/collectd_template
 install -Dm 0644 tendrl-node-agent.service $RPM_BUILD_ROOT%{_unitdir}/tendrl-node-agent.service
 install -Dm 0644 tendrl-node-agent.socket $RPM_BUILD_ROOT%{_unitdir}/tendrl-node-agent.socket
 install -Dm 0644 etc/tendrl/node-agent/node-agent.conf.yaml.sample $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node-agent/node-agent.conf.yaml
@@ -51,6 +55,10 @@ install -Dm 0644 etc/tendrl/node-agent/logging.yaml.syslog.sample $RPM_BUILD_ROO
 install -Dm 644 etc/tendrl/node-agent/*.sample $RPM_BUILD_ROOT%{_datadir}/tendrl/node-agent/
 mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/rsyslog.d
 install -Dm 644 etc/rsyslog.d/tendrl-node-agent.conf $RPM_BUILD_ROOT/%{_sysconfdir}/rsyslog.d/tendrl-node-agent.conf
+cp -a tendrl/node_agent/monitoring/collectd/collectors/* $RPM_BUILD_ROOT%{_libdir}/collectd/
+cp -a tendrl/node_agent/monitoring/collectd/templates/ceph/* $RPM_BUILD_ROOT%{_sysconfdir}/collectd_template/
+cp -a tendrl/node_agent/monitoring/collectd/templates/gluster/* $RPM_BUILD_ROOT%{_sysconfdir}/collectd_template/
+cp -a tendrl/node_agent/monitoring/collectd/templates/node/* $RPM_BUILD_ROOT%{_sysconfdir}/collectd_template/
 
 %post
 getent group tendrl >/dev/null || groupadd -r tendrl
@@ -75,6 +83,9 @@ py.test -v tendrl/node-agent/tests || :
 %dir %{_sysconfdir}/tendrl/node-agent
 %dir %{_datadir}/tendrl/node-agent
 %dir %{_sharedstatedir}/tendrl
+%attr(0655, root, root) %{_sysconfdir}/collectd_template/*
+%attr(0655, root, root) %{_libdir}/collectd/*
+
 %doc README.rst
 %license LICENSE
 %{_datadir}/tendrl/node-agent/
