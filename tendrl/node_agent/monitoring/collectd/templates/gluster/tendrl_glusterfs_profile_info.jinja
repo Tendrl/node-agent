@@ -1,0 +1,11 @@
+<Plugin "python">
+    ModulePath "/usr/lib64/collectd/gluster/low_weight"
+
+    Import "tendrl_glusterfs_profile_info"
+
+    <Module "tendrl_glusterfs_profile_info">
+        integration_id "{{integration_id}}"
+        graphite_host "{{ graphite_host }}"
+        graphite_port "{{ graphite_port }}"
+    </Module>
+</Plugin>
