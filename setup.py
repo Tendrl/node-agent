@@ -117,7 +117,7 @@ setup(
     entry_points={
         'console_scripts': [
             'tendrl-node-agent = tendrl.node_agent.manager:main',
-            'tendrl-monitoring-config-manager = tendrl.node_agent.monitoring.collectd.commands.config_manager:main'
+            'tendrl-monitoring-config-manager = tendrl.node_agent.monitoring.collectd.commands.tendrl_monitoring_config_manager:main'
         ]
     },
     include_package_data=True,
