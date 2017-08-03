@@ -10,3 +10,5 @@ glusterfs_repo: https://buildlogs.centos.org/centos/7/storage/x86_64/gluster-3.9
 with_internal_profiling: False
 graphite_host: '0.0.0.0'
 graphite_port: '2003'
+tags:
+  - tendrl/node
