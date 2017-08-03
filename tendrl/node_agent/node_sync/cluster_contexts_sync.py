@@ -65,7 +65,6 @@ def sync():
                     )
                 )
                 NS.tendrl.objects.ClusterNodeContext(
-                    machine_id=NS.node_context.machine_id,
                     node_id=NS.node_context.node_id,
                     fqdn=NS.node_context.fqdn,
                     status=NS.node_context.status,
