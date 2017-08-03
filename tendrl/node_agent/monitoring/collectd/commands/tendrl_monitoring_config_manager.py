@@ -69,7 +69,7 @@ def main():
     TendrlMonitoringConfigManager(conf_name, data).generate_config_file()
     return Service(
         'collectd',
-        publisher_id='node_monitoring',
+        publisher_id='node_agent',
         node_id=data['node_id'],
         socket_path=data['logging_socket_path'],
         enabled=True
