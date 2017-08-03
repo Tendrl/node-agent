@@ -1,0 +1,31 @@
+Hostname "{{ hostname }}"
+BaseDir "/var/lib/collectd"
+PluginDir "{{ moduledirconfig }}"
+
+TypesDB "/usr/share/collectd/types.db"
+
+Interval {{ interval }}
+Timeout 5
+ReadThreads 5
+
+<LoadPlugin python>
+    Globals true
+</LoadPlugin>
+
+LoadPlugin "exec"
+LoadPlugin "threshold"
+LoadPlugin "unixsock"
+LoadPlugin "aggregation"
+
+<Plugin unixsock>
+  SocketFile "/var/run/collectd-unixsock"
+  SocketGroup "{{ socketgroup }}"
+  SocketPerms "0770"
+  DeleteSocket true
+</Plugin>
+
+<Plugin "exec">
+    NotificationExec "tendrl-user" "{{ moduledirconfig }}handle_collectd_notification.py"
+</Plugin>
+
+Include "/etc/collectd.d/*.conf"

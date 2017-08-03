@@ -1,0 +1,18 @@
+LoadPlugin swap
+
+<Plugin "swap">
+  ValuesPercentage true
+  ReportBytes true
+  ValuesAbsolute true
+</Plugin>
+
+<Plugin "aggregation">
+  <Aggregation>
+    Plugin "swap"
+    Type "swap"
+
+    GroupBy "Host"
+
+    CalculateSum true
+  </Aggregation>
+</Plugin>

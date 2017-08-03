@@ -1,0 +1,12 @@
+<Plugin "python">
+    ModulePath "/usr/lib64/collectd/"
+
+    Import "tendrl_ceph_node_network_throughput"
+
+    <Module "tendrl_ceph_node_network_throughput">
+        Verbose "True"
+        cluster_network {{ cluster_network }}
+        public_network {{ public_network }}
+        Interval 30
+    </Module>
+</Plugin>
