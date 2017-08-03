@@ -47,7 +47,6 @@ install -m  0755  --directory $RPM_BUILD_ROOT%{_datadir}/tendrl/node-agent
 install -m  0755  --directory $RPM_BUILD_ROOT%{_sharedstatedir}/tendrl
 install -m  0755  --directory $RPM_BUILD_ROOT%{_libdir}/collectd/gluster/low_weight
 install -m  0755  --directory $RPM_BUILD_ROOT%{_libdir}/collectd/gluster/heavy_weight
-install -m  0755  --directory $RPM_BUILD_ROOT%{_bindir}/config_manager
 install -m  0755  --directory $RPM_BUILD_ROOT%{_sysconfdir}/collectd_template
 install -Dm 0644 tendrl-node-agent.service $RPM_BUILD_ROOT%{_unitdir}/tendrl-node-agent.service
 install -Dm 0644 tendrl-node-agent.socket $RPM_BUILD_ROOT%{_unitdir}/tendrl-node-agent.socket
@@ -56,7 +55,6 @@ install -Dm 0644 etc/tendrl/node-agent/logging.yaml.syslog.sample $RPM_BUILD_ROO
 install -Dm 644 etc/tendrl/node-agent/*.sample $RPM_BUILD_ROOT%{_datadir}/tendrl/node-agent/
 mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/rsyslog.d
 install -Dm 644 etc/rsyslog.d/tendrl-node-agent.conf $RPM_BUILD_ROOT/%{_sysconfdir}/rsyslog.d/tendrl-node-agent.conf
-install -Dm 655 tendrl/node_agent/monitoring/collectd/commands/tendrl_monitoring_config_manager.py $RPM_BUILD_ROOT%{_bindir}/tendrl_monitoring_config_manager
 cp -a tendrl/node_agent/monitoring/collectd/collectors/* $RPM_BUILD_ROOT%{_libdir}/collectd/
 cp -a tendrl/node_agent/monitoring/collectd/templates/ceph/* $RPM_BUILD_ROOT%{_sysconfdir}/collectd_template/
 cp -a tendrl/node_agent/monitoring/collectd/templates/gluster/* $RPM_BUILD_ROOT%{_sysconfdir}/collectd_template/
@@ -90,7 +88,6 @@ py.test -v tendrl/node-agent/tests || :
 
 %doc README.rst
 %license LICENSE
-%{_bindir}/config_manager
 %{_datadir}/tendrl/node-agent/
 %config(noreplace) %{_sysconfdir}/tendrl/node-agent/*.yaml
 %{_unitdir}/tendrl-node-agent.service
