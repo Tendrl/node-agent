@@ -57,7 +57,7 @@ def get_gluster_state_dump():
     ret_val = {}
     try:
         gluster_state_dump_op, gluster_state_dump_err = exec_command(
-            'gluster get-state glusterd odir /var/run file glusterd-state'
+            'gluster get-state glusterd odir /var/run file collectd_gstate'
         )
         if (
             gluster_state_dump_err or
@@ -65,10 +65,10 @@ def get_gluster_state_dump():
         ):
             return ret_val, gluster_state_dump_err
         gluster_state_dump = ini2json.ini_to_dict(
-            '/var/run/glusterd-state'
+            '/var/run/collectd_gstate'
         )
         rm_state_dump, rm_state_dump_err = exec_command(
-            'rm -rf /var/run/glusterd-state'
+            'rm -rf /var/run/collectd_gstate'
         )
         if rm_state_dump_err:
             return ret_val, rm_state_dump_err
