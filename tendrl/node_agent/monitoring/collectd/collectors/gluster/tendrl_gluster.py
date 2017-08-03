@@ -86,7 +86,7 @@ def list_modules_in_package_path(package_path, prefix):
 
 def load_plugins():
     path = os.path.dirname(os.path.abspath(__file__)) + '/low_weight'
-    pkg = 'gluster.low_weight'
+    pkg = 'low_weight'
     sds_plugins = list_modules_in_package_path(path, pkg)
     for name, sds_fqdn in sds_plugins:
         importlib.import_module(sds_fqdn)
