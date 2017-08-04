@@ -23,7 +23,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 payload={"message": "%s running" % self.__class__.__name__}
             )
         )
-        while not self._complete.is_set():                    
+        while not self._complete.is_set():
             gevent.sleep(int(NS.config.data.get("sync_interval", 10)))
             NS.node_context = NS.node_context.load()
             NS.node_context.sync_status = "in_progress"

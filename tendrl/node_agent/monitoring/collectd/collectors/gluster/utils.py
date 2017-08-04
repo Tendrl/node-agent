@@ -1,7 +1,7 @@
 import ConfigParser
+from gevent import socket
 import os
 import shlex
-import socket
 import subprocess
 from subprocess import Popen
 import time

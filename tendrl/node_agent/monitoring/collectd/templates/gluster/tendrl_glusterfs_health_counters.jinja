@@ -1,12 +1,11 @@
 <Plugin "python">
-    ModulePath "/usr/lib64/collectd/gluster"
+    ModulePath "/usr/lib64/collectd/gluster/low_weight"
 
-    Import "tendrl_gluster"
+    Import "tendrl_glusterfs_health_counters"
 
-    <Module "tendrl_gluster">
+    <Module "tendrl_glusterfs_health_counters">
         integration_id "{{integration_id}}"
         graphite_host "{{ graphite_host }}"
         graphite_port "{{ graphite_port }}"
-        peer_name "{{ hostname }}"
     </Module>
 </Plugin>
