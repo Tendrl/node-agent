@@ -1,3 +1,0 @@
-# use latest version from develop branch on github
-git+https://github.com/Tendrl/commons.git@develop
--e .
