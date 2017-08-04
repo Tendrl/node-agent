@@ -11,8 +11,6 @@ from jinja2 import Environment
 from jinja2 import FileSystemLoader
 
 
-from tendrl.commons.utils.service import Service
-
 collectd_os_specifics = {
     'Fedora': {
         'config': '/etc/collectd.conf',
@@ -67,17 +65,7 @@ def main():
     conf_name = argv[1]
     data = json.loads(argv[2])
     TendrlMonitoringConfigManager(conf_name, data).generate_config_file()
-    err, success = Service(
-        'collectd',
-        publisher_id='node_agent',
-        node_id=data['node_id'],
-        socket_path=data['logging_socket_path'],
-        enabled=True
-    ).restart()
-    if success:
-        return 0
-    else:
-        return 1
+    return 0
 
 
 if __name__ == '__main__':
