@@ -2,7 +2,6 @@ import collectd
 import netifaces
 import socket
 import time
-import traceback
 
 import utils as tendrl_glusterfs_utils
 
