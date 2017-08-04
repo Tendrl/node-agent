@@ -74,10 +74,7 @@ def main():
         socket_path=data['logging_socket_path'],
         enabled=True
     ).restart()
-    if success:
-        return 0
-    else:
-        return 1
+    return 0
 
 
 if __name__ == '__main__':
