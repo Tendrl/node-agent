@@ -6,7 +6,7 @@ import subprocess
 from subprocess import Popen
 import time
 import traceback
-
+import uuid
 
 import collectd
 
@@ -56,8 +56,9 @@ def get_gluster_state_dump():
     global GLUSTERD_ERROR_MSG
     ret_val = {}
     try:
+        file_name = "collectd_gstate_%s" % str(uuid.uuid4())
         gluster_state_dump_op, gluster_state_dump_err = exec_command(
-            'gluster get-state glusterd odir /var/run file collectd_gstate'
+            'gluster get-state glusterd odir /var/run file %s' % file_name
         )
         if (
             gluster_state_dump_err or
@@ -65,10 +66,10 @@ def get_gluster_state_dump():
         ):
             return ret_val, gluster_state_dump_err
         gluster_state_dump = ini2json.ini_to_dict(
-            '/var/run/collectd_gstate'
+            '/var/run/%s' % file_name
         )
         rm_state_dump, rm_state_dump_err = exec_command(
-            'rm -rf /var/run/collectd_gstate'
+            'rm -rf /var/run/%s' % file_name
         )
         if rm_state_dump_err:
             return ret_val, rm_state_dump_err
