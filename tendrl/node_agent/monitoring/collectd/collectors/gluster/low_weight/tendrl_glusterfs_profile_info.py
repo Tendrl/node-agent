@@ -159,7 +159,7 @@ def get_metrics():
                 t_name % (
                     CONFIG['integration_id'],
                     volName,
-                    brickName.split(':')[0].replace('.', '_'),
+                    CONFIG['peer_name'].replace('.', '_'),
                     brickName.split(':')[1].replace('/', '|')
                 )
             ] = brick_det.get('cumulativeStats').get('totalRead')
@@ -169,7 +169,7 @@ def get_metrics():
                 t_name % (
                     CONFIG['integration_id'],
                     volName,
-                    brickName.split(':')[0].replace('.', '_'),
+                    CONFIG['peer_name'].replace('.', '_'),
                     brickName.split(':')[1].replace('/', '|')
                 )
             ] = brick_det.get('cumulativeStats').get('totalWrite')

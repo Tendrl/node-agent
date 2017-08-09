@@ -1,6 +1,7 @@
 import collectd
 import os
 import shlex
+import socket
 import subprocess
 from subprocess import Popen
 import traceback
@@ -206,6 +207,7 @@ def brick_utilization(path):
 
 def get_brick_utilization():
     global CLUSTER_TOPOLOGY
+    global CONFIG
     ret_val = {}
     volumes = CLUSTER_TOPOLOGY.get('volumes', [])
     for volume in volumes:
@@ -217,29 +219,37 @@ def get_brick_utilization():
             for brick in sub_volume_bricks:
                 brick_path = brick['path']
                 brick_hostname = brick['hostname']
-                try:
-                    utilization = brick_utilization(
-                        brick['path']
-                    )
-                except (
-                    AttributeError,
-                    KeyError,
-                    ValueError
+                # Check if current brick is from localhost else utilization
+                # of brick from some other host can't be computed here..
+                if (
+                    brick_hostname == socket.gethostbyname(
+                        CONFIG['peer_name']
+                    ) or
+                    brick_hostname == CONFIG['peer_name']
                 ):
-                    collectd.error(
-                        'Failed to fetch utilization of brick %s of host'
-                        ' %s. Error %s' % (
-                            brick['path'],
-                            brick['hostname'],
-                            traceback.format_exc()
+                    try:
+                        utilization = brick_utilization(
+                            brick['path']
                         )
-                    )
-                if not utilization:
-                    continue
-                utilization['hostname'] = brick_hostname
-                utilization['brick_path'] = brick_path
-                utilizations.append(utilization)
-            ret_val[volume['name']] = utilizations
+                    except (
+                        AttributeError,
+                        KeyError,
+                        ValueError
+                    ):
+                        collectd.error(
+                            'Failed to fetch utilization of brick %s of host'
+                            ' %s. Error %s' % (
+                                brick['path'],
+                                brick['hostname'],
+                                traceback.format_exc()
+                            )
+                        )
+                    if not utilization:
+                        continue
+                    utilization['hostname'] = brick_hostname
+                    utilization['brick_path'] = brick_path
+                    utilizations.append(utilization)
+                ret_val[volume['name']] = utilizations
     return ret_val
 
 
@@ -255,7 +265,7 @@ def get_metrics():
                 t_name % (
                     CONFIG['integration_id'],
                     vol,
-                    brick_usage.get('hostname').replace(".", "_"),
+                    CONFIG['peer_name'].replace(".", "_"),
                     brick_usage.get('brick_path').replace("/", "|")
                 )
             ] = brick_usage.get('used')
@@ -265,7 +275,7 @@ def get_metrics():
                 t_name % (
                     CONFIG['integration_id'],
                     vol,
-                    brick_usage.get('hostname').replace(".", "_"),
+                    CONFIG['peer_name'].replace(".", "_"),
                     brick_usage.get('brick_path').replace("/", "|")
                 )
             ] = brick_usage.get('total')
@@ -275,7 +285,7 @@ def get_metrics():
                 t_name % (
                     CONFIG['integration_id'],
                     vol,
-                    brick_usage.get('hostname').replace(".", "_"),
+                    CONFIG['peer_name'].replace(".", "_"),
                     brick_usage.get('brick_path').replace("/", "|")
                 )
             ] = brick_usage.get('used_percent')
@@ -285,7 +295,7 @@ def get_metrics():
                 t_name % (
                     CONFIG['integration_id'],
                     vol,
-                    brick_usage.get('hostname').replace(".", "_"),
+                    CONFIG['peer_name'].replace(".", "_"),
                     brick_usage.get('brick_path').replace("/", "|")
                 )
             ] = brick_usage.get('thinpool_used_percent')
@@ -295,7 +305,7 @@ def get_metrics():
                 t_name % (
                     CONFIG['integration_id'],
                     vol,
-                    brick_usage.get('hostname').replace(".", "_"),
+                    CONFIG['peer_name'].replace(".", "_"),
                     brick_usage.get('brick_path').replace("/", "|")
                 )
             ] = brick_usage.get('metadata_used_percent')
@@ -305,7 +315,7 @@ def get_metrics():
                 t_name % (
                     CONFIG['integration_id'],
                     vol,
-                    brick_usage.get('hostname').replace(".", "_"),
+                    CONFIG['peer_name'].replace(".", "_"),
                     brick_usage.get('brick_path').replace("/", "|")
                 )
             ] = brick_usage.get('metadata_used')
@@ -315,7 +325,7 @@ def get_metrics():
                 t_name % (
                     CONFIG['integration_id'],
                     vol,
-                    brick_usage.get('hostname').replace(".", "_"),
+                    CONFIG['peer_name'].replace(".", "_"),
                     brick_usage.get('brick_path').replace("/", "|")
                 )
             ] = brick_usage.get('used_inode')
@@ -325,7 +335,7 @@ def get_metrics():
                 t_name % (
                     CONFIG['integration_id'],
                     vol,
-                    brick_usage.get('hostname').replace(".", "_"),
+                    CONFIG['peer_name'].replace(".", "_"),
                     brick_usage.get('brick_path').replace("/", "|")
                 )
             ] = brick_usage.get('total_inode')
@@ -335,7 +345,7 @@ def get_metrics():
                 t_name % (
                     CONFIG['integration_id'],
                     vol,
-                    brick_usage.get('hostname').replace(".", "_"),
+                    CONFIG['peer_name'].replace(".", "_"),
                     brick_usage.get('brick_path').replace("/", "|")
                 )
             ] = brick_usage.get('used_percent_inode')
@@ -345,7 +355,7 @@ def get_metrics():
                 t_name % (
                     CONFIG['integration_id'],
                     vol,
-                    brick_usage.get('hostname').replace(".", "_"),
+                    CONFIG['peer_name'].replace(".", "_"),
                     brick_usage.get('brick_path').replace("/", "|")
                 )
             ] = brick_usage.get('thinpool_used')
@@ -355,7 +365,7 @@ def get_metrics():
                 t_name % (
                     CONFIG['integration_id'],
                     vol,
-                    brick_usage.get('hostname').replace(".", "_"),
+                    CONFIG['peer_name'].replace(".", "_"),
                     brick_usage.get('brick_path').replace("/", "|")
                 )
             ] = brick_usage.get('thinpool_size')
@@ -364,7 +374,7 @@ def get_metrics():
             ret_val[
                 t_name % (
                     CONFIG['integration_id'],
-                    brick_usage.get('hostname').replace(".", "_"),
+                    CONFIG['peer_name'].replace(".", "_"),
                     brick_usage.get('brick_path').replace("/", "|")
                 )
             ] = brick_usage.get('used')
@@ -373,7 +383,7 @@ def get_metrics():
             ret_val[
                 t_name % (
                     CONFIG['integration_id'],
-                    brick_usage.get('hostname').replace(".", "_"),
+                    CONFIG['peer_name'].replace(".", "_"),
                     brick_usage.get('brick_path').replace("/", "|")
                 )
             ] = brick_usage.get('total')
@@ -382,7 +392,7 @@ def get_metrics():
             ret_val[
                 t_name % (
                     CONFIG['integration_id'],
-                    brick_usage.get('hostname').replace(".", "_"),
+                    CONFIG['peer_name'].replace(".", "_"),
                     brick_usage.get('brick_path').replace("/", "|")
                 )
             ] = brick_usage.get('used_percent')
@@ -391,7 +401,7 @@ def get_metrics():
             ret_val[
                 t_name % (
                     CONFIG['integration_id'],
-                    brick_usage.get('hostname').replace(".", "_"),
+                    CONFIG['peer_name'].replace(".", "_"),
                     brick_usage.get('brick_path').replace("/", "|")
                 )
             ] = brick_usage.get('thinpool_used_percent')
@@ -400,7 +410,7 @@ def get_metrics():
             ret_val[
                 t_name % (
                     CONFIG['integration_id'],
-                    brick_usage.get('hostname').replace(".", "_"),
+                    CONFIG['peer_name'].replace(".", "_"),
                     brick_usage.get('brick_path').replace("/", "|")
                 )
             ] = brick_usage.get('metadata_used_percent')
@@ -409,7 +419,7 @@ def get_metrics():
             ret_val[
                 t_name % (
                     CONFIG['integration_id'],
-                    brick_usage.get('hostname').replace(".", "_"),
+                    CONFIG['peer_name'].replace(".", "_"),
                     brick_usage.get('brick_path').replace("/", "|")
                 )
             ] = brick_usage.get('metadata_used')
@@ -418,7 +428,7 @@ def get_metrics():
             ret_val[
                 t_name % (
                     CONFIG['integration_id'],
-                    brick_usage.get('hostname').replace(".", "_"),
+                    CONFIG['peer_name'].replace(".", "_"),
                     brick_usage.get('brick_path').replace("/", "|")
                 )
             ] = brick_usage.get('used_inode')
@@ -427,7 +437,7 @@ def get_metrics():
             ret_val[
                 t_name % (
                     CONFIG['integration_id'],
-                    brick_usage.get('hostname').replace(".", "_"),
+                    CONFIG['peer_name'].replace(".", "_"),
                     brick_usage.get('brick_path').replace("/", "|")
                 )
             ] = brick_usage.get('total_inode')
@@ -436,7 +446,7 @@ def get_metrics():
             ret_val[
                 t_name % (
                     CONFIG['integration_id'],
-                    brick_usage.get('hostname').replace(".", "_"),
+                    CONFIG['peer_name'].replace(".", "_"),
                     brick_usage.get('brick_path').replace("/", "|")
                 )
             ] = brick_usage.get('used_percent_inode')
@@ -445,7 +455,7 @@ def get_metrics():
             ret_val[
                 t_name % (
                     CONFIG['integration_id'],
-                    brick_usage.get('hostname').replace(".", "_"),
+                    CONFIG['peer_name'].replace(".", "_"),
                     brick_usage.get('brick_path').replace("/", "|")
                 )
             ] = brick_usage.get('thinpool_used')
@@ -454,7 +464,7 @@ def get_metrics():
             ret_val[
                 t_name % (
                     CONFIG['integration_id'],
-                    brick_usage.get('hostname').replace(".", "_"),
+                    CONFIG['peer_name'].replace(".", "_"),
                     brick_usage.get('brick_path').replace("/", "|")
                 )
             ] = brick_usage.get('thinpool_size')
