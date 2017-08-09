@@ -1,5 +1,7 @@
 import collectd
 import gevent
+import socket
+import sys
 import traceback
 try:
     import xml.etree.cElementTree as ElementTree
@@ -12,6 +14,60 @@ import utils as tendrl_glusterfs_utils
 PLUGIN_NAME = 'network_throughput'
 CONFIG = {}
 CLUSTER_TOPOLOGY = {}
+READ_WRITE_OPS = [
+    'CREATE',
+    'DISCARD',
+    'FALLOCATE',
+    'FLUSH',
+    'FSYNC',
+    'FSYNCDIR',
+    'RCHECKSUM',
+    'READ',
+    'READDIR',
+    'READDIRP',
+    'READY',
+    'WRITE',
+    'ZEROFILL'
+]
+LOCK_OPS = [
+    'ENTRYLK',
+    'FENTRYLK',
+    'FINODELK',
+    'INODELK',
+    'LK'
+]
+INODE_OPS = [
+    'ACCESS',
+    'FGETXATTR',
+    'FREMOVEXATTR',
+    'FSETATTR',
+    'FSETXATTR',
+    'FSTAT',
+    'FTRUNCATE',
+    'FXATTROP',
+    'GETXATTR',
+    'LOOKUP',
+    'OPEN',
+    'OPENDIR',
+    'READLINK',
+    'REMOVEXATTR',
+    'SEEK',
+    'SETATTR',
+    'SETXATTR',
+    'STAT',
+    'STATFS',
+    'TRUNCATE',
+    'XATTROP'
+]
+ENTRY_OPS = [
+    'LINK',
+    'MKDIR',
+    'MKNOD',
+    'RENAME',
+    'RMDIR',
+    'SYMLINK',
+    'UNLINK'
+]
 
 
 def _parseVolumeProfileInfo(tree, nfs=False):
@@ -144,6 +200,10 @@ def get_volume_profile_info(volName):
 def get_metrics():
     global CONFIG
     global CLUSTER_TOPOLOGY
+    global READ_WRITE_OPS
+    global LOCK_OPS
+    global INODE_OPS
+    global ENTRY_OPS
     ret_val = {}
     volumes = CLUSTER_TOPOLOGY.get('volumes', [])
     for volume in volumes:
@@ -151,29 +211,231 @@ def get_metrics():
         vol_iops = get_volume_profile_info(volName)
         if not vol_iops:
             return ret_val
+        read_write_hits = 0
+        inode_hits = 0
+        entry_hits = 0
+        lock_hits = 0
         for brick_det in vol_iops.get('bricks', {}):
             brickName = brick_det.get('brick', '')
-            t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s.iops." \
-                "gauge-read"
-            ret_val[
-                t_name % (
-                    CONFIG['integration_id'],
-                    volName,
-                    CONFIG['peer_name'].replace('.', '_'),
-                    brickName.split(':')[1].replace('/', '|')
+            brick_host = brick_det.get('hostname', '')
+            if (
+                brick_host == CONFIG['peer_name'] or
+                brick_host == socket.gethostbyname(
+                    CONFIG['peer_name']
                 )
-            ] = brick_det.get('cumulativeStats').get('totalRead')
-            t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s.iops." \
-                "gauge-write"
-            ret_val[
-                t_name % (
-                    CONFIG['integration_id'],
-                    volName,
-                    CONFIG['peer_name'].replace('.', '_'),
-                    brickName.split(':')[1].replace('/', '|')
-                )
-            ] = brick_det.get('cumulativeStats').get('totalWrite')
-            gevent.sleep(0.1)
+            ):
+                t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s.iops." \
+                    "gauge-read"
+                ret_val[
+                    t_name % (
+                        CONFIG['integration_id'],
+                        volName,
+                        CONFIG['peer_name'].replace('.', '_'),
+                        brickName.split(':')[1].replace('/', '|')
+                    )
+                ] = brick_det.get('intervalStats').get('totalRead')
+                t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s.iops." \
+                    "gauge-write"
+                ret_val[
+                    t_name % (
+                        CONFIG['integration_id'],
+                        volName,
+                        CONFIG['peer_name'].replace('.', '_'),
+                        brickName.split(':')[1].replace('/', '|')
+                    )
+                ] = brick_det.get('intervalStats').get('totalWrite')
+                t_name = "clusters.%s.nodes.%s.bricks.%s.iops." \
+                    "gauge-read"
+                ret_val[
+                    t_name % (
+                        CONFIG['integration_id'],
+                        CONFIG['peer_name'].replace('.', '_'),
+                        brickName.split(':')[1].replace('/', '|')
+                    )
+                ] = brick_det.get('intervalStats').get('totalRead')
+                t_name = "clusters.%s.nodes.%s.bricks.%s.iops." \
+                    "gauge-write"
+                ret_val[
+                    t_name % (
+                        CONFIG['integration_id'],
+                        CONFIG['peer_name'].replace('.', '_'),
+                        brickName.split(':')[1].replace('/', '|')
+                    )
+                ] = brick_det.get('intervalStats').get('totalWrite')
+                fopIntervalStats = brick_det.get(
+                    'intervalStats'
+                ).get('fopStats')
+                for fopStat in fopIntervalStats:
+                    t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s.fop." \
+                        "%s.hits"
+                    ret_val[
+                        t_name % (
+                            CONFIG['integration_id'],
+                            volName,
+                            CONFIG['peer_name'].replace('.', '_'),
+                            brickName.split(':')[1].replace('/', '|'),
+                            fopStat.get('name')
+                        )
+                    ] = float(fopStat.get('hits'))
+                    t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s.fop." \
+                        "%s.latencyAvg"
+                    ret_val[
+                        t_name % (
+                            CONFIG['integration_id'],
+                            volName,
+                            CONFIG['peer_name'].replace('.', '_'),
+                            brickName.split(':')[1].replace('/', '|'),
+                            fopStat.get('name')
+                        )
+                    ] = float(fopStat.get('latencyAvg'))
+                    t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s.fop." \
+                        "%s.latencyMin"
+                    ret_val[
+                        t_name % (
+                            CONFIG['integration_id'],
+                            volName,
+                            CONFIG['peer_name'].replace('.', '_'),
+                            brickName.split(':')[1].replace('/', '|'),
+                            fopStat.get('name')
+                        )
+                    ] = float(fopStat.get('latencyMin'))
+                    t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s.fop." \
+                        "%s.latencyMax"
+                    ret_val[
+                        t_name % (
+                            CONFIG['integration_id'],
+                            volName,
+                            CONFIG['peer_name'].replace('.', '_'),
+                            brickName.split(':')[1].replace('/', '|'),
+                            fopStat.get('name')
+                        )
+                    ] = float(fopStat.get('latencyMax'))
+                    t_name = "clusters.%s.nodes.%s.bricks.%s.fop." \
+                        "%s.hits"
+                    ret_val[
+                        t_name % (
+                            CONFIG['integration_id'],
+                            CONFIG['peer_name'].replace('.', '_'),
+                            brickName.split(':')[1].replace('/', '|'),
+                            fopStat.get('name')
+                        )
+                    ] = float(fopStat.get('hits'))
+                    t_name = "clusters.%s.nodes.%s.bricks.%s.fop." \
+                        "%s.latencyAvg"
+                    ret_val[
+                        t_name % (
+                            CONFIG['integration_id'],
+                            CONFIG['peer_name'].replace('.', '_'),
+                            brickName.split(':')[1].replace('/', '|'),
+                            fopStat.get('name')
+                        )
+                    ] = float(fopStat.get('latencyAvg'))
+                    t_name = "clusters.%s.nodes.%s.bricks.%s.fop." \
+                        "%s.latencyMin"
+                    ret_val[
+                        t_name % (
+                            CONFIG['integration_id'],
+                            CONFIG['peer_name'].replace('.', '_'),
+                            brickName.split(':')[1].replace('/', '|'),
+                            fopStat.get('name')
+                        )
+                    ] = float(fopStat.get('latencyMin'))
+                    t_name = "clusters.%s.nodes.%s.bricks.%s.fop." \
+                        "%s.latencyMax"
+                    ret_val[
+                        t_name % (
+                            CONFIG['integration_id'],
+                            CONFIG['peer_name'].replace('.', '_'),
+                            brickName.split(':')[1].replace('/', '|'),
+                            fopStat.get('name')
+                        )
+                    ] = float(fopStat.get('latencyMax'))
+                    if fopStat.get('name') in READ_WRITE_OPS:
+                        read_write_hits = read_write_hits + float(
+                            fopStat.get('hits')
+                        )
+                    if fopStat.get('name') in LOCK_OPS:
+                        lock_hits = lock_hits + float(fopStat.get('hits'))
+                    if fopStat.get('name') in INODE_OPS:
+                        inode_hits = inode_hits + float(fopStat.get('hits'))
+                    if fopStat.get('name') in ENTRY_OPS:
+                        entry_hits = entry_hits + float(fopStat.get('hits'))
+                t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s." \
+                    "read_write_ops"
+                ret_val[
+                    t_name % (
+                        CONFIG['integration_id'],
+                        volName,
+                        CONFIG['peer_name'].replace('.', '_'),
+                        brickName.split(':')[1].replace('/', '|')
+                    )
+                ] = read_write_hits
+                t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s." \
+                    "lock_ops"
+                ret_val[
+                    t_name % (
+                        CONFIG['integration_id'],
+                        volName,
+                        CONFIG['peer_name'].replace('.', '_'),
+                        brickName.split(':')[1].replace('/', '|')
+                    )
+                ] = lock_hits
+                t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s." \
+                    "inode_ops"
+                ret_val[
+                    t_name % (
+                        CONFIG['integration_id'],
+                        volName,
+                        CONFIG['peer_name'].replace('.', '_'),
+                        brickName.split(':')[1].replace('/', '|')
+                    )
+                ] = inode_hits
+                t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s." \
+                    "entry_ops"
+                ret_val[
+                    t_name % (
+                        CONFIG['integration_id'],
+                        volName,
+                        CONFIG['peer_name'].replace('.', '_'),
+                        brickName.split(':')[1].replace('/', '|')
+                    )
+                ] = entry_hits
+                t_name = "clusters.%s.nodes.%s.bricks.%s." \
+                    "read_write_ops"
+                ret_val[
+                    t_name % (
+                        CONFIG['integration_id'],
+                        CONFIG['peer_name'].replace('.', '_'),
+                        brickName.split(':')[1].replace('/', '|')
+                    )
+                ] = read_write_hits
+                t_name = "clusters.%s.nodes.%s.bricks.%s." \
+                    "lock_ops"
+                ret_val[
+                    t_name % (
+                        CONFIG['integration_id'],
+                        CONFIG['peer_name'].replace('.', '_'),
+                        brickName.split(':')[1].replace('/', '|')
+                    )
+                ] = lock_hits
+                t_name = "clusters.%s.nodes.%s.bricks.%s." \
+                    "inode_ops"
+                ret_val[
+                    t_name % (
+                        CONFIG['integration_id'],
+                        CONFIG['peer_name'].replace('.', '_'),
+                        brickName.split(':')[1].replace('/', '|')
+                    )
+                ] = inode_hits
+                t_name = "clusters.%s.nodes.%s.bricks.%s." \
+                    "entry_ops"
+                ret_val[
+                    t_name % (
+                        CONFIG['integration_id'],
+                        CONFIG['peer_name'].replace('.', '_'),
+                        brickName.split(':')[1].replace('/', '|')
+                    )
+                ] = entry_hits
     return ret_val
 
 
@@ -189,7 +451,7 @@ def read_callback():
                 isinstance(value, str) and
                 value.isdigit()
             ):
-                value = int(value)
+                value = float(value)
             tendrl_glusterfs_utils.write_graphite(
                 metric_name,
                 value,

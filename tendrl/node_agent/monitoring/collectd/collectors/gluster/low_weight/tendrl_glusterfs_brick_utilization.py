@@ -77,10 +77,14 @@ def get_lvs():
             )
         else:
             out = stdout.split('\n')[:-1]
-            l = map(lambda x: dict(x),
-                    map(lambda x: [e.split('=') for e in x],
-                        map(lambda x: x.strip().split('$'), out)))
-
+            l = map(
+                lambda x: dict(x), map(
+                    lambda x: [
+                        e.split('=') for e in x
+                    ],
+                    map(lambda x: x.strip().split('$'), out)
+                )
+            )
             d = {}
             for i in l:
                 if i['LVM2_LV_ATTR'][0] == 't':
@@ -103,8 +107,10 @@ def get_mount_stats(
     mount_path
 ):
     def _get_mounts(mount_path=[]):
-        mount_list = map(_get_mount_point, mount_path)
+        mount_list = _get_mount_point(mount_path)
         mount_points = _parse_proc_mounts()
+        if isinstance(mount_list, basestring):
+            mount_list = [mount_list]
         outList = set(mount_points).intersection(set(mount_list))
         # list comprehension to build dictionary does not work in
         # python 2.6.6
@@ -122,7 +128,6 @@ def get_mount_stats(
                'metadata_free': None,
                'thinpool_used': None,
                'metadata_used': None}
-
         if lvs and device in lvs and \
            lvs[device]['LVM2_LV_ATTR'][0] == 'V':
             thinpool = "%s/%s" % (lvs[device]['LVM2_VG_NAME'],
@@ -144,7 +149,6 @@ def get_mount_stats(
             out['metadata_used'] = \
                 out['metadata_size'] - out['metadata_free']
         return out
-
     mount_points = _get_mounts(mount_path)
     lvs = get_lvs()
     mount_detail = {}

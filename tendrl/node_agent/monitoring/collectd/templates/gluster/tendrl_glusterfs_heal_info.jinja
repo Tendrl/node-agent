@@ -1,0 +1,12 @@
+<Plugin "python">
+    ModulePath "/usr/lib64/collectd/gluster/heavy_weight"
+
+    Import "tendrl_gluster_heal_info"
+
+    <Module "tendrl_gluster_heal_info">
+        integration_id "{{integration_id}}"
+        graphite_host "{{ graphite_host }}"
+        graphite_port "{{ graphite_port }}"
+        peer_name "{{ hostname }}"
+    </Module>
+</Plugin>

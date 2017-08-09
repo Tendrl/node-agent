@@ -1,12 +1,16 @@
 import collectd
+import socket
+import sys
 import traceback
 
+sys.path.append('/usr/lib64/collectd/gluster')
 import utils as tendrl_glusterfs_utils
+sys.path.remove('/usr/lib64/collectd/gluster')
 
 
-PEER_IN_CLUSTER = ['Peer', 'in', 'Cluster']
 CLUSTER_TOPOLOGY = {}
 CONFIG = {}
+PEER_IN_CLUSTER = ['Peer', 'in', 'Cluster']
 
 
 def get_peer_count():
@@ -23,8 +27,12 @@ def get_peer_count():
             not (peer['connected'] == 'Connected') or
             not (
                 len(
-                    set(peer['state']) & set(PEER_IN_CLUSTER)
-                ) == len(PEER_IN_CLUSTER)
+                    set(peer['state']) & set(
+                        PEER_IN_CLUSTER
+                    )
+                ) == len(
+                    PEER_IN_CLUSTER
+                )
             )
         ):
             peer_down_cnt = peer_down_cnt + 1
@@ -43,6 +51,56 @@ def get_volume_statuses():
         status = volume.get('status', '')
         ret_val[volume['name']] = \
             tendrl_glusterfs_utils.get_volume_state_mapping(status)
+    return ret_val
+
+
+def get_volume_snap_counts():
+    global CLUSTER_TOPOLOGY
+    ret_val = {}
+    volumes = CLUSTER_TOPOLOGY.get('volumes', [])
+    for volume in volumes:
+        snap_cnt = volume.get('snap_count', 0)
+        ret_val[volume['name']] = snap_cnt
+    return ret_val
+
+
+def get_vol_rebalance_in_progress_bytes():
+    global CLUSTER_TOPOLOGY
+    ret_val = {}
+    volumes = CLUSTER_TOPOLOGY.get('volumes', [])
+    for volume in volumes:
+        rebalance_data = volume.get('rebalance_data', 0)
+        ret_val[volume['name']] = rebalance_data
+    return ret_val
+
+
+def get_vol_rebalance_in_progress_files():
+    global CLUSTER_TOPOLOGY
+    ret_val = {}
+    volumes = CLUSTER_TOPOLOGY.get('volumes', [])
+    for volume in volumes:
+        rebalance_files = volume.get('rebalance_files', 0)
+        ret_val[volume['name']] = rebalance_files
+    return ret_val
+
+
+def get_volume_rebalance_failures():
+    global CLUSTER_TOPOLOGY
+    ret_val = {}
+    volumes = CLUSTER_TOPOLOGY.get('volumes', [])
+    for volume in volumes:
+        rebalance_failures = volume.get('rebalance_failures', 0)
+        ret_val[volume['name']] = rebalance_failures
+    return ret_val
+
+
+def get_volume_rebalance_skipped():
+    global CLUSTER_TOPOLOGY
+    ret_val = {}
+    volumes = CLUSTER_TOPOLOGY.get('volumes', [])
+    for volume in volumes:
+        rebalance_skipped = volume.get('rebalance_skipped', 0)
+        ret_val[volume['name']] = rebalance_skipped
     return ret_val
 
 
@@ -65,20 +123,55 @@ def get_volume_brick_statuses(volume):
     ret_val = {}
     for sub_volume_index, sub_volume_bricks in volume.get(
         'bricks',
-        {}
+        []
     ).iteritems():
         for brick in sub_volume_bricks:
-            if 'status' in brick:
-                brick_statuses = ret_val.get(brick['hostname'], [])
-                b_path = tendrl_glusterfs_utils.get_brick_state_mapping(
-                    brick['status']
-                )
-                brick_statuses.append(
-                    {
-                        brick['path']: b_path
-                    }
-                )
-                ret_val['hostname'] = brick_statuses
+            brick_hostname = brick.get('hostname')
+            if (
+                brick_hostname == socket.gethostbyname(
+                    CONFIG['peer_name']
+                ) or
+                brick_hostname == CONFIG['peer_name']
+            ):
+                if 'status' in brick:
+                    brick_statuses = ret_val.get(brick['hostname'], [])
+                    status = tendrl_glusterfs_utils.get_brick_state_mapping(
+                        brick['status']
+                    )
+                    brick_statuses.append(
+                        {
+                            'status': status,
+                            'path': brick['path']
+                        }
+                    )
+                    ret_val[brick['hostname']] = brick_statuses
+    return ret_val
+
+
+def get_node_brick_status_wise_counts(volumes):
+    global CONFIG
+    ret_val = {}
+    total = 0
+    for volume in volumes:
+        for sub_volume_index, sub_volume_bricks in volume.get(
+            'bricks',
+            {}
+        ).iteritems():
+            for brick in sub_volume_bricks:
+                brick_hostname = brick.get('hostname')
+                if (
+                    brick_hostname == socket.gethostbyname(
+                        CONFIG['peer_name']
+                    ) or
+                    brick_hostname == CONFIG['peer_name']
+                ):
+                    if 'status' in brick:
+                        status = \
+                            tendrl_glusterfs_utils.get_tendrl_volume_status(
+                                brick['status']
+                            )
+                        ret_val[status] = ret_val.get(status, 0) + 1
+                        total = total + 1
     return ret_val
 
 
@@ -101,18 +194,51 @@ def get_metrics():
                 CONFIG['integration_id']
             )
         ] = get_peer_count()
-        # Push brick statuses
         volumes = CLUSTER_TOPOLOGY.get('volumes', [])
         for volume in volumes:
             brick_statuses = get_volume_brick_statuses(volume)
-            for host_name, brick in brick_statuses.iteritems():
-                for path, status_val in brick.iteritems():
+            for host_name, bricks in brick_statuses.iteritems():
+                for brick in bricks:
+                    # Push brick statuses
                     ret_val[
-                        'clusters.%s.volumes.%s.bricks_count' % (
+                        'clusters.%s.volumes.%s.nodes.%s.bricks.%s.status' % (
                             CONFIG['integration_id'],
                             volume.get('name', ''),
+                            CONFIG['peer_name'].replace('.', '_'),
+                            brick['path'].replace('/', '|')
                         )
-                    ] = status_val
+                    ] = brick['status']
+                    ret_val[
+                        'clusters.%s.nodes.%s.bricks.%s.status' % (
+                            CONFIG['integration_id'],
+                            CONFIG['peer_name'].replace('.', '_'),
+                            brick['path'].replace('/', '|')
+                        )
+                    ] = brick['status']
+        # Push brick level connections count
+        for volume in volumes:
+            for sub_volume_index, sub_volume_bricks in volume.get(
+                'bricks',
+                {}
+            ).iteritems():
+                for brick in sub_volume_bricks:
+                    brick_hostname = brick.get('hostname')
+                    if (
+                        brick_hostname == socket.gethostbyname(
+                            CONFIG['peer_name']
+                        ) or
+                        brick_hostname == CONFIG['peer_name']
+                    ):
+                        # Push brick client connections
+                        ret_val[
+                            'clusters.%s.volumes.%s.nodes.%s.bricks.%s.'
+                            'connections_count' % (
+                                CONFIG['integration_id'],
+                                volume.get('name', ''),
+                                CONFIG['peer_name'].replace('.', '_'),
+                                brick['path'].replace('/', '|')
+                            )
+                        ] = brick['connections_count']
         # Push volume statuses
         volume_statuses = get_volume_statuses()
         for vol_name, status_val in volume_statuses.iteritems():
@@ -144,6 +270,62 @@ def get_metrics():
                     vol_name
                 )
             ] = int(volume.get('brick_count', 0))
+        # Push node wise brick status wise counts
+        brick_status_wise_counts = \
+            get_node_brick_status_wise_counts(volumes)
+        t_name = 'clusters.%s.nodes.%s.brick_count.%s'
+        for status, val in brick_status_wise_counts.iteritems():
+            ret_val[
+                t_name % (
+                    CONFIG['integration_id'],
+                    CONFIG['peer_name'].replace('.', '_'),
+                    status
+                )
+            ] = val
+        # Push volume wise snap counts
+        for vol_name, snap_cnt in get_volume_snap_counts().iteritems():
+            ret_val[
+                'clusters.%s.volumes.%s.snap_count' % (
+                    CONFIG['integration_id'],
+                    vol_name
+                )
+            ] = snap_cnt
+        # Push rebalance bytes progress
+        for vol_name, rebalance_bytes in get_vol_rebalance_in_progress_bytes(
+        ).iteritems():
+            ret_val[
+                'clusters.%s.volumes.%s.rebalance_bytes' % (
+                    CONFIG['integration_id'],
+                    vol_name
+                )
+            ] = int(filter(str.isdigit, rebalance_bytes))
+        # Push rebalance files progress
+        for vol_name, rebalance_files in get_vol_rebalance_in_progress_files(
+        ).iteritems():
+            ret_val[
+                'clusters.%s.volumes.%s.rebalance_files' % (
+                    CONFIG['integration_id'],
+                    vol_name
+                )
+            ] = rebalance_files
+        # Push rebalance failures
+        for vol_name, rebalance_failures in get_volume_rebalance_failures(
+        ).iteritems():
+            ret_val[
+                'clusters.%s.volumes.%s.rebalance_failures' % (
+                    CONFIG['integration_id'],
+                    vol_name
+                )
+            ] = rebalance_failures
+        # Push rebalance skipped
+        for vol_name, rebalance_skipped in get_volume_rebalance_skipped(
+        ).iteritems():
+            ret_val[
+                'clusters.%s.volumes.%s.rebalance_skipped' % (
+                    CONFIG['integration_id'],
+                    vol_name
+                )
+            ] = rebalance_skipped
         # Push cluster wise brick total count
         cluster_brick_count = 0
         for volume in volumes:

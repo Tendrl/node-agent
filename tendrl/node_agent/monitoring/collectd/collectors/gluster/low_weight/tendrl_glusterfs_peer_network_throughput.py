@@ -31,6 +31,69 @@ def get_interface_name(peer_name):
     return None
 
 
+def get_iface_stats(iface):
+    iface_stats = {
+        'if_collisions': None,
+        'if_multicast': None,
+        'if_bytes': {
+            'rx': None,
+            'tx': None
+        },
+        'if_compressed': {
+            'rx': None,
+            'tx': None
+        },
+        'if_dropped': {
+            'rx': None,
+            'tx': None
+        },
+        'if_errors': {
+            'rx': None,
+            'tx': None
+        },
+        'if_fifo_errors': {
+            'rx': None,
+            'tx': None
+        },
+        'if_over_errors': {
+            'rx': None
+        },
+        'if_packets': {
+            'rx': None,
+            'tx': None
+        }
+    }
+    if not iface:
+        return iface_stats
+    with open('/sys/class/net/%s/statistics/rx_bytes' % iface, 'r') as f:
+        iface_stats['if_bytes']['rx'] = long(f.read().rstrip())
+    with open('/sys/class/net/%s/statistics/tx_bytes' % iface, 'r') as f:
+        iface_stats['if_bytes']['tx'] = long(f.read().rstrip())
+    with open('/sys/class/net/%s/statistics/rx_compressed' % iface, 'r') as f:
+        iface_stats['if_compressed']['rx'] = long(f.read().rstrip())
+    with open('/sys/class/net/%s/statistics/tx_compressed' % iface, 'r') as f:
+        iface_stats['if_compressed']['tx'] = long(f.read().rstrip())
+    with open('/sys/class/net/%s/statistics/rx_dropped' % iface, 'r') as f:
+        iface_stats['if_dropped']['rx'] = long(f.read().rstrip())
+    with open('/sys/class/net/%s/statistics/tx_dropped' % iface, 'r') as f:
+        iface_stats['if_dropped']['tx'] = long(f.read().rstrip())
+    with open('/sys/class/net/%s/statistics/rx_errors' % iface, 'r') as f:
+        iface_stats['if_errors']['rx'] = long(f.read().rstrip())
+    with open('/sys/class/net/%s/statistics/tx_errors' % iface, 'r') as f:
+        iface_stats['if_errors']['tx'] = long(f.read().rstrip())
+    with open('/sys/class/net/%s/statistics/rx_fifo_errors' % iface, 'r') as f:
+        iface_stats['if_fifo_errors']['rx'] = long(f.read().rstrip())
+    with open('/sys/class/net/%s/statistics/tx_fifo_errors' % iface, 'r') as f:
+        iface_stats['if_fifo_errors']['tx'] = long(f.read().rstrip())
+    with open('/sys/class/net/%s/statistics/rx_over_errors' % iface, 'r') as f:
+        iface_stats['if_over_errors']['rx'] = long(f.read().rstrip())
+    with open('/sys/class/net/%s/statistics/rx_packets' % iface, 'r') as f:
+        iface_stats['if_packets']['rx'] = long(f.read().rstrip())
+    with open('/sys/class/net/%s/statistics/tx_packets' % iface, 'r') as f:
+        iface_stats['if_packets']['tx'] = long(f.read().rstrip())
+    return iface_stats
+
+
 def get_rx_and_tx(iface):
     rx = 0
     tx = 0
@@ -51,6 +114,7 @@ def calc_network_throughput(peer_name):
 
 
 def get_metrics():
+    global CONFIG
     ret_val = {}
     t_name = 'clusters.%s.nodes.%s.network_throughput-cluster_network.' \
         'gauge-used'
@@ -60,6 +124,29 @@ def get_metrics():
             socket.getfqdn(CONFIG['peer_name']).replace(".", "_")
         )
     ] = calc_network_throughput(CONFIG['peer_name'])
+    nw_stats = get_iface_stats(
+        get_interface_name(CONFIG['peer_name'])
+    )
+    t_name = 'clusters.%s.nodes.%s.cluster_network.%s'
+    for if_stat_type, val in nw_stats.iteritems():
+        if isinstance(val, dict):
+            for stat_type, stat_val in val.iteritems():
+                if_stat_name = "%s.%s" % (if_stat_type, stat_type)
+                ret_val[
+                    t_name % (
+                        CONFIG['integration_id'],
+                        CONFIG['peer_name'].replace(".", "_"),
+                        if_stat_name
+                    )
+                ] = stat_val
+        else:
+            ret_val[
+                t_name % (
+                    CONFIG['integration_id'],
+                    CONFIG['peer_name'].replace(".", "_"),
+                    if_stat_type
+                )
+            ] = val
     return ret_val
 
 
