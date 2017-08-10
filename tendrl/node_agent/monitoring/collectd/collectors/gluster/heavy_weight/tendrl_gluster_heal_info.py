@@ -144,7 +144,11 @@ def read_callback():
                     CONFIG['graphite_host'],
                     CONFIG['graphite_port']
                 )
-    except Exception:
+    except (
+        AttributeError,
+        KeyError,
+        ValueError
+    ):
         collectd.error(
             'Error in heal info: %s\n\n' % (
                 str(traceback.format_exc())

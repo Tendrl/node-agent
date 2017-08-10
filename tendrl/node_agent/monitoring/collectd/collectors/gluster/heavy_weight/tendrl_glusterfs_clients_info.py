@@ -1,11 +1,15 @@
 import collectd
+import sys
 import traceback
 try:
     import xml.etree.cElementTree as ElementTree
 except ImportError:
     import xml.etree.ElementTree as ElementTree
 
-import glusterfs.utils as tendrl_glusterfs_utils
+sys.path.append('/usr/lib64/collectd/gluster')
+import utils as tendrl_glusterfs_utils
+sys.path.remove('/usr/lib64/collectd/gluster')
+
 
 
 CONFIG = {}

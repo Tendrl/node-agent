@@ -1,9 +1,12 @@
 import collectd
 import netifaces
 import socket
+import sys
 import time
 
+sys.path.append('/usr/lib64/collectd/gluster')
 import utils as tendrl_glusterfs_utils
+sys.path.remove('/usr/lib64/collectd/gluster')
 
 
 # Working Procedure:

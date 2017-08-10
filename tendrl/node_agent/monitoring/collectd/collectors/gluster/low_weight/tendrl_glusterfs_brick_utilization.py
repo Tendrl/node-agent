@@ -4,8 +4,13 @@ import shlex
 import socket
 import subprocess
 from subprocess import Popen
+import sys
 import traceback
+
+
+sys.path.append('/usr/lib64/collectd/gluster')
 import utils as tendrl_glusterfs_utils
+sys.path.remove('/usr/lib64/collectd/gluster')
 
 
 CONFIG = {}
