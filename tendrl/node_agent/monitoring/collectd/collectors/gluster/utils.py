@@ -6,7 +6,7 @@ import subprocess
 from subprocess import Popen
 import time
 import traceback
-
+import uuid
 
 import collectd
 
@@ -25,10 +25,17 @@ def get_brick_state_mapping(status):
     }.get(status, 1)
 
 
+def get_tendrl_volume_status(status):
+    return {
+        'Created': 'Stopped'
+    }.get(status, status)
+
+
 def get_volume_state_mapping(status):
     return {
         'Started': 0,
-        'Stopped': 2
+        'Stopped': 2,
+        'Created': 2
     }.get(status, 1)
 
 
@@ -56,8 +63,11 @@ def get_gluster_state_dump():
     global GLUSTERD_ERROR_MSG
     ret_val = {}
     try:
+        file_name = "collectd_gstate_%s" % str(uuid.uuid4())
         gluster_state_dump_op, gluster_state_dump_err = exec_command(
-            'gluster get-state glusterd odir /var/run file collectd_gstate'
+            'gluster get-state glusterd odir /var/run file %s detail' % (
+                file_name
+            )
         )
         if (
             gluster_state_dump_err or
@@ -65,10 +75,10 @@ def get_gluster_state_dump():
         ):
             return ret_val, gluster_state_dump_err
         gluster_state_dump = ini2json.ini_to_dict(
-            '/var/run/collectd_gstate'
+            '/var/run/%s' % file_name
         )
         rm_state_dump, rm_state_dump_err = exec_command(
-            'rm -rf /var/run/collectd_gstate'
+            'rm -rf /var/run/%s' % file_name
         )
         if rm_state_dump_err:
             return ret_val, rm_state_dump_err
@@ -165,6 +175,19 @@ def parse_get_state(get_state_json):
                 sub_volumes = {}
                 no_of_bricks = int(volume['brick_count'])
                 for brick_index in range(1, no_of_bricks + 1):
+                    client_count = 0
+                    if (
+                        'volume%s.brick%s.client_count' % (
+                            vol_index,
+                            brick_index
+                        ) in volumes
+                    ):
+                        client_count = volumes[
+                            'volume%s.brick%s.client_count' % (
+                                vol_index,
+                                brick_index
+                            )
+                        ]
                     brick = {
                         'hostname': volumes[
                             'volume%s.brick%s.hostname' % (
@@ -178,8 +201,9 @@ def parse_get_state(get_state_json):
                                 brick_index
                             )
                         ].split(':')[1],
+                        'connections_count': client_count
                     }
-                    brick_status_key = 'Volume%s.Brick%s.status' % (
+                    brick_status_key = 'volume%s.brick%s.status' % (
                         vol_index,
                         brick_index
                     )
