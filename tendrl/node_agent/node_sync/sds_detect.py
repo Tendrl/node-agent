@@ -48,7 +48,7 @@ def sync():
                             sds_pkg_version=sds_details.get('pkg_version'),
                         ).save()
                         integration_index_key = \
-                            "indexes/detected_cluster_id_to_integration_id " \
+                            "indexes/detected_cluster_id_to_integration_id/" \
                             "%s" % sds_details['detected_cluster_id']
                         try:
                             integration_id = str(uuid.uuid4())
