@@ -82,6 +82,10 @@ def sync():
                                                  integration_tag]
                         NS.node_context.tags = list(set(NS.node_context.tags))
                         NS.node_context.save()
+                        _cluster = NS.tendrl.objects.Cluster(integration_id=NS.tendrl_context.integration_id)
+                        if _cluster.is_managed is None or _cluster.is_managed == '':
+                            _cluster.is_managed = "no"
+                            _cluster.save()
 
                     except (etcd.EtcdException, KeyError) as ex:
                         Event(
