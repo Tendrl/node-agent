@@ -30,13 +30,14 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
             NS.node_context.save()
             NS.tendrl_context = NS.tendrl_context.load()
 
+            platform_detect_thread = gevent.spawn(platform_detect.sync)
+            sds_detect_thread = gevent.spawn(sds_detect.sync)
+            gevent.joinall([platform_detect_thread, sds_detect_thread])
+
             sync_service_and_index_thread = gevent.spawn(
                 services_and_index_sync.sync)
             sync_service_and_index_thread.join()
 
-            platform_detect_thread = gevent.spawn(platform_detect.sync)
-            sds_detect_thread = gevent.spawn(sds_detect.sync)
-            gevent.joinall([platform_detect_thread, sds_detect_thread])
 
             try:
                 NS.tendrl.objects.Os().save()

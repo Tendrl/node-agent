@@ -11,7 +11,6 @@ import utils as tendrl_glusterfs_utils
 sys.path.remove('/usr/lib64/collectd/gluster')
 
 
-
 CONFIG = {}
 
 

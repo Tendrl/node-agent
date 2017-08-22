@@ -1,8 +1,6 @@
-import etcd
 import gevent
 from gevent.event import Event as GEvent
 import signal
-import sys
 
 from tendrl.commons.event import Event
 from tendrl.commons import manager as commons_manager
@@ -13,7 +11,6 @@ from tendrl.node_agent.provisioner.ceph.manager import \
 from tendrl.node_agent.provisioner.gluster.manager import \
     ProvisioningManager as GlusterProvisioningManager
 
-from tendrl.integrations import ceph
 from tendrl import node_agent
 from tendrl.node_agent.message.handler import MessageHandler
 from tendrl.node_agent import node_sync
@@ -49,7 +46,7 @@ def main():
     # Init NS.integrations.ceph
     # TODO(team) add all short circuited ceph(import/create) NS.tendrl.flows
     #  to NS.integrations.ceph
-    ceph.CephIntegrationNS()
+    # ceph.CephIntegrationNS()
 
     # Init NS.integrations.gluster
     # TODO(team) add all short circuited ceph(import/create) NS.tendrl.flows
@@ -60,8 +57,7 @@ def main():
     NS.compiled_definitions = \
         NS.node_agent.objects.CompiledDefinitions()
     NS.compiled_definitions.merge_definitions([
-        NS.tendrl.definitions, NS.node_agent.definitions,
-        NS.integrations.ceph.definitions])
+        NS.tendrl.definitions, NS.node_agent.definitions])
     NS.node_agent.compiled_definitions = NS.compiled_definitions
 
     # Every process needs to set a NS.type
@@ -74,18 +70,9 @@ def main():
     NS.compiled_definitions.save()
     NS.node_context.save()
 
-    # Check if Node is part of any Tendrl imported/created sds cluster
-    try:
-        NS.tendrl_context = NS.tendrl_context.load()
-        sys.stdout.write("Node %s is part of sds cluster %s" % (
-            NS.node_context.node_id, NS.tendrl_context.integration_id))
-    except etcd.EtcdKeyNotFound:
-        sys.stdout.write("Node %s is not part of any sds cluster" %
-                         NS.node_context.node_id)
-        pass
     NS.tendrl_context.save()
     NS.node_agent.definitions.save()
-    NS.integrations.ceph.definitions.save()
+    # NS.integrations.ceph.definitions.save()
     NS.node_agent.config.save()
     NS.publisher_id = "node_agent"
     NS.message_handler_thread = MessageHandler()

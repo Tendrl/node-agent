@@ -1,3 +1,5 @@
+import uuid
+
 import etcd
 
 from tendrl.commons.event import Event
@@ -45,13 +47,39 @@ def sync():
                             sds_pkg_name=sds_details.get('pkg_name'),
                             sds_pkg_version=sds_details.get('pkg_version'),
                         ).save()
+                        integration_index_key = \
+                            "indexes/detected_cluster_id_to_integration_id " \
+                            "%s" % sds_details['detected_cluster_id']
+                        try:
+                            integration_id = str(uuid.uuid4())
+                            NS._int.wclient.write(integration_index_key,
+                                                  integration_id,
+                                                  prevExist=False)
+                        except etcd.EtcdAlreadyExist:
+                            integration_id = NS._int.client.read(
+                                integration_index_key).value
+                        finally:
+                            NS.tendrl_context.integration_id = integration_id
+                            NS.tendrl_context.cluster_id = sds_details.get(
+                                'detected_cluster_id')
+                            NS.tendrl_context.cluster_name = sds_details.get(
+                                'detected_cluster_name')
+                            NS.tendrl_context.sds_name = sds_details.get(
+                                'pkg_name')
+                            NS.tendrl_context.sds_version = sds_details.get(
+                                'pkg_version')
+                            NS.tendrl_context.save()
+
                         NS.node_context = NS.node_context.load()
+                        integration_tag = "tendrl/integration/%s" % \
+                                          integration_id
                         detected_cluster_tag = "detected_cluster/%s" % \
                                                sds_details[
                                                    'detected_cluster_id']
-                        if detected_cluster_tag in NS.node_context.tags:
+                        if integration_tag in NS.node_context.tags:
                             continue
-                        NS.node_context.tags += [detected_cluster_tag]
+                        NS.node_context.tags += [detected_cluster_tag,
+                                                 integration_tag]
                         NS.node_context.tags = list(set(NS.node_context.tags))
                         NS.node_context.save()
 
