@@ -1,4 +1,5 @@
 import collectd
+import socket
 import sys
 import traceback
 
@@ -42,7 +43,7 @@ def _parse_self_heal_stats(op):
 
 
 def get_volume_heal_info(vol):
-    ret_val = {}
+    ret_val = []
     vol_heal_op, vol_heal_err = \
         tendrl_glusterfs_utils.exec_command(
             "gluster volume heal %s statistics" % vol['name']
@@ -60,16 +61,30 @@ def get_volume_heal_info(vol):
         )
         for idx, brick_heal_info in enumerate(vol_heal_info):
             for sub_vol_id, sub_vol in vol['bricks'].iteritems():
-                for sub_vol_brick in sub_vol:
+                for brick_idx, sub_vol_brick in enumerate(sub_vol):
                     if (
-                        sub_vol_brick[
-                            'index'
-                        ] == brick_heal_info['brick_index']
+                        (
+                            sub_vol_brick[
+                                'brick_index'
+                            ] == brick_heal_info[
+                                'brick_index'
+                            ]
+                        ) and (
+                            brick_heal_info[
+                                'host_name'
+                            ] == socket.gethostbyname(
+                                CONFIG['peer_name']
+                            ) or
+                            brick_heal_info[
+                                'host_name'
+                            ] == CONFIG['peer_name']
+                        )
                     ):
                         vol_heal_info[idx][
                             'brick_path'
                         ] = sub_vol_brick['path']
-        return vol_heal_info
+                        ret_val.append(vol_heal_info[idx])
+        return ret_val
     except (
         AttributeError,
         KeyError,
@@ -164,4 +179,4 @@ def configure_callback(configobj):
 
 
 collectd.register_config(configure_callback)
-collectd.register_read(read_callback, 600)
+collectd.register_read(read_callback, 60)

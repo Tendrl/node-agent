@@ -201,7 +201,8 @@ def parse_get_state(get_state_json):
                                 brick_index
                             )
                         ].split(':')[1],
-                        'connections_count': client_count
+                        'connections_count': client_count,
+                        'brick_index': brick_index
                     }
                     brick_status_key = 'volume%s.brick%s.status' % (
                         vol_index,
