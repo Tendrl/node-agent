@@ -69,10 +69,6 @@ def sync():
                             NS.tendrl_context.sds_version = sds_details.get(
                                 'pkg_version')
                             NS.tendrl_context.save()
-                            _cluster = NS.tendrl.objects.Cluster(integration_id=NS.tendrl_context.integration_id)
-                            if _cluster.is_managed is None or _cluster.is_managed == '':
-                                _cluster.is_managed = "no"
-                                _cluster.save()
 
                         NS.node_context = NS.node_context.load()
                         integration_tag = "tendrl/integration/%s" % \
@@ -84,6 +80,12 @@ def sync():
                                                  integration_tag]
                         NS.node_context.tags = list(set(NS.node_context.tags))
                         NS.node_context.save()
+                        _cluster = NS.tendrl.objects.Cluster(integration_id=NS.tendrl_context.integration_id).load()
+                        if _cluster.is_managed == "yes":
+                            continue
+                        else:
+                            _cluster.is_managed = "no"
+                            _cluster.save()
 
                     except (etcd.EtcdException, KeyError) as ex:
                         Event(
