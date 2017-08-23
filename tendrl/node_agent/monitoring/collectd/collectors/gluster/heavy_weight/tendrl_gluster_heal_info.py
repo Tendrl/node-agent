@@ -63,22 +63,11 @@ def get_volume_heal_info(vol):
             for sub_vol_id, sub_vol in vol['bricks'].iteritems():
                 for brick_idx, sub_vol_brick in enumerate(sub_vol):
                     if (
-                        (
-                            sub_vol_brick[
-                                'brick_index'
-                            ] == brick_heal_info[
-                                'brick_index'
-                            ]
-                        ) and (
-                            brick_heal_info[
-                                'host_name'
-                            ] == socket.gethostbyname(
-                                CONFIG['peer_name']
-                            ) or
-                            brick_heal_info[
-                                'host_name'
-                            ] == CONFIG['peer_name']
-                        )
+                        sub_vol_brick[
+                            'brick_index'
+                        ] == brick_heal_info[
+                            'brick_index'
+                        ]
                     ):
                         vol_heal_info[idx][
                             'brick_path'
