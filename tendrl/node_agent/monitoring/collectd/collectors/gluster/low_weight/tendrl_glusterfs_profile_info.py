@@ -220,7 +220,7 @@ def get_metrics():
         lock_hits = 0
         for brick_det in vol_iops.get('bricks', {}):
             brickName = brick_det.get('brick', '')
-            brick_host = brick_det.get('hostname', '')
+            brick_host = brick_det.get('brick', '').split(':')[0]
             t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s.iops." \
                 "gauge-read"
             ret_val[
@@ -465,4 +465,4 @@ def configure_callback(configobj):
 
 
 collectd.register_config(configure_callback)
-collectd.register_read(read_callback, 60)
+collectd.register_read(read_callback, 120)
