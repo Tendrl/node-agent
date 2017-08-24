@@ -4,6 +4,8 @@ from etcd import EtcdKeyNotFound
 from tendrl.commons.objects.alert import AlertUtils
 from tendrl.commons.objects.node_alert import NodeAlert
 from tendrl.commons.objects.cluster_alert import ClusterAlert
+from tendrl.commons.objects.node_alert_counters import NodeAlertCounters
+from tendrl.commons.objects.cluster_alert_counters import ClusterAlertCounters
 from tendrl.commons.utils import etcd_utils
 
 def read(key):
@@ -59,6 +61,7 @@ def classify_alert(alert):
                 acked_at = alert.acked_at,
                 pid=alert.pid,
                 source=alert.source,
+                delivered=alert.delivered
             ).save()
         elif alert.tags['alert_catagory'] == "cluster":
             ClusterAlert(
@@ -77,4 +80,32 @@ def classify_alert(alert):
                 acked_at = alert.acked_at,
                 pid=alert.pid,
                 source=alert.source,
+                delivered=alert.delivered
             ).save()
+
+def update_alert_count(alert, existing_alert):
+    if alert.tags['alert_catagory'] == "node":
+        counter_obj = NodeAlertCounters(
+            node_id=alert.node_id).load()
+    elif alert.tags['alert_catagory'] == "cluster":
+        counter_obj = ClusterAlertCounters(
+            integration_id=alert.tags['integration_id']
+        ).load()
+    
+    warn_count = int(counter_obj.warning_count)
+    info_count = int(counter_obj.info_count)
+    if existing_alert:
+        if alert.severity == "INFO":
+            warn_count -= 1
+            info_count += 1 
+        elif alert.severity == "WARNING":
+            warn_count += 1
+            info_count -= 1
+    else:
+        if alert.severity == "INFO":
+            info_count += 1
+        else:
+            warn_count += 1
+    counter_obj.warning_count = warn_count
+    counter_obj.info_count = info_count
+    counter_obj.save()

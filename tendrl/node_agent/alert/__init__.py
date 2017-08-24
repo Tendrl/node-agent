@@ -9,6 +9,7 @@ from tendrl.node_agent.alert import utils
 
 def update_alert(msg_id, alert_str):
     try:
+        existing_alert = False
         new_alert = json.loads(alert_str)
         new_alert['alert_id'] = msg_id
         new_alert_obj = AlertUtils().to_obj(new_alert)
@@ -25,11 +26,20 @@ def update_alert(msg_id, alert_str):
                 ):
                     new_alert_obj.save()
                     utils.classify_alert(new_alert_obj)
+                    existing_alert = True
+                    utils.update_alert_count(
+                        new_alert_obj,
+                        existing_alert
+                    )
                     return
                 return
             # else add this new alert to etcd
         new_alert_obj.save()
         utils.classify_alert(new_alert_obj)
+        utils.update_alert_count(
+            new_alert_obj,
+            existing_alert
+        )
     except(
         ValueError,
         KeyError,
@@ -43,5 +53,3 @@ def update_alert(msg_id, alert_str):
                 "message": "Error in updating alert %s" % alert_str
             }
         )
-    
-    
