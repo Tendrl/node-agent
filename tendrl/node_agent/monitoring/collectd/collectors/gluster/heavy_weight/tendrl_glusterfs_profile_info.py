@@ -7,15 +7,13 @@ try:
 except ImportError:
     import xml.etree.ElementTree as ElementTree
 
-
+import tendrl_gluster_heal_info
 sys.path.append('/usr/lib64/collectd/gluster')
 import utils as tendrl_glusterfs_utils
 sys.path.remove('/usr/lib64/collectd/gluster')
 
 
-PLUGIN_NAME = 'network_throughput'
 CONFIG = {}
-CLUSTER_TOPOLOGY = {}
 READ_WRITE_OPS = [
     'CREATE',
     'DISCARD',
@@ -161,21 +159,25 @@ def _parseVolumeProfileInfo(tree, nfs=False):
     return status
 
 
-def get_volume_profile_info(volName):
-    global CONFIG
+def get_volume_profile_info(volName, cluster_id):
     ret_val = {}
     brickName = ''
     profile_info = {}
-    profile_cmd_op, profile_err = tendrl_glusterfs_utils.exec_command(
-        "gluster volume profile %s info --xml" % volName
-    )
-    if profile_err:
-        collectd.error(
-            'Failed to fetch brick utilizations. The error is: %s' % (
-                profile_err
-            )
+    for trial_cnt in xrange(0, 3):
+        profile_cmd_op, profile_err = tendrl_glusterfs_utils.exec_command(
+            "gluster volume profile %s info --xml" % volName
         )
-        return ret_val
+        if profile_err:
+            if trial_cnt == 2:
+                collectd.error(
+                    'Failed to fetch profile info. The error is: %s' % (
+                        profile_err
+                    )
+                )
+                return ret_val
+            continue
+        else:
+            break
     try:
         profile_info = _parseVolumeProfileInfo(
             ElementTree.fromstring(profile_cmd_op)
@@ -192,7 +194,7 @@ def get_volume_profile_info(volName):
             'cluster %s. The profile info is %s. Error %s' % (
                 brickName,
                 volName,
-                CONFIG['integration_id'],
+                cluster_id,
                 str(profile_info),
                 traceback.format_exc()
             )
@@ -200,9 +202,7 @@ def get_volume_profile_info(volName):
         return ret_val
 
 
-def get_metrics():
-    global CONFIG
-    global CLUSTER_TOPOLOGY
+def get_volume_profile_metrics(CLUSTER_TOPOLOGY, CONFIG):
     global READ_WRITE_OPS
     global LOCK_OPS
     global INODE_OPS
@@ -211,7 +211,7 @@ def get_metrics():
     volumes = CLUSTER_TOPOLOGY.get('volumes', [])
     for volume in volumes:
         volName = volume['name']
-        vol_iops = get_volume_profile_info(volName)
+        vol_iops = get_volume_profile_info(volName, CONFIG['integration_id'])
         if not vol_iops:
             return ret_val
         read_write_hits = 0
@@ -436,25 +436,44 @@ def get_metrics():
     return ret_val
 
 
+def get_metrics(CLUSTER_TOPOLOGY, CONFIG):
+    profile_info = {}
+    heal_stats = {}
+    profile_info = get_volume_profile_metrics(
+        CLUSTER_TOPOLOGY,
+        CONFIG
+    )
+    heal_stats = tendrl_gluster_heal_info.get_metrics(
+        CLUSTER_TOPOLOGY,
+        CONFIG
+    )
+    profile_info.update(heal_stats)
+    return profile_info
+
+
 def read_callback():
-    global CLUSTER_TOPOLOGY
-    global CONFIG
-    CLUSTER_TOPOLOGY = \
-        tendrl_glusterfs_utils.get_gluster_cluster_topology()
-    metrics = get_metrics()
-    for metric_name, value in metrics.iteritems():
-        if value is not None:
-            if (
-                isinstance(value, str) and
-                value.isdigit()
-            ):
-                value = float(value)
-            tendrl_glusterfs_utils.write_graphite(
-                metric_name,
-                value,
-                CONFIG['graphite_host'],
-                CONFIG['graphite_port']
-            )
+    try:
+        global CONFIG
+        CLUSTER_TOPOLOGY = \
+            tendrl_glusterfs_utils.get_gluster_cluster_topology()
+        metrics = get_metrics(CLUSTER_TOPOLOGY, CONFIG)
+        for metric_name, value in metrics.iteritems():
+            if value is not None:
+                if (
+                    isinstance(value, str) and
+                    value.isdigit()
+                ):
+                    value = float(value)
+                tendrl_glusterfs_utils.write_graphite(
+                    metric_name,
+                    value,
+                    CONFIG['graphite_host'],
+                    CONFIG['graphite_port']
+                )
+    except Exception:
+        collectd.error(
+            'Failed to push stats.Error %s' % traceback.format_exc()
+        )
 
 
 def configure_callback(configobj):
@@ -465,4 +484,5 @@ def configure_callback(configobj):
 
 
 collectd.register_config(configure_callback)
-collectd.register_read(read_callback, 120)
+collectd.register_read(read_callback, 137)
+
