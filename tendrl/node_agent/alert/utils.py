@@ -44,53 +44,54 @@ def get_alerts():
 
 
 def classify_alert(alert):
-    if 'alert_catagory' in alert.tags:
-        if alert.tags['alert_catagory'] == "node":
-            NodeAlert(
-                alert_id=alert.alert_id,
-                node_id=alert.node_id,
-                time_stamp=alert.time_stamp,
-                resource=alert.resource,
-                current_value=alert.current_value,
-                tags=alert.tags,
-                alert_type=alert.alert_type,
-                severity=alert.severity,
-                significance=alert.significance,
-                ackedby=alert.ackedby,
-                acked=alert.acked,
-                ack_comment=alert.ack_comment,
-                acked_at = alert.acked_at,
-                pid=alert.pid,
-                source=alert.source,
-                delivered=alert.delivered
-            ).save()
-        elif alert.tags['alert_catagory'] == "cluster":
-            ClusterAlert(
-                alert_id=alert.alert_id,
-                node_id=alert.node_id,
-                time_stamp=alert.time_stamp,
-                resource=alert.resource,
-                current_value=alert.current_value,
-                tags=alert.tags,
-                alert_type=alert.alert_type,
-                severity=alert.severity,
-                significance=alert.significance,
-                ackedby=alert.ackedby,
-                acked=alert.acked,
-                ack_comment=alert.ack_comment,
-                acked_at = alert.acked_at,
-                pid=alert.pid,
-                source=alert.source,
-                delivered=alert.delivered
-            ).save()
+    if alert.classification == "node":
+        NodeAlert(
+            alert_id=alert.alert_id,
+            node_id=alert.node_id,
+            time_stamp=alert.time_stamp,
+            resource=alert.resource,
+            current_value=alert.current_value,
+            tags=alert.tags,
+            alert_type=alert.alert_type,
+            severity=alert.severity,
+            classification=alert.classification,
+            significance=alert.significance,
+            ackedby=alert.ackedby,
+            acked=alert.acked,
+            ack_comment=alert.ack_comment,
+            acked_at = alert.acked_at,
+            pid=alert.pid,
+            source=alert.source,
+            delivered=alert.delivered
+        ).save()
+    elif alert.classification == "cluster":
+        ClusterAlert(
+            alert_id=alert.alert_id,
+            node_id=alert.node_id,
+            time_stamp=alert.time_stamp,
+            resource=alert.resource,
+            current_value=alert.current_value,
+            tags=alert.tags,
+            alert_type=alert.alert_type,
+            severity=alert.severity,
+            classification=alert.classification,
+            significance=alert.significance,
+            ackedby=alert.ackedby,
+            acked=alert.acked,
+            ack_comment=alert.ack_comment,
+            acked_at = alert.acked_at,
+            pid=alert.pid,
+            source=alert.source,
+            delivered=alert.delivered
+        ).save()
 
 def update_alert_count(alert, existing_alert):
     counter_objects = []
-    if alert.tags['alert_catagory'] == "node":
+    if alert.classification == "node":
         node_counter_obj = NodeAlertCounters(
             node_id=alert.node_id).load()
         counter_objects.append(node_counter_obj)
-    elif alert.tags['alert_catagory'] == "cluster":
+    elif alert.classification == "cluster":
         cluster_counter_obj = ClusterAlertCounters(
             integration_id=alert.tags['integration_id']
         ).load()
