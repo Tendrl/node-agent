@@ -44,17 +44,23 @@ def _parse_self_heal_stats(op):
 
 def get_volume_heal_info(vol):
     ret_val = []
-    vol_heal_op, vol_heal_err = \
-        tendrl_glusterfs_utils.exec_command(
-            "gluster volume heal %s statistics" % vol['name']
-        )
-    if vol_heal_err:
-        collectd.error(
-            'Failed to fetch volume heal statistics. The error is: %s' % (
-                vol_heal_err
+    for trial_cnt in xrange(0, 3):
+        vol_heal_op, vol_heal_err = \
+            tendrl_glusterfs_utils.exec_command(
+                "gluster volume heal %s statistics" % vol['name']
             )
-        )
-        return ret_val
+        if vol_heal_err:
+            if trial_cnt == 2:
+                collectd.error(
+                    'Failed to fetch volume heal statistics.'
+                    'The error is: %s' % (
+                        vol_heal_err
+                    )
+                )
+                return ret_val
+            continue
+        else:
+            break
     try:
         vol_heal_info = _parse_self_heal_stats(
             vol_heal_op
@@ -63,22 +69,11 @@ def get_volume_heal_info(vol):
             for sub_vol_id, sub_vol in vol['bricks'].iteritems():
                 for brick_idx, sub_vol_brick in enumerate(sub_vol):
                     if (
-                        (
-                            sub_vol_brick[
-                                'brick_index'
-                            ] == brick_heal_info[
-                                'brick_index'
-                            ]
-                        ) and (
-                            brick_heal_info[
-                                'host_name'
-                            ] == socket.gethostbyname(
-                                CONFIG['peer_name']
-                            ) or
-                            brick_heal_info[
-                                'host_name'
-                            ] == CONFIG['peer_name']
-                        )
+                        sub_vol_brick[
+                            'brick_index'
+                        ] == brick_heal_info[
+                            'brick_index'
+                        ]
                     ):
                         vol_heal_info[idx][
                             'brick_path'
@@ -98,9 +93,7 @@ def get_volume_heal_info(vol):
         return ret_val
 
 
-def get_metrics():
-    global CLUSTER_TOPOLOGY
-    global CONFIG
+def get_metrics(CLUSTER_TOPOLOGY, CONFIG):
     ret_val = {}
     for volume in CLUSTER_TOPOLOGY.get('volumes', []):
         if 'Replicate' in volume.get('type', ''):
@@ -169,14 +162,3 @@ def read_callback():
                 str(traceback.format_exc())
             )
         )
-
-
-def configure_callback(configobj):
-    global CONFIG
-    CONFIG = {
-        c.key: c.values[0] for c in configobj.children
-    }
-
-
-collectd.register_config(configure_callback)
-collectd.register_read(read_callback, 60)
