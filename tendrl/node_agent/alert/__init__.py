@@ -7,12 +7,31 @@ from tendrl.commons.objects.alert import AlertUtils
 from tendrl.commons.utils import log_utils as logger
 from tendrl.node_agent.alert import utils
 
+SUPPORTED_ALERT_TYPES = [
+    "utilization",
+    "status"
+]
+
+
+class InvalidAlertType(Exception):
+    pass
+
+
 def update_alert(msg_id, alert_str):
     try:
         existing_alert = False
         new_alert = json.loads(alert_str)
         new_alert['alert_id'] = msg_id
         new_alert_obj = AlertUtils().to_obj(new_alert)
+        if not new_alert_obj.alert_type in SUPPORTED_ALERT_TYPES:
+            logger.log(
+                "error",
+                NS.publisher_id,
+                {
+                    "message": "Invalid alert type in alert %s" % alert_str
+                }    
+            )
+            raise InvalidAlertType    
         alerts = utils.get_alerts()
         for curr_alert in alerts:
             if AlertUtils().is_same(new_alert_obj, curr_alert):
@@ -43,6 +62,7 @@ def update_alert(msg_id, alert_str):
     except(
         ValueError,
         KeyError,
+        InvalidAlertType, 
         EtcdKeyNotFound,
         EtcdException
     ) as ex:
