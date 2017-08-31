@@ -5,7 +5,6 @@ class VolumeAlertCounters(objects.BaseObject):
     def __init__(
         self,
         warn_count=0,
-        info_count=0,
         integration_id='',
         volume_id='',
         *args,
@@ -13,7 +12,6 @@ class VolumeAlertCounters(objects.BaseObject):
     ):
         super(VolumeAlertCounters, self).__init__(*args, **kwargs)
         self.warning_count = warn_count
-        self.info_count = info_count
         self.integration_id = integration_id
         self.volume_id = volume_id
         self.value = '/clusters/{0}/Volumes/{1}/alert_counters'

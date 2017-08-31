@@ -7,9 +7,6 @@ namespace.integrations.gluster:
         warning_count:
           help: "Count of warning alerts for the volume"
           type: int
-        info_count:
-          help: "Count of ok alerts for the volume"
-          type: int
         integration_id:
           help: "Id of the cluster"
           type: String
