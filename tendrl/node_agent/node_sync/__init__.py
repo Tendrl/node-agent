@@ -24,11 +24,11 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
             )
         )
 
-        nc = NS.tendrl.objects.NodeContext().load()
-        current_tags = list(nc.tags)
+        NS.node_context = NS.node_context.load()
+        current_tags = list(NS.node_context.tags)
         current_tags += ["tendrl/node_%s" % NS.node_context.node_id]
-        nc.tags = list(set(current_tags))
-        nc.save()
+        NS.node_context.tags = list(set(current_tags))
+        NS.node_context.save()
 
         while not self._complete.is_set():
             gevent.sleep(int(NS.config.data.get("sync_interval", 10)))
