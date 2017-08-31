@@ -57,10 +57,11 @@ def sync():
                          }
             )
         )
+        NS.node_context = NS.tendrl.objects.NodeContext().load()
         current_tags = list(NS.node_context.tags)
         tags += current_tags
         NS.node_context.tags = list(set(tags))
-        if NS.node_context.tags != current_tags:
+        if NS.node_context.tags.sort() != current_tags.sort():
             NS.node_context.save()
 
         # Update /indexes/tags/:tag = [node_ids]
