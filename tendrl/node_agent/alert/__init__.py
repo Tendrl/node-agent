@@ -8,8 +8,8 @@ from tendrl.commons.utils import log_utils as logger
 from tendrl.node_agent.alert import utils
 
 SUPPORTED_ALERT_TYPES = [
-    "utilization",
-    "status"
+    "UTILIZATION",
+    "STATUS"
 ]
 
 

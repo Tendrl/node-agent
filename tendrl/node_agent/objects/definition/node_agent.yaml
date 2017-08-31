@@ -82,24 +82,6 @@ namespace.node_agent:
       value: /clusters/{0}/alert_counters
       list: /clusters/{0}/alert_counters
       help: "Cluster Alert Counter"
-    VolumeAlertCounters:
-      enabled: True
-      attrs:
-        warning_count:
-          help: "Count of warning alerts for the volume"
-          type: int
-        info_count:
-          help: "Count of ok alerts for the volume"
-          type: int
-        integration_id:
-          help: "Id of the cluster"
-          type: String
-        volume_id:
-          help: "Id of the volume"
-          type: String
-      value: /clusters/{0}/Volumes/{1}
-      list: /clusters/{0}/Volumes/{1}
-      help: "Volume Alert Counter"
     NodeAlertCounters:
       enabled: True
       attrs:

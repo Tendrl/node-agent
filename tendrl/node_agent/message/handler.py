@@ -18,6 +18,7 @@ from tendrl.commons.message import Message
 from tendrl.node_agent.alert import update_alert
 
 MESSAGE_SOCK_PATH = "/var/run/tendrl/message.sock"
+ALERT_PRIORITY = "notice"
 
 
 class MessageHandler(gevent.greenlet.Greenlet):
@@ -36,7 +37,7 @@ class MessageHandler(gevent.greenlet.Greenlet):
             msg = struct.unpack(frmt, data)
             message = Message.from_json(msg[0])
             # Logger is in commons so passing alert from here
-            if message.priority == "notice":
+            if message.priority == ALERT_PRIORITY:
                 update_alert(
                     message.message_id,
                     message.payload["message"]
