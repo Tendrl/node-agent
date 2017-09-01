@@ -5,16 +5,10 @@ from tendrl.commons.objects.alert import AlertUtils
 from tendrl.commons.objects.node_alert import NodeAlert
 from tendrl.commons.objects.cluster_alert import ClusterAlert
 from tendrl.commons.utils import etcd_utils
+from tendrl.node_agent.alert import constants
 from tendrl.node_agent.objects.node_alert_counters import NodeAlertCounters
 from tendrl.node_agent.objects.cluster_alert_counters import ClusterAlertCounters
 
-NODE_ALERT = "node"
-CLUSTER_ALERT = "cluster"
-VOLUME_ALERT = "volume_utilization_alert"
-ALERT_SEVERITY = {
-    "info" : "INFO",
-    "warning": "WARNING"
-}
 
 def read(key):
     result = {}
@@ -37,21 +31,29 @@ def read(key):
     return result
 
 
-def get_alerts():
+def get_alerts(alert):
     alerts_arr = []
     try:
-        alerts = read('/alerting/alerts')
+        if alert.classification == constants.NODE_ALERT:
+            alerts = read(
+                '/alerting/nodes/%s' % alert.node_id
+            )
+        elif  alert.classification == constants.CLUSTER_ALERT:
+            alerts = read(
+                '/alerting/clusters/%s' % alert.tags["integration_id"]
+            ) 
     except EtcdKeyNotFound:
         return alerts_arr
     except (EtcdException, AttributeError) as ex:
         raise ex
     for alert_id, alert in alerts.iteritems():
-        alerts_arr.append(AlertUtils().to_obj(alert))
+        if alert:
+            alerts_arr.append(AlertUtils().to_obj(alert))
     return alerts_arr
 
 
-def classify_alert(alert):
-    if alert.classification == "node":
+def classify_alert(alert, ttl=None):
+    if alert.classification == constants.NODE_ALERT:
         NodeAlert(
             alert_id=alert.alert_id,
             node_id=alert.node_id,
@@ -70,8 +72,8 @@ def classify_alert(alert):
             pid=alert.pid,
             source=alert.source,
             delivered=alert.delivered
-        ).save()
-    elif alert.classification == "cluster":
+        ).save(ttl=ttl)
+    elif alert.classification == constants.CLUSTER_ALERT:
         ClusterAlert(
             alert_id=alert.alert_id,
             node_id=alert.node_id,
@@ -90,20 +92,21 @@ def classify_alert(alert):
             pid=alert.pid,
             source=alert.source,
             delivered=alert.delivered
-        ).save()
+        ).save(ttl=ttl)
+
 
 def update_alert_count(alert, existing_alert):
     alert_count_obj = []
-    if alert.classification == NODE_ALERT:
+    if alert.classification == constants.NODE_ALERT:
         counter_obj = NodeAlertCounters(
             node_id=alert.node_id).load()
         alert_count_obj.append(counter_obj) 
-    elif alert.classification == CLUSTER_ALERT:
+    elif alert.classification == constants.CLUSTER_ALERT:
         counter_obj = ClusterAlertCounters(
             integration_id=alert.tags['integration_id']
         ).load()
         alert_count_obj.append(counter_obj)
-        if alert.resource == VOLUME_ALERT:
+        if alert.resource == constants.VOLUME_ALERT:
             counter_obj = NS.integrations.gluster.objects.VolumeAlertCounters(
                 integration_id=alert.tags['integration_id'],
                 volume_id=alert.tags['volume_id']
@@ -112,11 +115,49 @@ def update_alert_count(alert, existing_alert):
     for counter_obj in alert_count_obj:
         warn_count = int(counter_obj.warning_count)
         if existing_alert:
-            if alert.severity == ALERT_SEVERITY["info"]:
+            if alert.severity == constants.ALERT_SEVERITY["info"]:
                 warn_count -= 1
-            elif alert.severity == ALERT_SEVERITY["warning"]:
+            elif alert.severity == constants.ALERT_SEVERITY["warning"]:
                 warn_count += 1
         else:
             warn_count += 1
         counter_obj.warning_count = warn_count
         counter_obj.save()
+
+
+def remove_alert(alert):
+    try:
+        alert_key = (
+            '/alerting/alerts/%s' % alert.alert_id)
+        if alert.classification == constants.NODE_ALERT:
+            alert_classification_key = (
+                '/alerting/nodes/%s/%s' % (
+                    alert.node_id, alert.alert_id
+                )
+            )
+        elif alert.classification == constants.CLUSTER_ALERT:
+            alert_classification_key = (
+                '/alerting/clusters/%s/%s' % (
+                    alert.tags["integration_id"], alert.alert_id
+                )
+            )
+        NS._int.client.delete(
+            alert_key,
+            recursive=True
+        )
+        NS._int.client.delete(
+            alert_classification_key,
+            recursive=True
+        )
+    except (etcd.EtcdConnectionFailed, etcd.EtcdException) as ex:
+        if type(ex) != etcd.EtcdKeyNotFound:
+            NS._int.wreconnect()
+            NS._int.client.delete(
+                alert_key,
+                recursive=True
+            )
+            NS._int.client.delete(
+                alert_classification_key,
+                recursive=True
+            )
+        # For etcd_key_not_found, clearing alert may deleted by ttl

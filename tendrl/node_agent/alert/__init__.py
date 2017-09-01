@@ -5,12 +5,8 @@ from etcd import EtcdKeyNotFound
 
 from tendrl.commons.objects.alert import AlertUtils
 from tendrl.commons.utils import log_utils as logger
+from tendrl.node_agent.alert import constants
 from tendrl.node_agent.alert import utils
-
-SUPPORTED_ALERT_TYPES = [
-    "UTILIZATION",
-    "STATUS"
-]
 
 
 class InvalidAlertType(Exception):
@@ -23,7 +19,7 @@ def update_alert(msg_id, alert_str):
         new_alert = json.loads(alert_str)
         new_alert['alert_id'] = msg_id
         new_alert_obj = AlertUtils().to_obj(new_alert)
-        if not new_alert_obj.alert_type in SUPPORTED_ALERT_TYPES:
+        if not new_alert_obj.alert_type in constants.SUPPORTED_ALERT_TYPES:
             logger.log(
                 "error",
                 NS.publisher_id,
@@ -32,7 +28,7 @@ def update_alert(msg_id, alert_str):
                 }    
             )
             raise InvalidAlertType    
-        alerts = utils.get_alerts()
+        alerts = utils.get_alerts(new_alert_obj)
         for curr_alert in alerts:
             if AlertUtils().is_same(new_alert_obj, curr_alert):
                 new_alert_obj = AlertUtils().update(
@@ -43,8 +39,15 @@ def update_alert(msg_id, alert_str):
                     new_alert_obj,
                     curr_alert
                 ):
-                    new_alert_obj.save()
-                    utils.classify_alert(new_alert_obj)
+                    if new_alert_obj.severity == constants.ALERT_SEVERITY["info"]:
+                        keep_alive  = int(NS.config.data["clearing_alert_time"])
+                        new_alert_obj.save(ttl=keep_alive)
+                        utils.classify_alert(new_alert_obj, keep_alive)
+                    elif new_alert_obj.severity == constants.ALERT_SEVERITY["warning"]:
+                        # Remove the clearing alert with same if exist
+                        utils.remove_alert(new_alert_obj)
+                        new_alert_obj.save()
+                        utils.classify_alert(new_alert_obj)
                     existing_alert = True
                     utils.update_alert_count(
                         new_alert_obj,
@@ -60,6 +63,8 @@ def update_alert(msg_id, alert_str):
             existing_alert
         )
     except(
+        AttributeError,
+        TypeError,
         ValueError,
         KeyError,
         InvalidAlertType, 

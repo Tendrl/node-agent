@@ -50,7 +50,7 @@ class MessageHandler(gevent.greenlet.Greenlet):
                 exc_type, exc_value, exc_tb, file=sys.stderr)
         except (TypeError, ValueError, KeyError, AttributeError):
             sys.stderr.write(
-                "Unable to log the message.%s\n" % self.data)
+                "Unable to log the message.%s\n" % data)
             exc_type, exc_value, exc_tb = sys.exc_info()
             traceback.print_exception(
                 exc_type, exc_value, exc_tb, file=sys.stderr)
