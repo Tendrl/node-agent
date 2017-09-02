@@ -1,14 +1,12 @@
 import collectd
-import sys
+import time
 import traceback
+# import threading
 
-sys.path.append('/usr/lib64/collectd/gluster')
 import utils as tendrl_glusterfs_utils
-sys.path.remove('/usr/lib64/collectd/gluster')
 
 
-CLUSTER_TOPOLOGY = {}
-CONFIG = {}
+ret_val = {}
 
 
 def _parse_self_heal_stats(op):
@@ -49,6 +47,7 @@ def get_volume_heal_info(vol):
                 "gluster volume heal %s statistics" % vol['name']
             )
         if vol_heal_err:
+            time.sleep(5)
             if trial_cnt == 2:
                 collectd.error(
                     'Failed to fetch volume heal statistics.'
@@ -92,72 +91,57 @@ def get_volume_heal_info(vol):
         return ret_val
 
 
+def get_heal_info(volume, integration_id):
+    vol_heal_info = get_volume_heal_info(volume)
+    for brick_heal_info in vol_heal_info:
+        t_name = \
+            'clusters.%s.volumes.%s.nodes.%s.bricks.%s.split_brain_cnt'
+        ret_val[
+            t_name % (
+                integration_id,
+                volume['name'],
+                brick_heal_info['host_name'].replace('.', '_'),
+                brick_heal_info['brick_path'].replace('/', '|')
+            )
+        ] = brick_heal_info['split_brain_cnt']
+        t_name = \
+            'clusters.%s.volumes.%s.nodes.%s.bricks.%s.healed_cnt'
+        ret_val[
+            t_name % (
+                integration_id,
+                volume['name'],
+                brick_heal_info['host_name'].replace('.', '_'),
+                brick_heal_info['brick_path'].replace('/', '|')
+            )
+        ] = brick_heal_info['healed_cnt']
+        t_name = \
+            'clusters.%s.volumes.%s.nodes.%s.bricks.%s.heal_failed_cnt'
+        ret_val[
+            t_name % (
+                integration_id,
+                volume['name'],
+                brick_heal_info['host_name'].replace('.', '_'),
+                brick_heal_info['brick_path'].replace('/', '|')
+            )
+        ] = brick_heal_info['heal_failed_cnt']
+
+
 def get_metrics(CLUSTER_TOPOLOGY, CONFIG):
-    ret_val = {}
+    global ret_val
+    # threads = []
     for volume in CLUSTER_TOPOLOGY.get('volumes', []):
         if 'Replicate' in volume.get('type', ''):
-            vol_heal_info = get_volume_heal_info(volume)
-            for brick_heal_info in vol_heal_info:
-                t_name = \
-                    'clusters.%s.volumes.%s.nodes.%s.bricks.%s.split_brain_cnt'
-                ret_val[
-                    t_name % (
-                        CONFIG['integration_id'],
-                        volume['name'],
-                        brick_heal_info['host_name'].replace('.', '_'),
-                        brick_heal_info['brick_path'].replace('/', '|')
-                    )
-                ] = brick_heal_info['split_brain_cnt']
-                t_name = \
-                    'clusters.%s.volumes.%s.nodes.%s.bricks.%s.healed_cnt'
-                ret_val[
-                    t_name % (
-                        CONFIG['integration_id'],
-                        volume['name'],
-                        brick_heal_info['host_name'].replace('.', '_'),
-                        brick_heal_info['brick_path'].replace('/', '|')
-                    )
-                ] = brick_heal_info['healed_cnt']
-                t_name = \
-                    'clusters.%s.volumes.%s.nodes.%s.bricks.%s.heal_failed_cnt'
-                ret_val[
-                    t_name % (
-                        CONFIG['integration_id'],
-                        volume['name'],
-                        brick_heal_info['host_name'].replace('.', '_'),
-                        brick_heal_info['brick_path'].replace('/', '|')
-                    )
-                ] = brick_heal_info['heal_failed_cnt']
+            get_heal_info(volume, CONFIG['integration_id'])
+            # thread = threading.Thread(
+            #    target=get_heal_info,
+            #    args=(volume, CONFIG['integration_id'],)
+            # )
+            # thread.start()
+            # threads.append(
+            #    thread
+            # )
+    # for thread in threads:
+    #    thread.join(1)
+    # for thread in threads:
+    #    del thread
     return ret_val
-
-
-def read_callback():
-    global CLUSTER_TOPOLOGY
-    global CONFIG
-    CLUSTER_TOPOLOGY = \
-        tendrl_glusterfs_utils.get_gluster_cluster_topology()
-    try:
-        metrics = get_metrics()
-        for metric_name, value in metrics.iteritems():
-            if value is not None:
-                if (
-                    isinstance(value, str) and
-                    value.isdigit()
-                ):
-                    value = int(value)
-                tendrl_glusterfs_utils.write_graphite(
-                    metric_name,
-                    value,
-                    CONFIG['graphite_host'],
-                    CONFIG['graphite_port']
-                )
-    except (
-        AttributeError,
-        KeyError,
-        ValueError
-    ):
-        collectd.error(
-            'Error in heal info: %s\n\n' % (
-                str(traceback.format_exc())
-            )
-        )

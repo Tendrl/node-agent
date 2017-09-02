@@ -1,12 +1,13 @@
 import ConfigParser
-from gevent import socket
 import os
 import shlex
+import socket
 import subprocess
 from subprocess import Popen
 import time
 import traceback
 import uuid
+
 
 import collectd
 
@@ -45,9 +46,9 @@ def exec_command(cmd_str):
             shlex.split(
                 cmd_str
             ),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
             stdin=open(os.devnull, "r"),
+            stderr=subprocess.PIPE,
+            stdout=subprocess.PIPE,
             close_fds=True
         )
         stdout, stderr = cmd.communicate()
