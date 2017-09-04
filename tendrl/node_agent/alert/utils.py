@@ -5,6 +5,7 @@ from tendrl.commons.objects.alert import AlertUtils
 from tendrl.commons.objects.node_alert import NodeAlert
 from tendrl.commons.objects.cluster_alert import ClusterAlert
 from tendrl.commons.utils import etcd_utils
+from tendrl.integrations.gluster import alerts as gluster_alert
 from tendrl.node_agent.alert import constants
 from tendrl.node_agent.objects.node_alert_counters import NodeAlertCounters
 from tendrl.node_agent.objects.cluster_alert_counters import ClusterAlertCounters
@@ -95,34 +96,38 @@ def classify_alert(alert, ttl=None):
         ).save(ttl=ttl)
 
 
+def find_sds_name(integration_id):
+    sds_name = NS.tendrl.objects.ClusterTendrlContext(
+        integration_id=integration_id).load().sds_name
+    return sds_name
+
+
 def update_alert_count(alert, existing_alert):
-    alert_count_obj = []
     if alert.classification == constants.NODE_ALERT:
         counter_obj = NodeAlertCounters(
-            node_id=alert.node_id).load()
-        alert_count_obj.append(counter_obj) 
+            node_id=alert.node_id
+        ).load()
     elif alert.classification == constants.CLUSTER_ALERT:
         counter_obj = ClusterAlertCounters(
             integration_id=alert.tags['integration_id']
         ).load()
-        alert_count_obj.append(counter_obj)
-        if alert.resource == constants.VOLUME_ALERT:
-            counter_obj = NS.integrations.gluster.objects.VolumeAlertCounters(
-                integration_id=alert.tags['integration_id'],
-                volume_id=alert.tags['volume_id']
-            ).load()
-            alert_count_obj.append(counter_obj)
-    for counter_obj in alert_count_obj:
-        warn_count = int(counter_obj.warning_count)
-        if existing_alert:
-            if alert.severity == constants.ALERT_SEVERITY["info"]:
-                warn_count -= 1
-            elif alert.severity == constants.ALERT_SEVERITY["warning"]:
-                warn_count += 1
-        else:
+        sds_name = find_sds_name(
+            alert.tags['integration_id']
+        )
+        if sds_name == constants.GLUSTER:
+            gluster_alert.update_alert_count(
+                alert, existing_alert
+            )
+    warn_count = int(counter_obj.warning_count)
+    if existing_alert:
+        if alert.severity == constants.ALERT_SEVERITY["info"]:
+            warn_count -= 1
+        elif alert.severity == constants.ALERT_SEVERITY["warning"]:
             warn_count += 1
-        counter_obj.warning_count = warn_count
-        counter_obj.save()
+    else:
+        warn_count += 1
+    counter_obj.warning_count = warn_count
+    counter_obj.save()
 
 
 def remove_alert(alert):

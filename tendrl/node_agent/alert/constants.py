@@ -16,3 +16,4 @@ ALERT_SEVERITY = {
 NODE_ALERT = "node"
 CLUSTER_ALERT = "cluster"
 VOLUME_ALERT = "volume_utilization_alert"
+GLUSTER="gluster"

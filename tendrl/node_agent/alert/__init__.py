@@ -13,6 +13,10 @@ class InvalidAlertType(Exception):
     pass
 
 
+class InvalidAlertSeverity(Exception):
+    pass
+
+
 def update_alert(msg_id, alert_str):
     try:
         existing_alert = False
@@ -27,7 +31,16 @@ def update_alert(msg_id, alert_str):
                     "message": "Invalid alert type in alert %s" % alert_str
                 }    
             )
-            raise InvalidAlertType    
+            raise InvalidAlertType  
+        if not new_alert_obj.severity in constants.SUPPORTED_ALERT_SEVERITY:
+            logger.log(
+                "error",
+                NS.publisher_id,
+                {
+                    "message": "Invalid alert severity in alert %s" % alert_str
+                }
+            )
+            raise InvalidAlertSeverity
         alerts = utils.get_alerts(new_alert_obj)
         for curr_alert in alerts:
             if AlertUtils().is_same(new_alert_obj, curr_alert):
@@ -40,7 +53,9 @@ def update_alert(msg_id, alert_str):
                     curr_alert
                 ):
                     if new_alert_obj.severity == constants.ALERT_SEVERITY["info"]:
-                        keep_alive  = int(NS.config.data["clearing_alert_time"])
+                        keep_alive  = int(
+                            NS.config.data["alert_retention_time"]
+                        )
                         new_alert_obj.save(ttl=keep_alive)
                         utils.classify_alert(new_alert_obj, keep_alive)
                     elif new_alert_obj.severity == constants.ALERT_SEVERITY["warning"]:
@@ -67,7 +82,8 @@ def update_alert(msg_id, alert_str):
         TypeError,
         ValueError,
         KeyError,
-        InvalidAlertType, 
+        InvalidAlertType,
+        InvalidAlertSeverity,
         EtcdKeyNotFound,
         EtcdException
     ) as ex:
