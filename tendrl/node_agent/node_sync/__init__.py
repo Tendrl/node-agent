@@ -44,8 +44,6 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
             sync_service_and_index_thread = gevent.spawn(
                 services_and_index_sync.sync)
             sync_service_and_index_thread.join()
-
-
             try:
                 NS.tendrl.objects.Os().save()
                 NS.tendrl.objects.Cpu().save()

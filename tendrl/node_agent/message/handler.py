@@ -15,9 +15,10 @@ from gevent.socket import timeout as socket_timeout
 
 from tendrl.commons.logger import Logger
 from tendrl.commons.message import Message
-
+from tendrl.node_agent.alert import update_alert
 
 MESSAGE_SOCK_PATH = "/var/run/tendrl/message.sock"
+ALERT_PRIORITY = "notice"
 
 
 class MessageHandler(gevent.greenlet.Greenlet):
@@ -35,6 +36,12 @@ class MessageHandler(gevent.greenlet.Greenlet):
             frmt = "=%ds" % size
             msg = struct.unpack(frmt, data)
             message = Message.from_json(msg[0])
+            # Logger is in commons so passing alert from here
+            if message.priority == ALERT_PRIORITY:
+                update_alert(
+                    message.message_id,
+                    message.payload["message"]
+                )
             gevent.sleep(3)
             Logger(message)
         except (socket_error, socket_timeout):
@@ -43,7 +50,7 @@ class MessageHandler(gevent.greenlet.Greenlet):
                 exc_type, exc_value, exc_tb, file=sys.stderr)
         except (TypeError, ValueError, KeyError, AttributeError):
             sys.stderr.write(
-                "Unable to log the message.%s\n" % self.data)
+                "Unable to log the message.%s\n" % data)
             exc_type, exc_value, exc_tb = sys.exc_info()
             traceback.print_exception(
                 exc_type, exc_value, exc_tb, file=sys.stderr)

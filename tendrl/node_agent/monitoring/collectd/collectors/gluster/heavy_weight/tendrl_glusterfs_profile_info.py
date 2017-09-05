@@ -485,4 +485,3 @@ def configure_callback(configobj):
 
 collectd.register_config(configure_callback)
 collectd.register_read(read_callback, 137)
-

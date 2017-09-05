@@ -18,6 +18,8 @@ from tendrl.node_agent import node_sync
 from tendrl.integrations.ceph import sds_sync as \
     ceph_integrations_sds_sync
 
+from tendrl.integrations.gluster import GlusterIntegrationNS
+
 
 class NodeAgentManager(commons_manager.Manager):
     def __init__(self):
@@ -51,13 +53,14 @@ def main():
     # Init NS.integrations.gluster
     # TODO(team) add all short circuited ceph(import/create) NS.tendrl.flows
     #  to NS.integrations.ceph
-    # gluster.GlusterIntegrationNS()
+    GlusterIntegrationNS()
 
     # Compile all definitions
     NS.compiled_definitions = \
         NS.node_agent.objects.CompiledDefinitions()
     NS.compiled_definitions.merge_definitions([
-        NS.tendrl.definitions, NS.node_agent.definitions])
+        NS.tendrl.definitions, NS.node_agent.definitions,
+        NS.integrations.gluster.definitions])
     NS.node_agent.compiled_definitions = NS.compiled_definitions
 
     # Every process needs to set a NS.type
