@@ -43,6 +43,7 @@ def update_alert(msg_id, alert_str):
             raise InvalidAlertSeverity
         alerts = utils.get_alerts(new_alert_obj)
         for curr_alert in alerts:
+            curr_alert.tags = json.loads(curr_alert.tags)
             if AlertUtils().is_same(new_alert_obj, curr_alert):
                 new_alert_obj = AlertUtils().update(
                     new_alert_obj,
@@ -52,31 +53,31 @@ def update_alert(msg_id, alert_str):
                     new_alert_obj,
                     curr_alert
                 ):
-                    if new_alert_obj.severity == constants.ALERT_SEVERITY["info"]:
-                        keep_alive  = int(
-                            NS.config.data["alert_retention_time"]
-                        )
-                        new_alert_obj.save(ttl=keep_alive)
-                        utils.classify_alert(new_alert_obj, keep_alive)
-                    elif new_alert_obj.severity == constants.ALERT_SEVERITY["warning"]:
-                        # Remove the clearing alert with same if exist
-                        utils.remove_alert(new_alert_obj)
-                        new_alert_obj.save()
-                        utils.classify_alert(new_alert_obj)
                     existing_alert = True
                     utils.update_alert_count(
                         new_alert_obj,
                         existing_alert
                     )
+                    if new_alert_obj.severity == constants.ALERT_SEVERITY["info"]:
+                        keep_alive  = int(
+                            NS.config.data["alert_retention_time"]
+                        )
+                        utils.classify_alert(new_alert_obj, keep_alive)
+                        new_alert_obj.save(ttl=keep_alive)
+                    elif new_alert_obj.severity == constants.ALERT_SEVERITY["warning"]:
+                        # Remove the clearing alert with same if exist
+                        utils.remove_alert(new_alert_obj)
+                        utils.classify_alert(new_alert_obj)
+                        new_alert_obj.save()
                     return
                 return
             # else add this new alert to etcd
-        new_alert_obj.save()
-        utils.classify_alert(new_alert_obj)
         utils.update_alert_count(
             new_alert_obj,
             existing_alert
         )
+        utils.classify_alert(new_alert_obj)
+        new_alert_obj.save()
     except(
         AttributeError,
         TypeError,
@@ -91,6 +92,8 @@ def update_alert(msg_id, alert_str):
             "error",
             NS.publisher_id,
             {
-                "message": "Error in updating alert %s" % alert_str
+                "message": "Error %s in updating alert %s" % (
+                    ex, alert_str
+                )
             }
         )

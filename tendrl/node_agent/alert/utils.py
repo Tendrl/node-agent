@@ -11,46 +11,25 @@ from tendrl.node_agent.objects.node_alert_counters import NodeAlertCounters
 from tendrl.node_agent.objects.cluster_alert_counters import ClusterAlertCounters
 
 
-def read(key):
-    result = {}
-    obj = {}
-    try:
-        obj = etcd_utils.read(key)
-    except EtcdKeyNotFound:
-        pass
-    except (AttributeError, EtcdException) as ex:
-        raise ex
-    if hasattr(obj, 'leaves'):
-        for item in obj.leaves:
-            if key == item.key:
-                result[item.key.split("/")[-1]] = item.value
-                return result
-            if item.dir is True:
-                result[item.key.split("/")[-1]] = read(item.key)
-            else:
-                result[item.key.split("/")[-1]] = item.value
-    return result
-
-
 def get_alerts(alert):
     alerts_arr = []
     try:
         if alert.classification == constants.NODE_ALERT:
-            alerts = read(
-                '/alerting/nodes/%s' % alert.node_id
-            )
+            alerts_arr = NS.tendrl.objects.NodeAlert(
+                node_id=alert.node_id
+            ).load_all()          
         elif  alert.classification == constants.CLUSTER_ALERT:
-            alerts = read(
-                '/alerting/clusters/%s' % alert.tags["integration_id"]
-            ) 
+            alerts_arr = NS.tendrl.objects.ClusterAlert(
+                tags=alert.tags
+            ).load_all()
     except EtcdKeyNotFound:
         return alerts_arr
     except (EtcdException, AttributeError) as ex:
         raise ex
-    for alert_id, alert in alerts.iteritems():
-        if alert:
-            alerts_arr.append(AlertUtils().to_obj(alert))
-    return alerts_arr
+    if alerts_arr:
+        return alerts_arr
+    else:
+        return []
 
 
 def classify_alert(alert, ttl=None):
