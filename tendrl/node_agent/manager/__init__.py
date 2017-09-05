@@ -20,6 +20,7 @@ from tendrl.integrations.ceph import sds_sync as \
 
 from tendrl.integrations.gluster import GlusterIntegrationNS
 
+
 class NodeAgentManager(commons_manager.Manager):
     def __init__(self):
         # Initialize the state sync thread which gets the underlying

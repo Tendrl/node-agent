@@ -1,14 +1,13 @@
+from etcd import EtcdConnectionFailed
 from etcd import EtcdException
 from etcd import EtcdKeyNotFound
-
-from tendrl.commons.objects.alert import AlertUtils
-from tendrl.commons.objects.node_alert import NodeAlert
 from tendrl.commons.objects.cluster_alert import ClusterAlert
-from tendrl.commons.utils import etcd_utils
+from tendrl.commons.objects.node_alert import NodeAlert
 from tendrl.integrations.gluster import alerts as gluster_alert
 from tendrl.node_agent.alert import constants
+from tendrl.node_agent.objects.cluster_alert_counters import \
+    ClusterAlertCounters
 from tendrl.node_agent.objects.node_alert_counters import NodeAlertCounters
-from tendrl.node_agent.objects.cluster_alert_counters import ClusterAlertCounters
 
 
 def get_alerts(alert):
@@ -17,8 +16,8 @@ def get_alerts(alert):
         if alert.classification == constants.NODE_ALERT:
             alerts_arr = NS.tendrl.objects.NodeAlert(
                 node_id=alert.node_id
-            ).load_all()          
-        elif  alert.classification == constants.CLUSTER_ALERT:
+            ).load_all()
+        elif alert.classification == constants.CLUSTER_ALERT:
             alerts_arr = NS.tendrl.objects.ClusterAlert(
                 tags=alert.tags
             ).load_all()
@@ -48,7 +47,7 @@ def classify_alert(alert, ttl=None):
             ackedby=alert.ackedby,
             acked=alert.acked,
             ack_comment=alert.ack_comment,
-            acked_at = alert.acked_at,
+            acked_at=alert.acked_at,
             pid=alert.pid,
             source=alert.source,
             delivered=alert.delivered
@@ -68,7 +67,7 @@ def classify_alert(alert, ttl=None):
             ackedby=alert.ackedby,
             acked=alert.acked,
             ack_comment=alert.ack_comment,
-            acked_at = alert.acked_at,
+            acked_at=alert.acked_at,
             pid=alert.pid,
             source=alert.source,
             delivered=alert.delivered
@@ -133,8 +132,8 @@ def remove_alert(alert):
             alert_classification_key,
             recursive=True
         )
-    except (etcd.EtcdConnectionFailed, etcd.EtcdException) as ex:
-        if type(ex) != etcd.EtcdKeyNotFound:
+    except (EtcdConnectionFailed, EtcdException) as ex:
+        if type(ex) != EtcdKeyNotFound:
             NS._int.wreconnect()
             NS._int.client.delete(
                 alert_key,

@@ -23,16 +23,16 @@ def update_alert(msg_id, alert_str):
         new_alert = json.loads(alert_str)
         new_alert['alert_id'] = msg_id
         new_alert_obj = AlertUtils().to_obj(new_alert)
-        if not new_alert_obj.alert_type in constants.SUPPORTED_ALERT_TYPES:
+        if new_alert_obj.alert_type not in constants.SUPPORTED_ALERT_TYPES:
             logger.log(
                 "error",
                 NS.publisher_id,
                 {
                     "message": "Invalid alert type in alert %s" % alert_str
-                }    
+                }
             )
-            raise InvalidAlertType  
-        if not new_alert_obj.severity in constants.SUPPORTED_ALERT_SEVERITY:
+            raise InvalidAlertType
+        if new_alert_obj.severity not in constants.SUPPORTED_ALERT_SEVERITY:
             logger.log(
                 "error",
                 NS.publisher_id,
@@ -58,13 +58,15 @@ def update_alert(msg_id, alert_str):
                         new_alert_obj,
                         existing_alert
                     )
-                    if new_alert_obj.severity == constants.ALERT_SEVERITY["info"]:
-                        keep_alive  = int(
+                    if new_alert_obj.severity == \
+                        constants.ALERT_SEVERITY["info"]:
+                        keep_alive = int(
                             NS.config.data["alert_retention_time"]
                         )
                         utils.classify_alert(new_alert_obj, keep_alive)
                         new_alert_obj.save(ttl=keep_alive)
-                    elif new_alert_obj.severity == constants.ALERT_SEVERITY["warning"]:
+                    elif new_alert_obj.severity == \
+                        constants.ALERT_SEVERITY["warning"]:
                         # Remove the clearing alert with same if exist
                         utils.remove_alert(new_alert_obj)
                         utils.classify_alert(new_alert_obj)

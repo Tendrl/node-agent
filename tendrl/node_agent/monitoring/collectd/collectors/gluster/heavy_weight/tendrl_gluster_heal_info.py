@@ -1,5 +1,4 @@
 import collectd
-import socket
 import sys
 import traceback
 

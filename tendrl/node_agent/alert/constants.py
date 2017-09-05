@@ -9,11 +9,11 @@ SUPPORTED_ALERT_SEVERITY = [
 ]
 
 ALERT_SEVERITY = {
-    "info" : "INFO",
+    "info": "INFO",
     "warning": "WARNING"
 }
 
 NODE_ALERT = "node"
 CLUSTER_ALERT = "cluster"
 VOLUME_ALERT = "volume_utilization_alert"
-GLUSTER="gluster"
+GLUSTER = "gluster"

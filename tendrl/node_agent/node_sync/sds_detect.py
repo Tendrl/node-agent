@@ -80,7 +80,9 @@ def sync():
                                                  integration_tag]
                         NS.node_context.tags = list(set(NS.node_context.tags))
                         NS.node_context.save()
-                        _cluster = NS.tendrl.objects.Cluster(integration_id=NS.tendrl_context.integration_id).load()
+                        _cluster = NS.tendrl.objects.Cluster(
+                            integration_id=NS.tendrl_context.integration_id
+                        ).load()
                         if _cluster.is_managed == "yes":
                             continue
                         else:

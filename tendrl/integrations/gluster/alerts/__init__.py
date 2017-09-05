@@ -4,7 +4,7 @@ VOLUME_ALERT = "volume_utilization_alert"
 
 
 def update_alert_count(alert, existing_alert):
-    if alert.resource == VOLUME_ALERT:    
+    if alert.resource == VOLUME_ALERT:
         counter_obj = NS.integrations.gluster.objects.VolumeAlertCounters(
             integration_id=alert.tags['integration_id'],
             volume_id=alert.tags['volume_id']
