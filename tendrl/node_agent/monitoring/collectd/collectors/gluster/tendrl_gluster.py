@@ -6,6 +6,7 @@ import threading
 import time
 
 
+import blivet
 import collectd
 
 
@@ -30,6 +31,9 @@ class TendrlGlusterfsMonitoringBase(object):
 
     CLUSTER_TOPOLOGY = tendrl_glusterfs_utils.get_gluster_cluster_topology()
     CONFIG = {}
+    b = blivet.Blivet()
+    b.reset()
+    DEVICE_TREE = b.devicetree
 
     def __init__(self):
         super(TendrlGlusterfsMonitoringBase, self).__init__()
