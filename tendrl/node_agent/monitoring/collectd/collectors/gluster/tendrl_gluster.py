@@ -2,11 +2,11 @@ import importlib
 import os
 import pkgutil
 import six
+import sys
 import threading
 import time
 
 
-import blivet
 import collectd
 
 
@@ -29,11 +29,8 @@ class PluginMount(type):
 @six.add_metaclass(PluginMount)
 class TendrlGlusterfsMonitoringBase(object):
 
-    CLUSTER_TOPOLOGY = tendrl_glusterfs_utils.get_gluster_cluster_topology()
+    CLUSTER_TOPOLOGY = {}
     CONFIG = {}
-    b = blivet.Blivet()
-    b.reset()
-    DEVICE_TREE = b.devicetree
 
     def __init__(self):
         super(TendrlGlusterfsMonitoringBase, self).__init__()
@@ -84,7 +81,12 @@ def load_plugins(pkg_path, pkg):
     path = os.path.dirname(os.path.abspath(__file__)) + pkg_path
     sds_plugins = list_modules_in_package_path(path, pkg)
     for name, sds_fqdn in sds_plugins:
-        importlib.import_module(sds_fqdn)
+        if sds_fqdn in sys.modules:
+            # Reload module if hot fixes need to be auto-picked in next cycle
+            reload(sys.modules[sds_fqdn])
+            # continue
+        else:
+            importlib.import_module(sds_fqdn)
 
 
 threads = []
@@ -129,9 +131,24 @@ def read_callback(pkg_path, pkg):
         del threads[0]
 
 
+def init():
+    TendrlGlusterfsMonitoringBase.CLUSTER_TOPOLOGY = \
+        tendrl_glusterfs_utils.get_gluster_cluster_topology()
+
+
+def destroy():
+    global threads
+    for index in range(len(TendrlGlusterfsMonitoringBase.plugins)):
+        del TendrlGlusterfsMonitoringBase.plugins[0]
+    while len(threads) != 0:
+        continue
+
+
 def r_callback():
+    init()
     read_callback("/low_weight", "low_weight")
     read_callback("/heavy_weight", "heavy_weight")
+    destroy()
 
 
 def configure_callback(configobj):

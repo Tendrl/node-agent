@@ -1,3 +1,5 @@
+import ast
+import etcd
 import psutil
 import socket
 import threading
@@ -6,18 +8,40 @@ import traceback
 
 
 import collectd
-from tendrl_gluster import TendrlGlusterfsMonitoringBase
 import utils as gluster_utils
 
 
-class TendrlBrickDeviceStatsPlugin(
-    TendrlGlusterfsMonitoringBase
-):
+class TendrlBrickDeviceStatsPlugin(object):
+    CONFIG = {}
+    etcd_client = {}
+
     def __init__(self):
         self.provisioner_only_plugin = False
-        TendrlGlusterfsMonitoringBase.__init__(self)
         self.STAT_INTERVAL_FOR_PER_SEC_COUNTER = 10
         self.brick_details = {}
+        if not self.etcd_client:
+            self.etcd_client = etcd.Client(
+                host=self.CONFIG['etcd_host'],
+                port=int(self.CONFIG['etcd_port'])
+            )
+
+    def fetch_brick_devices(self, brick_path):
+        mount_point = self.get_brick_source_and_mount(
+            brick_path
+        )
+        try:
+            brick_devices = ast.literal_eval(
+                self.etcd_client.read(
+                    '/clusters/%s/Bricks/all/%s/%s/devices' % (
+                        self.CONFIG['integration_id'],
+                        self.CONFIG['peer_name'],
+                        brick_path.replace('/', '_').replace("_", "", 1)
+                    )
+                ).value
+            )
+            return brick_devices, mount_point
+        except etcd.EtcdKeyNotFound:
+            return [], mount_point
 
     def get_brick_source_and_mount(self, brick_path):
         # source and target correspond to fields "Filesystem" and
@@ -29,32 +53,34 @@ class TendrlBrickDeviceStatsPlugin(
         command = "df --output=source,target " + brick_path
         out, err = gluster_utils.exec_command(command)
         if err:
-            return None, None, err
+            return None
         mount_source, mount_point = out.split("\n")[-2].split()
-        return mount_source, mount_point, None
+        return mount_point
 
     def get_brick_devices(self, brick_path):
-        mount_source, mount_point, err = self.get_brick_source_and_mount(
-            brick_path
-        )
-        if err or (not mount_source or not mount_point):
-            collectd.error(
-                'mount_source is %s\n mount_point is %s\n DEVICE_TREE is %s\n'
-                'Failed to fetch device details of brick %s.'
-                'Error %s.' % (
-                    str(mount_source),
-                    str(mount_point),
-                    str(self.DEVICE_TREE),
-                    brick_path,
-                    err
-                )
-            )
-            return None, None
-        device = self.DEVICE_TREE.resolveDevice(mount_source)
-        disks = [
-            d.path for d in device.ancestors if d.isDisk and not d.parents
-        ]
-        return disks, mount_point
+        try:
+            return self.fetch_brick_devices(brick_path)
+        except (etcd.EtcdConnectionFailed, etcd.EtcdException):
+            self.etcd_client = None
+            trial_cnt = 0
+            while not self.etcd_client:
+                trial_cnt = trial_cnt + 1
+                try:
+                    self.etcd_client = self.etcd_client = etcd.Client(
+                        host=self.CONFIG['etcd_host'],
+                        port=int(self.CONFIG['etcd_port'])
+                    )
+                except etcd.EtcdException:
+                    collectd.error(
+                        "Error connecting to central store (etcd), trying "
+                        "again..."
+                    )
+                    time.sleep(2)
+                if trial_cnt == 3:
+                    if not self.etcd_client:
+                        return []
+                    return self.fetch_brick_devices(brick_path)
+            return self.fetch_brick_devices(brick_path)
 
     def get_interval_disk_io_stat(self, device_name, attr_name):
         return (
@@ -419,3 +445,32 @@ class TendrlBrickDeviceStatsPlugin(
         for thread in threads:
             del thread
         return self.brick_details
+
+
+def r_callback():
+    TendrlBrickDeviceStatsPlugin.CLUSTER_TOPOLOGY = \
+        gluster_utils.get_gluster_cluster_topology()
+    metrics = TendrlBrickDeviceStatsPlugin().get_metrics()
+    for metric_name, value in metrics.iteritems():
+        if value is not None:
+            if (
+                isinstance(value, str) and
+                value.isdigit()
+            ):
+                value = int(value)
+            gluster_utils.write_graphite(
+                metric_name,
+                value,
+                TendrlBrickDeviceStatsPlugin.CONFIG['graphite_host'],
+                TendrlBrickDeviceStatsPlugin.CONFIG['graphite_port']
+            )
+
+
+def configure_callback(configobj):
+    TendrlBrickDeviceStatsPlugin.CONFIG = {
+        c.key: c.values[0] for c in configobj.children
+    }
+
+
+collectd.register_config(configure_callback)
+collectd.register_read(r_callback, 77)

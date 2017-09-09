@@ -1,0 +1,15 @@
+<Plugin "python">
+    ModulePath "/usr/lib64/collectd/gluster"
+
+    Import "tendrl_gluster_brick_disk_stats"
+
+    <Module "tendrl_gluster_brick_disk_stats">
+        integration_id "{{integration_id}}"
+        graphite_host "{{ graphite_host }}"
+        graphite_port "{{ graphite_port }}"
+        peer_name "{{ hostname }}"
+        provisioner {{ is_provisioner_node }}
+        etcd_host "{{ etcd_host }}"
+        etcd_port {{ etcd_port }}
+    </Module>
+</Plugin>
