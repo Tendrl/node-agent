@@ -37,7 +37,7 @@ class MessageHandler(gevent.greenlet.Greenlet):
             msg = struct.unpack(frmt, data)
             message = Message.from_json(msg[0])
             # Logger is in commons so passing alert from here
-            notify_only = message.payload.get('notify_only', False)
+            notify_only = message.payload.get('notify_only_ui', False)
             if message.priority == NOTICE_PRIORITY and not notify_only:
                 update_alert(
                     message.message_id,
