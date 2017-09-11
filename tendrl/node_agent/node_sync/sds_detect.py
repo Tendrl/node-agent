@@ -54,9 +54,11 @@ def sync():
                         try:
                             if dc_changed:
                                 integration_id = NS.tendrl_context.integration_id
+                                NS._int.wclient.write(integration_index_key,
+                                                  integration_id)
                             else:
                                 integration_id = str(uuid.uuid4())
-                            NS._int.wclient.write(integration_index_key,
+                                NS._int.wclient.write(integration_index_key,
                                                   integration_id,
                                                   prevExist=False)
                         except etcd.EtcdAlreadyExist:
