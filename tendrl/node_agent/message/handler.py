@@ -37,12 +37,21 @@ class MessageHandler(gevent.greenlet.Greenlet):
             msg = struct.unpack(frmt, data)
             message = Message.from_json(msg[0])
             # Logger is in commons so passing alert from here
-            notify_only = message.payload.get('notify_only_ui', False)
-            if message.priority == NOTICE_PRIORITY and not notify_only:
-                update_alert(
-                    message.message_id,
-                    message.payload["message"]
-                )
+            alert_conditions = [
+                "alert_condition_status",
+                "alert_condition_state",
+                "alert_condition_unset"
+            ]
+            if message.priority == NOTICE_PRIORITY:
+                alert = True
+                for alert_condition in alert_conditions:
+                    if not alert_condition in message.payload:
+                        alert = False
+                        break
+                if alert:
+                    update_alert(
+                        message
+                    )
             gevent.sleep(3)
             Logger(message)
         except (socket_error, socket_timeout):

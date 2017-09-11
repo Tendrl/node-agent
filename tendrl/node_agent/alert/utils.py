@@ -89,9 +89,12 @@ def update_alert_count(alert, existing_alert):
         counter_obj = ClusterAlertCounters(
             integration_id=alert.tags['integration_id']
         ).load()
-        sds_name = find_sds_name(
-            alert.tags['integration_id']
-        )
+        if "sds_name" in alert.tags:
+            sds_name = alert.tags["sds_name"]
+        else: 
+            sds_name = find_sds_name(
+                alert.tags['integration_id']
+            )
         if sds_name == constants.GLUSTER:
             gluster_alert.update_alert_count(
                 alert, existing_alert
