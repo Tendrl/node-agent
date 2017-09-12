@@ -3,6 +3,7 @@ from etcd import EtcdException
 from etcd import EtcdKeyNotFound
 from tendrl.commons.objects.cluster_alert import ClusterAlert
 from tendrl.commons.objects.node_alert import NodeAlert
+from tendrl.commons.objects.utilization_only_alert import UtilizationOnlyAlert
 from tendrl.integrations.gluster import alerts as gluster_alert
 from tendrl.node_agent.alert import constants
 from tendrl.node_agent.objects.cluster_alert_counters import \
@@ -74,6 +75,28 @@ def classify_alert(alert, ttl=None):
         ).save(ttl=ttl)
 
 
+def save_utilization_only_alert(alert):
+    UtilizationOnlyAlert(
+        alert_id=alert.alert_id,
+        node_id=alert.node_id,
+        time_stamp=alert.time_stamp,
+        resource=alert.resource,
+        current_value=alert.current_value,
+        tags=alert.tags,
+        alert_type=alert.alert_type,
+        severity=alert.severity,
+        classification=alert.classification,
+        significance=alert.significance,
+        ackedby=alert.ackedby,
+        acked=alert.acked,
+        ack_comment=alert.ack_comment,
+        acked_at=alert.acked_at,
+        pid=alert.pid,
+        source=alert.source,
+        delivered=alert.delivered
+    ).save()
+
+
 def find_sds_name(integration_id):
     sds_name = NS.tendrl.objects.ClusterTendrlContext(
         integration_id=integration_id).load().sds_name
@@ -91,7 +114,7 @@ def update_alert_count(alert, existing_alert):
         ).load()
         if "sds_name" in alert.tags:
             sds_name = alert.tags["sds_name"]
-        else: 
+        else:
             sds_name = find_sds_name(
                 alert.tags['integration_id']
             )

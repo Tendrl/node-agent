@@ -45,7 +45,7 @@ class MessageHandler(gevent.greenlet.Greenlet):
             if message.priority == NOTICE_PRIORITY:
                 alert = True
                 for alert_condition in alert_conditions:
-                    if not alert_condition in message.payload:
+                    if alert_condition not in message.payload:
                         alert = False
                         break
                 if alert:
