@@ -94,7 +94,7 @@ def update_alert(message):
                 )
         else:
             # SDS native events
-            utils.save_utilization_only_alert(new_alert_obj)
+            utils.save_notification_only_alert(new_alert_obj)
     except(
         AttributeError,
         TypeError,
