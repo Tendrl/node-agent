@@ -41,55 +41,60 @@ def update_alert(message):
                 }
             )
             raise InvalidAlertSeverity
-        alerts = utils.get_alerts(new_alert_obj)
-        for curr_alert in alerts:
-            curr_alert.tags = json.loads(curr_alert.tags)
-            if AlertUtils().is_same(new_alert_obj, curr_alert):
-                new_alert_obj = AlertUtils().update(
-                    new_alert_obj,
-                    curr_alert
-                )
-                if not AlertUtils().equals(
-                    new_alert_obj,
-                    curr_alert
-                ):
-                    existing_alert = True
-                    utils.update_alert_count(
+        alert_notify = message.payload.get('alert_notify', False)
+        if not alert_notify:
+            alerts = utils.get_alerts(new_alert_obj)
+            for curr_alert in alerts:
+                curr_alert.tags = json.loads(curr_alert.tags)
+                if AlertUtils().is_same(new_alert_obj, curr_alert):
+                    new_alert_obj = AlertUtils().update(
                         new_alert_obj,
-                        existing_alert
+                        curr_alert
                     )
-                    if message.payload["alert_condition_unset"]:
-                        keep_alive = int(
-                            NS.config.data["alert_retention_time"]
+                    if not AlertUtils().equals(
+                        new_alert_obj,
+                        curr_alert
+                    ):
+                        existing_alert = True
+                        utils.update_alert_count(
+                            new_alert_obj,
+                            existing_alert
                         )
-                        utils.classify_alert(new_alert_obj, keep_alive)
-                        new_alert_obj.save(ttl=keep_alive)
-                    else:
-                        # Remove the clearing alert with same if exist
-                        utils.remove_alert(new_alert_obj)
-                        utils.classify_alert(new_alert_obj)
-                        new_alert_obj.save()
+                        if message.payload["alert_condition_unset"]:
+                            keep_alive = int(
+                                NS.config.data["alert_retention_time"]
+                            )
+                            utils.classify_alert(new_alert_obj, keep_alive)
+                            new_alert_obj.save(ttl=keep_alive)
+                        else:
+                            # Remove the clearing alert with same if exist
+                            utils.remove_alert(new_alert_obj)
+                            utils.classify_alert(new_alert_obj)
+                            new_alert_obj.save()
+                        return
                     return
-                return
-            # else add this new alert to etcd
-        if message.payload["alert_condition_state"] == \
-            constants.ALERT_SEVERITY["warning"]: 
-            utils.update_alert_count(
-                new_alert_obj,
-                existing_alert
-            )
-            utils.classify_alert(new_alert_obj)
-            new_alert_obj.save()
+                # else add this new alert to etcd
+            if message.payload["alert_condition_state"] == \
+                constants.ALERT_SEVERITY["warning"]:
+                utils.update_alert_count(
+                    new_alert_obj,
+                    existing_alert
+                )
+                utils.classify_alert(new_alert_obj)
+                new_alert_obj.save()
+            else:
+                logger.log(
+                    "error",
+                    NS.publisher_id,
+                    {
+                        "message": "New alert can't be a clearing alert %s" % (
+                            new_alert
+                        )
+                    }
+                )
         else:
-            logger.log(
-                "error",
-                NS.publisher_id,
-                {
-                    "message": "New alert can't be a clearing alert %s" % (
-                        new_alert
-                    )
-                }
-            )
+            # SDS native events
+            utils.save_notification_only_alert(new_alert_obj)
     except(
         AttributeError,
         TypeError,
