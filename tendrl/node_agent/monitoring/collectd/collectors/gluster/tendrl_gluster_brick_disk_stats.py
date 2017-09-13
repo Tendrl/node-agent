@@ -1,6 +1,7 @@
 import ast
 import etcd
 import psutil
+import re
 import socket
 import threading
 import time
@@ -83,22 +84,40 @@ class TendrlBrickDeviceStatsPlugin(object):
             return self.fetch_brick_devices(brick_path)
 
     def get_interval_disk_io_stat(self, device_name, attr_name):
-        return (
-            (
-                getattr(self.current_io_stats[
-                    device_name.replace(
-                        '/dev/',
-                        ''
+        # Unpartioned disk
+        if (
+            device_name.replace('/dev/', '') in self.current_io_stats and
+            device_name.replace('/dev/', '') in self.initial_io_stats
+        ):
+            return (
+                (
+                    getattr(self.current_io_stats[
+                        device_name.replace(
+                            '/dev/',
+                            ''
+                        )
+                    ], attr_name) -
+                    getattr(self.initial_io_stats[
+                        device_name.replace(
+                            '/dev/',
+                            ''
+                        )
+                    ], attr_name, 0)
+                ) * 1.0
+            ) / (self.STAT_INTERVAL_FOR_PER_SEC_COUNTER * 1.0)
+        else:
+            # partitioned disk
+            dev_name = device_name.replace('/dev/', '')
+            sum = 0
+            for key, value in self.current_io_stats.iteritems():
+                prev_stat = self.initial_io_stats.get(key)
+                partition_name_re = re.compile('%s[0-9]+' % dev_name)
+                if partition_name_re.match(key):
+                    sum = sum + (
+                        getattr(value, attr_name) -
+                        getattr(prev_stat, attr_name, 0)
                     )
-                ], attr_name) -
-                getattr(self.initial_io_stats[
-                    device_name.replace(
-                        '/dev/',
-                        ''
-                    )
-                ], attr_name)
-            ) * 1.0
-        ) / (self.STAT_INTERVAL_FOR_PER_SEC_COUNTER * 1.0)
+            return sum
 
     def get_disk_usage(self, device_name):
         return psutil.disk_usage(device_name)
