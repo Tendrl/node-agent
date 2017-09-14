@@ -23,7 +23,9 @@ class TendrlBrickDeviceStatsPlugin(object):
         if not self.etcd_client:
             self.etcd_client = etcd.Client(
                 host=self.CONFIG['etcd_host'],
-                port=int(self.CONFIG['etcd_port'])
+                port=int(self.CONFIG['etcd_port']),
+                username=self.CONFIG['etcd_username'],
+                password=self.CONFIG['etcd_password']
             )
 
     def fetch_brick_devices(self, brick_path):
@@ -67,9 +69,11 @@ class TendrlBrickDeviceStatsPlugin(object):
             while not self.etcd_client:
                 trial_cnt = trial_cnt + 1
                 try:
-                    self.etcd_client = self.etcd_client = etcd.Client(
+                    self.etcd_client = etcd.Client(
                         host=self.CONFIG['etcd_host'],
-                        port=int(self.CONFIG['etcd_port'])
+                        port=int(self.CONFIG['etcd_port']),
+                        username=self.CONFIG['etcd_username'],
+                        password=self.CONFIG['etcd_password']
                     )
                 except etcd.EtcdException:
                     collectd.error(
