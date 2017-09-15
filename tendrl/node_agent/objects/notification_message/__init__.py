@@ -10,7 +10,7 @@ class NotificationMessage(objects.BaseObject, CommonMessage):
         CommonMessage.__init__(self, **notification_message)
         objects.BaseObject.__init__(self)
 
-        self.value = '_tendrl/notifications/{0}'
+        self.value = 'notifications/{0}'
 
     def save(self):
         super(NotificationMessage, self).save(
