@@ -21,12 +21,15 @@ class TendrlBrickDeviceStatsPlugin(object):
         self.STAT_INTERVAL_FOR_PER_SEC_COUNTER = 10
         self.brick_details = {}
         if not self.etcd_client:
-            self.etcd_client = etcd.Client(
-                host=self.CONFIG['etcd_host'],
-                port=int(self.CONFIG['etcd_port']),
-                username=self.CONFIG['etcd_username'],
-                password=self.CONFIG['etcd_password']
-            )
+            _etcd_args = dict(host=self.CONFIG['etcd_host'],
+                port=int(self.CONFIG['etcd_port']))
+            etcd_username = self.CONFIG.get("etcd_username")
+            if etcd_username and str(etcd_username) != "":
+                _etcd_args.update({"username":str(self.CONFIG['etcd_username']),
+                                   "password":str(self.CONFIG['etcd_password'])
+                                  }
+                                 )
+            self.etcd_client = etcd.Client(**_etcd_args)
 
     def fetch_brick_devices(self, brick_path):
         mount_point = self.get_brick_source_and_mount(
@@ -69,12 +72,15 @@ class TendrlBrickDeviceStatsPlugin(object):
             while not self.etcd_client:
                 trial_cnt = trial_cnt + 1
                 try:
-                    self.etcd_client = etcd.Client(
-                        host=self.CONFIG['etcd_host'],
-                        port=int(self.CONFIG['etcd_port']),
-                        username=self.CONFIG['etcd_username'],
-                        password=self.CONFIG['etcd_password']
-                    )
+                    _etcd_args = dict(host=self.CONFIG['etcd_host'],
+                        port=int(self.CONFIG['etcd_port']))
+                    etcd_username = self.CONFIG.get("etcd_username")
+                    if etcd_username and str(etcd_username) != "":
+                        _etcd_args.update({"username":str(self.CONFIG['etcd_username']),
+                                           "password":str(self.CONFIG['etcd_password'])
+                                          }
+                                         )
+                    self.etcd_client = etcd.Client(**_etcd_args)
                 except etcd.EtcdException:
                     collectd.error(
                         "Error connecting to central store (etcd), trying "
