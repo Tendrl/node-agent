@@ -3,7 +3,7 @@ from tendrl.commons.message import ExceptionMessage
 from tendrl.commons.message import Message
 
 
-def sync():
+def sync(sync_ttl):
     try:
         if NS.tendrl_context.integration_id:
             Event(
@@ -37,7 +37,7 @@ def sync():
                 fqdn=NS.node_context.fqdn,
                 status=NS.node_context.status,
                 tags=NS.node_context.tags
-            ).save()
+            ).save(ttl=sync_ttl)
     except Exception as ex:
         Event(
             ExceptionMessage(
