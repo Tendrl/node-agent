@@ -45,9 +45,18 @@ class TendrlBrickDeviceStatsPlugin(object):
                     )
                 ).value
             )
-            return brick_devices, mount_point
+            brick_device_partitions = ast.literal_eval(
+                self.etcd_client.read(
+                    '/clusters/%s/Bricks/all/%s/%s/partitions' % (
+                        self.CONFIG['integration_id'],
+                        self.CONFIG['peer_name'],
+                        brick_path.replace('/', '_').replace("_", "", 1)
+                    )
+                ).value
+            )
+            return brick_devices, brick_device_partitions, mount_point
         except etcd.EtcdKeyNotFound:
-            return [], mount_point
+            return [], [], mount_point
 
     def get_brick_source_and_mount(self, brick_path):
         # source and target correspond to fields "Filesystem" and
@@ -93,40 +102,38 @@ class TendrlBrickDeviceStatsPlugin(object):
                     return self.fetch_brick_devices(brick_path)
             return self.fetch_brick_devices(brick_path)
 
-    def get_interval_disk_io_stat(self, device_name, attr_name):
-        # Unpartioned disk
+    def get_interval_device_io_stat(self, device_name, attr_name):
+        return (
+            (
+                getattr(self.current_io_stats[
+                    device_name.replace(
+                        '/dev/',
+                        ''
+                    )
+                ], attr_name) -
+                getattr(self.initial_io_stats[
+                    device_name.replace(
+                        '/dev/',
+                        ''
+                    )
+                ], attr_name, 0)
+            ) * 1.0
+        ) / (self.STAT_INTERVAL_FOR_PER_SEC_COUNTER * 1.0)
+
+    def get_interval_disk_io_stat(self, device_name, partitions, attr_name):
         if (
             device_name.replace('/dev/', '') in self.current_io_stats and
             device_name.replace('/dev/', '') in self.initial_io_stats
         ):
-            return (
-                (
-                    getattr(self.current_io_stats[
-                        device_name.replace(
-                            '/dev/',
-                            ''
-                        )
-                    ], attr_name) -
-                    getattr(self.initial_io_stats[
-                        device_name.replace(
-                            '/dev/',
-                            ''
-                        )
-                    ], attr_name, 0)
-                ) * 1.0
-            ) / (self.STAT_INTERVAL_FOR_PER_SEC_COUNTER * 1.0)
+            return self.get_interval_device_io_stat(device_name, attr_name)
         else:
-            # partitioned disk
-            dev_name = device_name.replace('/dev/', '')
+            # Use partitions
             sum = 0
-            for key, value in self.current_io_stats.iteritems():
-                prev_stat = self.initial_io_stats.get(key)
-                partition_name_re = re.compile('%s[0-9]+' % dev_name)
-                if partition_name_re.match(key):
-                    sum = sum + (
-                        getattr(value, attr_name) -
-                        getattr(prev_stat, attr_name, 0)
-                    )
+            for partition in partitions:
+                sum = sum + self.get_interval_device_io_stat(
+                    partition,
+                    attr_name
+                )
             return sum
 
     def get_disk_usage(self, device_name):
@@ -134,8 +141,10 @@ class TendrlBrickDeviceStatsPlugin(object):
 
     def populate_disk_details(self, vol_name, brick_host, brick_path):
         try:
-            brick_devices, mount_point = self.get_brick_devices(brick_path)
-            if not brick_devices:
+            device_to_partitions = {}
+            brick_devices, brick_device_partitions, mount_point = \
+                self.get_brick_devices(brick_path)
+            if not (brick_devices or brick_device_partitions):
                 collectd.error(
                     'Failed to fetch device details for brick %s:%s'
                     ' of volume %s' % (
@@ -145,7 +154,17 @@ class TendrlBrickDeviceStatsPlugin(object):
                     )
                 )
                 return
-            for brick_device in brick_devices:
+            for device in brick_devices:
+                partition_name_re = re.compile('%s[0-9]+' % device)
+                for partition in brick_device_partitions:
+                    if partition_name_re.match(partition):
+                        device_partitions = device_to_partitions.get(
+                            device,
+                            []
+                        )
+                        device_partitions.append(partition)
+                        device_to_partitions[device] = device_partitions
+            for brick_device, partitions in device_to_partitions.iteritems():
                 # Collect disk read and write octets
                 # Push to cluster->volume->node->brick tree
                 self.brick_details[
@@ -159,6 +178,7 @@ class TendrlBrickDeviceStatsPlugin(object):
                     )
                 ] = self.get_interval_disk_io_stat(
                     brick_device,
+                    partitions,
                     'read_bytes'
                 )
                 self.brick_details[
@@ -172,6 +192,7 @@ class TendrlBrickDeviceStatsPlugin(object):
                     )
                 ] = self.get_interval_disk_io_stat(
                     brick_device,
+                    partitions,
                     'write_bytes'
                 )
                 # Push to cluster->node->brick tree
@@ -185,6 +206,7 @@ class TendrlBrickDeviceStatsPlugin(object):
                     )
                 ] = self.get_interval_disk_io_stat(
                     brick_device,
+                    partitions,
                     'read_bytes'
                 )
                 self.brick_details[
@@ -197,6 +219,7 @@ class TendrlBrickDeviceStatsPlugin(object):
                     )
                 ] = self.get_interval_disk_io_stat(
                     brick_device,
+                    partitions,
                     'write_bytes'
                 )
                 # Collect disk read and write io
@@ -212,6 +235,7 @@ class TendrlBrickDeviceStatsPlugin(object):
                     )
                 ] = self.get_interval_disk_io_stat(
                     brick_device,
+                    partitions,
                     'read_count'
                 )
                 self.brick_details[
@@ -225,6 +249,7 @@ class TendrlBrickDeviceStatsPlugin(object):
                     )
                 ] = self.get_interval_disk_io_stat(
                     brick_device,
+                    partitions,
                     'write_count'
                 )
                 # Push to cluster->node->brick tree
@@ -238,6 +263,7 @@ class TendrlBrickDeviceStatsPlugin(object):
                     )
                 ] = self.get_interval_disk_io_stat(
                     brick_device,
+                    partitions,
                     'read_count'
                 )
                 self.brick_details[
@@ -250,6 +276,7 @@ class TendrlBrickDeviceStatsPlugin(object):
                     )
                 ] = self.get_interval_disk_io_stat(
                     brick_device,
+                    partitions,
                     'write_count'
                 )
                 # Collect disk read and write latency
@@ -265,6 +292,7 @@ class TendrlBrickDeviceStatsPlugin(object):
                     )
                 ] = self.get_interval_disk_io_stat(
                     brick_device,
+                    partitions,
                     'read_time'
                 )
                 self.brick_details[
@@ -278,6 +306,7 @@ class TendrlBrickDeviceStatsPlugin(object):
                     )
                 ] = self.get_interval_disk_io_stat(
                     brick_device,
+                    partitions,
                     'write_time'
                 )
                 # Push to cluster->node->brick tree
@@ -291,6 +320,7 @@ class TendrlBrickDeviceStatsPlugin(object):
                     )
                 ] = self.get_interval_disk_io_stat(
                     brick_device,
+                    partitions,
                     'read_time'
                 )
                 self.brick_details[
@@ -303,6 +333,7 @@ class TendrlBrickDeviceStatsPlugin(object):
                     )
                 ] = self.get_interval_disk_io_stat(
                     brick_device,
+                    partitions,
                     'write_time'
                 )
                 # Collect disk utilization
