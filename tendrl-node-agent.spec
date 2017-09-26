@@ -41,7 +41,6 @@ rm -rf html/.{doctrees,buildinfo}
 
 %install
 %{__python} setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=INSTALLED_FILES
-install -m  0755  --directory $RPM_BUILD_ROOT%{_var}/log/tendrl/node-agent
 install -m  0755  --directory $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node-agent
 install -m  0755  --directory $RPM_BUILD_ROOT%{_datadir}/tendrl/node-agent
 install -m  0755  --directory $RPM_BUILD_ROOT%{_sharedstatedir}/tendrl
@@ -79,7 +78,6 @@ systemctl enable tendrl-node-agent
 py.test -v tendrl/node-agent/tests || :
 
 %files -f INSTALLED_FILES
-%dir %{_var}/log/tendrl/node-agent
 %dir %{_sysconfdir}/tendrl/node-agent
 %dir %{_datadir}/tendrl/node-agent
 %dir %{_sharedstatedir}/tendrl
