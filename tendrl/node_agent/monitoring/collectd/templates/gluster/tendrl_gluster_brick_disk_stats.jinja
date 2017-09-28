@@ -11,9 +11,10 @@
         provisioner {{ is_provisioner_node }}
         etcd_host "{{ etcd_host }}"
         etcd_port {{ etcd_port }}
-        {% if etcd_username != None %}
-            etcd_username "{{ etcd_username }}"
-            etcd_password "{{ etcd_password }}"
+        {% if etcd_ca_cert_file != None %}
+            etcd_ca_cert_file "{{ etcd_ca_cert_file }}"
+            etcd_cert_file "{{ etcd_cert_file }}"
+            etcd_key_file "{{ etcd_key_file }}"
         {% endif %}
         
     </Module>
