@@ -23,10 +23,16 @@ class TendrlBrickDeviceStatsPlugin(object):
         if not self.etcd_client:
             _etcd_args = dict(host=self.CONFIG['etcd_host'],
                 port=int(self.CONFIG['etcd_port']))
-            etcd_username = self.CONFIG.get("etcd_username")
-            if etcd_username and str(etcd_username) != "":
-                _etcd_args.update({"username":str(self.CONFIG['etcd_username']),
-                                   "password":str(self.CONFIG['etcd_password'])
+            etcd_ca_cert_file = self.CONFIG.get("etcd_ca_cert_file")
+            etcd_cert_file = self.CONFIG.get("etcd_ert_file")
+            etcd_key_file = self.CONFIG.get("etcd_key_file")
+            if etcd_ca_cert_file and str(etcd_ca_cert_file) != ""
+                and etcd_cert_file and str(etcd_cert_file) != ""
+                and etcd_key_file and str(etcd_key_file) != "":
+                _etcd_args.update({"ca_cert":str(self.CONFIG['etcd_ca_cert_file']),
+                                   "cert": (str(self.CONFIG['etcd_cert_file']),
+                                            str(self.CONFIG['etcd_key_file'])),
+                                   "protocol":"https"
                                   }
                                  )
             self.etcd_client = etcd.Client(**_etcd_args)
