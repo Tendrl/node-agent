@@ -92,8 +92,8 @@ class TendrlBrickDeviceStatsPlugin(object):
                     etcd_ca_cert_file = self.CONFIG.get("etcd_ca_cert_file")
                     etcd_cert_file = self.CONFIG.get("etcd_ert_file")
                     etcd_key_file = self.CONFIG.get("etcd_key_file")
-                    if etcd_ca_cert_file and str(etcd_ca_cert_file) != ""
-                        and etcd_cert_file and str(etcd_cert_file) != ""
+                    if etcd_ca_cert_file and str(etcd_ca_cert_file) != "" \
+                        and etcd_cert_file and str(etcd_cert_file) != "" \
                         and etcd_key_file and str(etcd_key_file) != "":
                         _etcd_args.update({"ca_cert":str(self.CONFIG['etcd_ca_cert_file']),
                                            "cert": (str(self.CONFIG['etcd_cert_file']),
