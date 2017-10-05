@@ -3,7 +3,8 @@ from etcd import EtcdException
 from etcd import EtcdKeyNotFound
 from tendrl.commons.objects.cluster_alert import ClusterAlert
 from tendrl.commons.objects.node_alert import NodeAlert
-from tendrl.commons.objects.notification_only_alert import NotificationOnlyAlert
+from tendrl.commons.objects.notification_only_alert import \
+    NotificationOnlyAlert
 from tendrl.integrations.gluster import alerts as gluster_alert
 from tendrl.node_agent.alert import constants
 from tendrl.node_agent.objects.cluster_alert_counters import \
