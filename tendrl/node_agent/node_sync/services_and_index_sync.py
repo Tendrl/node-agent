@@ -45,7 +45,17 @@ def sync(sync_ttl=None):
                 if service_tag == "tendrl/server":
                     tags.append("tendrl/monitor")
             s.save()
-
+        
+        # Try to claim orphan "provisioner_%integration_id" tag
+        _cluster = NS.tendrl.objects.Cluster(integration_id=NS.tendrl_context.integration_id).load()
+        try:
+            if _cluster.is_managed == "yes":
+                _tag = "provisioner/%s" % _cluster.integration_id
+                _index_key = "/indexes/tags/%s" % _tag
+                etcd_utils.read(_index_key)
+        except etcd.EtcdKeyNotFound:
+            tags.append(_tag)
+                
         # updating node context with latest tags
         Event(
             Message(
