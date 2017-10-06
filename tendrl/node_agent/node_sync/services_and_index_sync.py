@@ -5,6 +5,7 @@ import etcd
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
 from tendrl.commons.message import Message
+from tendrl.commons.utils import etcd_utils
 
 # TODO(darshan) this has to be moved to Definition file
 
@@ -21,7 +22,7 @@ TENDRL_SERVICES = [
 ]
 
 
-def sync():
+def sync(sync_ttl=None):
     try:
         tags = []
         # update node agent service details
@@ -44,7 +45,17 @@ def sync():
                 if service_tag == "tendrl/server":
                     tags.append("tendrl/monitor")
             s.save()
-
+        
+        # Try to claim orphan "provisioner_%integration_id" tag
+        _cluster = NS.tendrl.objects.Cluster(integration_id=NS.tendrl_context.integration_id).load()
+        try:
+            if _cluster.is_managed == "yes":
+                _tag = "provisioner/%s" % _cluster.integration_id
+                _index_key = "/indexes/tags/%s" % _tag
+                etcd_utils.read(_index_key)
+        except etcd.EtcdKeyNotFound:
+            tags.append(_tag)
+                
         # updating node context with latest tags
         Event(
             Message(
@@ -82,8 +93,10 @@ def sync():
             else:
                 _node_ids = [NS.node_context.node_id]
             _node_ids = list(set(_node_ids))
-            NS._int.wclient.write(index_key,
-                                  json.dumps(_node_ids))
+            
+            etcd_utils.write(index_key, json.dumps(_node_ids))
+            if sync_ttl:
+                etcd_utils.refresh(index_key, sync_ttl)
 
         Event(
             Message(
