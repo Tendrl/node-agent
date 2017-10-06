@@ -168,6 +168,7 @@ class TendrlBrickDeviceStatsPlugin(object):
                 return
             for device in brick_devices:
                 partition_name_re = re.compile('%s[0-9]+' % device)
+                device_partitions = []
                 for partition in brick_device_partitions:
                     if partition_name_re.match(partition):
                         device_partitions = device_to_partitions.get(
@@ -175,7 +176,7 @@ class TendrlBrickDeviceStatsPlugin(object):
                             []
                         )
                         device_partitions.append(partition)
-                        device_to_partitions[device] = device_partitions
+                device_to_partitions[device] = device_partitions
             for brick_device, partitions in device_to_partitions.iteritems():
                 # Collect disk read and write octets
                 # Push to cluster->volume->node->brick tree
