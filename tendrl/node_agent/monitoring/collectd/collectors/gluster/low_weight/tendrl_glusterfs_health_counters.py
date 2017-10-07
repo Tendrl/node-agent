@@ -97,36 +97,40 @@ class TendrlGlusterfsHealthCounters(
             for vol_name, rebalance_bytes in self._get_vol_rebalance_bytes(
             ).iteritems():
                 ret_val[
-                    'clusters.%s.volumes.%s.rebalance_bytes' % (
+                    'clusters.%s.volumes.%s.nodes.%s.rebalance_bytes' % (
                         self.CONFIG['integration_id'],
-                        vol_name
+                        vol_name,
+                        self.CONFIG['peer_name'].replace('.', '_')
                     )
                 ] = int(filter(str.isdigit, rebalance_bytes))
             # Push rebalance files progress
             for vol_name, rebalance_files in self._get_vol_rebalance_files(
             ).iteritems():
                 ret_val[
-                    'clusters.%s.volumes.%s.rebalance_files' % (
+                    'clusters.%s.volumes.%s.nodes.%s.rebalance_files' % (
                         self.CONFIG['integration_id'],
-                        vol_name
+                        vol_name,
+                        self.CONFIG['peer_name'].replace('.', '_')
                     )
                 ] = rebalance_files
             # Push rebalance failures
             for vol_name, r_failures in self._get_volume_rebalance_failures(
             ).iteritems():
                 ret_val[
-                    'clusters.%s.volumes.%s.rebalance_failures' % (
+                    'clusters.%s.volumes.%s.nodes.%s.rebalance_failures' % (
                         self.CONFIG['integration_id'],
-                        vol_name
+                        vol_name,
+                        self.CONFIG['peer_name'].replace('.', '_')
                     )
                 ] = r_failures
             # Push rebalance skipped
             for vol_name, r_skipped in self._get_volume_rebalance_skipped(
             ).iteritems():
                 ret_val[
-                    'clusters.%s.volumes.%s.rebalance_skipped' % (
+                    'clusters.%s.volumes.%s.nodes.%s.rebalance_skipped' % (
                         self.CONFIG['integration_id'],
-                        vol_name
+                        vol_name,
+                        self.CONFIG['peer_name'].replace('.', '_')
                     )
                 ] = r_skipped
             return ret_val
