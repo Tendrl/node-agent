@@ -21,20 +21,31 @@ class TendrlBrickDeviceStatsPlugin(object):
         self.STAT_INTERVAL_FOR_PER_SEC_COUNTER = 10
         self.brick_details = {}
         if not self.etcd_client:
-            _etcd_args = dict(host=self.CONFIG['etcd_host'],
-                port=int(self.CONFIG['etcd_port']))
+            _etcd_args = dict(
+                host=self.CONFIG['etcd_host'],
+                port=int(self.CONFIG['etcd_port'])
+            )
             etcd_ca_cert_file = self.CONFIG.get("etcd_ca_cert_file")
             etcd_cert_file = self.CONFIG.get("etcd_ert_file")
             etcd_key_file = self.CONFIG.get("etcd_key_file")
-            if etcd_ca_cert_file and str(etcd_ca_cert_file) != "" \
-                and etcd_cert_file and str(etcd_cert_file) != "" \
-                and etcd_key_file and str(etcd_key_file) != "":
-                _etcd_args.update({"ca_cert":str(self.CONFIG['etcd_ca_cert_file']),
-                                   "cert": (str(self.CONFIG['etcd_cert_file']),
-                                            str(self.CONFIG['etcd_key_file'])),
-                                   "protocol":"https"
-                                  }
-                                 )
+            if (
+                etcd_ca_cert_file and
+                str(etcd_ca_cert_file) != "" and
+                etcd_cert_file and
+                str(etcd_cert_file) != "" and
+                etcd_key_file and
+                str(etcd_key_file) != ""
+            ):
+                _etcd_args.update(
+                    {
+                        "ca_cert": str(self.CONFIG['etcd_ca_cert_file']),
+                        "cert": (
+                            str(self.CONFIG['etcd_cert_file']),
+                            str(self.CONFIG['etcd_key_file'])
+                        ),
+                        "protocol": "https"
+                    }
+                )
             self.etcd_client = etcd.Client(**_etcd_args)
 
     def fetch_brick_devices(self, brick_path):
@@ -87,20 +98,32 @@ class TendrlBrickDeviceStatsPlugin(object):
             while not self.etcd_client:
                 trial_cnt = trial_cnt + 1
                 try:
-                    _etcd_args = dict(host=self.CONFIG['etcd_host'],
-                        port=int(self.CONFIG['etcd_port']))
+                    _etcd_args = dict(
+                        host=self.CONFIG['etcd_host'],
+                        port=int(self.CONFIG['etcd_port'])
+                    )
                     etcd_ca_cert_file = self.CONFIG.get("etcd_ca_cert_file")
                     etcd_cert_file = self.CONFIG.get("etcd_ert_file")
                     etcd_key_file = self.CONFIG.get("etcd_key_file")
-                    if etcd_ca_cert_file and str(etcd_ca_cert_file) != "" \
-                        and etcd_cert_file and str(etcd_cert_file) != "" \
-                        and etcd_key_file and str(etcd_key_file) != "":
-                        _etcd_args.update({"ca_cert":str(self.CONFIG['etcd_ca_cert_file']),
-                                           "cert": (str(self.CONFIG['etcd_cert_file']),
-                                                    str(self.CONFIG['etcd_key_file'])),
-                                           "protocol":"https"
-                                          }
-                                         )
+                    if (
+                        etcd_ca_cert_file and
+                        str(etcd_ca_cert_file) != "" and
+                        etcd_cert_file and
+                        str(etcd_cert_file) != "" and
+                        etcd_key_file and
+                        str(etcd_key_file) != ""
+                    ):
+                        _etcd_args.update(
+                            {
+                                "ca_cert": str(
+                                    self.CONFIG['etcd_ca_cert_file']
+                                ),
+                                "cert": (
+                                    str(self.CONFIG['etcd_cert_file']),
+                                    str(self.CONFIG['etcd_key_file'])),
+                                "protocol": "https"
+                            }
+                        )
                     self.etcd_client = etcd.Client(**_etcd_args)
                 except etcd.EtcdException:
                     collectd.error(

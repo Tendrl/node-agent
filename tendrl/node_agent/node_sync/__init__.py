@@ -6,10 +6,10 @@ from tendrl.commons.message import Message
 from tendrl.commons import sds_sync
 from tendrl.commons.utils import time_utils
 
+from tendrl.node_agent.node_sync import check_all_managed_nodes_status
 from tendrl.node_agent.node_sync import cluster_contexts_sync
 from tendrl.node_agent.node_sync import disk_sync
 from tendrl.node_agent.node_sync import network_sync
-from tendrl.node_agent.node_sync import check_all_managed_nodes_status
 from tendrl.node_agent.node_sync import platform_detect
 from tendrl.node_agent.node_sync import sds_detect
 from tendrl.node_agent.node_sync import services_and_index_sync
@@ -43,7 +43,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
             gevent.joinall([platform_detect_thread, sds_detect_thread])
 
             sync_service_and_index_thread = gevent.spawn(
-                services_and_index_sync.sync)
+                services_and_index_sync.sync, _sync_ttl)
             sync_service_and_index_thread.join()
             try:
                 NS.tendrl.objects.Os().save()
