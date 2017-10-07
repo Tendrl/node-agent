@@ -43,24 +43,31 @@ def sync():
                         dc = NS.tendrl.objects.DetectedCluster().load()
                         dc_changed = False
                         if dc.detected_cluster_id:
-                            if dc.detected_cluster_id != sds_details.get('detected_cluster_id'):
+                            if dc.detected_cluster_id != sds_details.get(
+                                'detected_cluster_id'
+                            ):
                                 dc_changed = True
                         else:
                             gevent.sleep(3)
-                            
+
                         integration_index_key = \
                             "indexes/detected_cluster_id_to_integration_id/" \
                             "%s" % sds_details['detected_cluster_id']
                         try:
                             if dc_changed:
-                                integration_id = NS.tendrl_context.integration_id
-                                NS._int.wclient.write(integration_index_key,
-                                                  integration_id)
+                                integration_id = \
+                                    NS.tendrl_context.integration_id
+                                NS._int.wclient.write(
+                                    integration_index_key,
+                                    integration_id
+                                )
                             else:
                                 integration_id = str(uuid.uuid4())
-                                NS._int.wclient.write(integration_index_key,
-                                                  integration_id,
-                                                  prevExist=False)
+                                NS._int.wclient.write(
+                                    integration_index_key,
+                                    integration_id,
+                                    prevExist=False
+                                )
                         except etcd.EtcdAlreadyExist:
                             if not dc_changed:
                                 integration_id = NS._int.client.read(
@@ -90,7 +97,7 @@ def sync():
                         _cluster = NS.tendrl.objects.Cluster(
                             integration_id=NS.tendrl_context.integration_id
                         ).load()
-                        
+
                         NS.tendrl.objects.DetectedCluster(
                             detected_cluster_id=sds_details.get(
                                 'detected_cluster_id'),
