@@ -1,6 +1,5 @@
-import gevent
-from gevent.event import Event as GEvent
 import signal
+import threading
 
 from tendrl.commons.event import Event
 from tendrl.commons import manager as commons_manager
@@ -101,9 +100,9 @@ def main():
             ceph_integrations_sds_sync.CephIntegrtaionsSyncThread()
         NS.ceph_integrations_sync_thread.start()
 
-    complete = GEvent()
+    complete = threading.Event()
 
-    def shutdown():
+    def shutdown(signum, frame):
         Event(
             Message(
                 priority="debug",
@@ -117,7 +116,7 @@ def main():
             NS.tendrl_context.integration_id:
             NS.ceph_integrations_sync_thread.stop()
 
-    def reload_config():
+    def reload_config(signum, frame):
         Event(
             Message(
                 priority="debug",
@@ -127,9 +126,9 @@ def main():
         )
         NS.config = NS.config.__class__()
 
-    gevent.signal(signal.SIGTERM, shutdown)
-    gevent.signal(signal.SIGINT, shutdown)
-    gevent.signal(signal.SIGHUP, reload_config)
+    signal.signal(signal.SIGTERM, shutdown)
+    signal.signal(signal.SIGINT, shutdown)
+    signal.signal(signal.SIGHUP, reload_config)
 
     while not complete.is_set():
         complete.wait(timeout=1)

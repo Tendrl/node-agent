@@ -2,15 +2,10 @@ from io import BlockingIOError
 import os
 import struct
 import sys
+import socket
+import time
 import traceback
-
-import gevent
-import gevent.event
-import gevent.greenlet
-from gevent.server import StreamServer
-from gevent import socket
-from gevent.socket import error as socket_error
-from gevent.socket import timeout as socket_timeout
+import threading
 
 
 from tendrl.commons.logger import Logger
@@ -21,13 +16,7 @@ MESSAGE_SOCK_PATH = "/var/run/tendrl/message.sock"
 NOTICE_PRIORITY = "notice"
 
 
-class MessageHandler(gevent.greenlet.Greenlet):
-    def __init__(self):
-        super(MessageHandler, self).__init__()
-        self.server = StreamServer(
-            self.bind_unix_listener(),
-            self.read_socket
-        )
+class MessageHandler(threading.Thread):
 
     def read_socket(self, sock, *args):
         try:
@@ -52,9 +41,9 @@ class MessageHandler(gevent.greenlet.Greenlet):
                     update_alert(
                         message
                     )
-            gevent.sleep(3)
+            time.sleep(3)
             Logger(message)
-        except (socket_error, socket_timeout):
+        except (socket.error, socket.timeout):
             exc_type, exc_value, exc_tb = sys.exc_info()
             traceback.print_exception(
                 exc_type, exc_value, exc_tb, file=sys.stderr)
@@ -79,10 +68,13 @@ class MessageHandler(gevent.greenlet.Greenlet):
         s = struct.unpack('=I', d)
         return s[0]
 
-    def _run(self):
+    def run(self):
+        self.bind_unix_listener()
         try:
-            self.server.serve_forever()
-        except (TypeError, BlockingIOError, socket_error, ValueError):
+            while True:
+                _conn, _client_address = self.sock.accept()
+                self.read_socket(_conn)
+        except (TypeError, BlockingIOError, socket.error, ValueError):
             exc_type, exc_value, exc_tb = sys.exc_info()
             traceback.print_exception(
                 exc_type, exc_value, exc_tb, file=sys.stderr)
@@ -100,7 +92,7 @@ class MessageHandler(gevent.greenlet.Greenlet):
             self.sock.setblocking(0)
             self.sock.listen(50)
             return self.sock
-        except (TypeError, BlockingIOError, socket_error, ValueError):
+        except (TypeError, BlockingIOError, socket.error, ValueError):
             exc_type, exc_value, exc_tb = sys.exc_info()
             traceback.print_exception(exc_type, exc_value, exc_tb,
                                       file=sys.stderr)

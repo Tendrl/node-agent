@@ -1,4 +1,5 @@
-import gevent
+import time
+import threading
 
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
@@ -16,7 +17,7 @@ from tendrl.node_agent.node_sync import services_and_index_sync
 
 
 class NodeAgentSyncThread(sds_sync.StateSyncThread):
-    def _run(self):
+    def run(self):
         Event(
             Message(
                 priority="info",
@@ -32,19 +33,26 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
         NS.node_context.save()
         _sync_ttl = int(NS.config.data.get("sync_interval", 10)) + 100
         while not self._complete.is_set():
-            gevent.sleep(int(NS.config.data.get("sync_interval", 10)))
+            time.sleep(int(NS.config.data.get("sync_interval", 10)))
             NS.node_context = NS.node_context.load()
             NS.node_context.sync_status = "in_progress"
             NS.node_context.save(ttl=_sync_ttl)
             NS.tendrl_context = NS.tendrl_context.load()
 
-            platform_detect_thread = gevent.spawn(platform_detect.sync)
-            sds_detect_thread = gevent.spawn(sds_detect.sync)
-            gevent.joinall([platform_detect_thread, sds_detect_thread])
+            platform_detect_thread = threading.Thread(
+                target=platform_detect.sync)
+            platform_detect_thread.start()
+            sds_detect_thread = threading.Thread(target=sds_detect.sync)
+            sds_detect_thread.start()
 
-            sync_service_and_index_thread = gevent.spawn(
-                services_and_index_sync.sync, _sync_ttl)
+            platform_detect_thread.join()
+            sds_detect_thread.join()
+
+            sync_service_and_index_thread = threading.Thread(
+                target=services_and_index_sync.sync, args=(_sync_ttl,))
+            sync_service_and_index_thread.start()
             sync_service_and_index_thread.join()
+
             try:
                 NS.tendrl.objects.Os().save()
                 NS.tendrl.objects.Cpu().save()
@@ -65,15 +73,18 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 NS.node_context.last_sync = str(time_utils.now())
                 NS.node_context.save(ttl=_sync_ttl)
 
-            sync_disks_thread = gevent.spawn(disk_sync.sync)
+            sync_disks_thread = threading.Thread(target=disk_sync.sync)
+            sync_disks_thread.start()
             sync_disks_thread.join()
 
-            sync_networks_thread = gevent.spawn(network_sync.sync)
+            sync_networks_thread = threading.Thread(target=network_sync.sync)
+            sync_networks_thread.start()
             sync_networks_thread.join()
 
             if "tendrl/monitor" in NS.node_context.tags:
-                check_all_managed_node_status_thread = gevent.spawn(
-                    check_all_managed_nodes_status.run)
+                check_all_managed_node_status_thread = threading.Thread(
+                    target=check_all_managed_nodes_status.run)
+                check_all_managed_node_status_thread.start()
                 check_all_managed_node_status_thread.join()
 
             NS.node_context = NS.node_context.load()
@@ -81,8 +92,9 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
             NS.node_context.last_sync = str(time_utils.now())
             NS.node_context.save(ttl=_sync_ttl)
 
-            sync_cluster_contexts_thread = gevent.spawn(
-                cluster_contexts_sync.sync, _sync_ttl)
+            sync_cluster_contexts_thread = threading.Thread(
+                target=cluster_contexts_sync.sync, args=(_sync_ttl,))
+            sync_cluster_contexts_thread.start()
             sync_cluster_contexts_thread.join()
 
         Event(
