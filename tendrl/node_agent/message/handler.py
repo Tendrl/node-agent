@@ -1,11 +1,10 @@
 from io import BlockingIOError
 import os
+import socket
 import struct
 import sys
-import socket
-import time
-import traceback
 import threading
+import traceback
 
 
 from tendrl.commons.logger import Logger
@@ -41,7 +40,6 @@ class MessageHandler(threading.Thread):
                     update_alert(
                         message
                     )
-            time.sleep(3)
             Logger(message)
         except (socket.error, socket.timeout):
             exc_type, exc_value, exc_tb = sys.exc_info()
@@ -70,14 +68,16 @@ class MessageHandler(threading.Thread):
 
     def run(self):
         self.bind_unix_listener()
-        try:
-            while True:
-                _conn, _client_address = self.sock.accept()
-                self.read_socket(_conn)
-        except (TypeError, BlockingIOError, socket.error, ValueError):
-            exc_type, exc_value, exc_tb = sys.exc_info()
-            traceback.print_exception(
-                exc_type, exc_value, exc_tb, file=sys.stderr)
+        while True:
+            try:
+                connection, client_address = self.sock.accept()
+                self.read_socket(connection)
+            except (TypeError, BlockingIOError, socket.error, ValueError):
+                exc_type, exc_value, exc_tb = sys.exc_info()
+                traceback.print_exception(
+                    exc_type, exc_value, exc_tb, file=sys.stderr)
+            finally:
+                connection.close()
 
     def stop(self):
         pass
@@ -89,23 +89,19 @@ class MessageHandler(threading.Thread):
             socket_fd = 3
             self.sock = socket.fromfd(socket_fd, socket.AF_UNIX,
                                       socket.SOCK_STREAM)
-            self.sock.setblocking(0)
             self.sock.listen(50)
             return self.sock
         except (TypeError, BlockingIOError, socket.error, ValueError):
-            exc_type, exc_value, exc_tb = sys.exc_info()
-            traceback.print_exception(exc_type, exc_value, exc_tb,
-                                      file=sys.stderr)
             pass
         try:
             self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
             if os.path.exists(MESSAGE_SOCK_PATH):
                 os.remove(MESSAGE_SOCK_PATH)
-            self.sock.setblocking(0)
             self.sock.bind(MESSAGE_SOCK_PATH)
             self.sock.listen(50)
             return self.sock
-        except Exception:
+        except Exception as ex:
             exc_type, exc_value, exc_tb = sys.exc_info()
             traceback.print_exception(exc_type, exc_value, exc_tb,
                                       file=sys.stderr)
+            raise ex
