@@ -16,6 +16,8 @@ NOTICE_PRIORITY = "notice"
 
 
 class MessageHandler(threading.Thread):
+    def __init__(self):
+        self._complete = threading.Event()
 
     def read_socket(self, sock, *args):
         try:
@@ -68,7 +70,7 @@ class MessageHandler(threading.Thread):
 
     def run(self):
         self.bind_unix_listener()
-        while True:
+        while not self._complete.is_set():
             try:
                 connection, client_address = self.sock.accept()
                 self.read_socket(connection)
@@ -80,7 +82,7 @@ class MessageHandler(threading.Thread):
                 connection.close()
 
     def stop(self):
-        pass
+        self._complete.set()
 
     def bind_unix_listener(self):
         # http://0pointer.de/blog/projects/systemd.html (search "file
