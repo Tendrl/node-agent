@@ -9,7 +9,7 @@ from tendrl.node_agent.node_sync import disk_sync
 
 
 class CephIntegrtaionsSyncThread(sds_sync.StateSyncThread):
-    def _run(self):
+    def run(self):
         logger.log(
             "debug",
             NS.get("publisher_id", None),

@@ -1,7 +1,7 @@
+import time
 import uuid
 
 import etcd
-import gevent
 
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
@@ -48,7 +48,7 @@ def sync():
                             ):
                                 dc_changed = True
                         else:
-                            gevent.sleep(3)
+                            time.sleep(3)
 
                         integration_index_key = \
                             "indexes/detected_cluster_id_to_integration_id/" \
