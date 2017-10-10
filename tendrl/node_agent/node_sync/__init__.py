@@ -47,14 +47,10 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
             sds_detect_thread.daemon = True
             sds_detect_thread.start()
 
-            platform_detect_thread.join()
-            sds_detect_thread.join()
-
             sync_service_and_index_thread = threading.Thread(
                 target=services_and_index_sync.sync, args=(_sync_ttl,))
             sync_service_and_index_thread.daemon = True
             sync_service_and_index_thread.start()
-            sync_service_and_index_thread.join()
 
             try:
                 NS.tendrl.objects.Os().save()
@@ -79,19 +75,16 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
             sync_disks_thread = threading.Thread(target=disk_sync.sync)
             sync_disks_thread.daemon = True
             sync_disks_thread.start()
-            sync_disks_thread.join()
 
             sync_networks_thread = threading.Thread(target=network_sync.sync)
             sync_networks_thread.daemon = True
             sync_networks_thread.start()
-            sync_networks_thread.join()
 
             if "tendrl/monitor" in NS.node_context.tags:
                 check_all_managed_node_status_thread = threading.Thread(
                     target=check_all_managed_nodes_status.run)
                 check_all_managed_node_status_thread.daemon = True
                 check_all_managed_node_status_thread.start()
-                check_all_managed_node_status_thread.join()
 
             NS.node_context = NS.node_context.load()
             NS.node_context.sync_status = "done"
@@ -102,7 +95,6 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 target=cluster_contexts_sync.sync, args=(_sync_ttl,))
             sync_cluster_contexts_thread.daemon = True
             sync_cluster_contexts_thread.start()
-            sync_cluster_contexts_thread.join()
 
         Event(
             Message(
