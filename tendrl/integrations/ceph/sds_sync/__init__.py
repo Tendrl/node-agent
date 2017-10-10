@@ -1,6 +1,6 @@
-import gevent
 import json
 import os
+import time
 
 from tendrl.commons import sds_sync
 from tendrl.commons.utils import cmd_utils
@@ -19,7 +19,7 @@ class CephIntegrtaionsSyncThread(sds_sync.StateSyncThread):
             while not self._complete.is_set():
                 # sync of OSD journal details every 30 sec is fine
                 # as this data doesnt change very frequently in cluster
-                gevent.sleep(30)
+                time.sleep(30)
                 try:
                     # Sync the OSD device path details
 
