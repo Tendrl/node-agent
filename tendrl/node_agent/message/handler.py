@@ -18,6 +18,7 @@ NOTICE_PRIORITY = "notice"
 class MessageHandler(threading.Thread):
     def __init__(self):
         super(MessageHandler, self).__init__()
+        self.daemon = True
         self._complete = threading.Event()
 
     def read_socket(self, sock, *args):
