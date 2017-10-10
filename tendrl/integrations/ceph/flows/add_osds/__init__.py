@@ -1,4 +1,4 @@
-import gevent
+import time
 import uuid
 
 from tendrl.commons.event import Event
@@ -53,7 +53,7 @@ class AddOsds(flows.BaseFlow):
                 )
             )
         while True:
-            gevent.sleep(3)
+            time.sleep(3)
             all_status = {}
             for job_id in ssh_job_ids:
                 # noinspection PyUnresolvedReferences
