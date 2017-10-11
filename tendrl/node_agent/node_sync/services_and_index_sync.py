@@ -45,17 +45,34 @@ def sync(sync_ttl=None):
                 if service_tag == "tendrl/server":
                     tags.append("tendrl/monitor")
             s.save()
-
-        # Try to claim orphan "provisioner_%integration_id" tag
+            
+        NS.node_context = NS.tendrl.objects.NodeContext().load()
         _cluster = NS.tendrl.objects.Cluster(
-            integration_id=NS.tendrl_context.integration_id).load()
-        _tag = "provisioner/%s" % _cluster.integration_id
+                integration_id=NS.tendrl_context.integration_id).load()
         if _cluster.is_managed == "yes":
-            try:
+            # Try to claim orphan "provisioner_%integration_id" tag
+            _tag = "provisioner/%s" % _cluster.integration_id
+            _is_new_provisioner = False
+            _is_old_provisioner = False
+            
+            if _tag in NS.node_context.tag:
+                # check if this node is has stale tag "provisioner/$integration_id"
+                # If yes, then remove above provisioner tag from this node
+                # And also remove cluster level collectd plugins
                 _index_key = "/indexes/tags/%s" % _tag
-                etcd_utils.read(_index_key)
-            except etcd.EtcdKeyNotFound:
-                tags.append(_tag)
+                if NS.node_context.node_id not in json.loads(etcd_utils.read(_index_key).value):
+                    _is_old_provisioner = True
+                    NS.node_context.tag.remove(_tag)
+            else:
+                try:
+                    _index_key = "/indexes/tags/%s" % _tag
+                    _node_id = json.dumps([NS.node_context.node_id])
+                    NS._int.wclient.write(_index_key, _node_id,
+                                          prevExist=False)
+                    tags.append(_tag)
+                    _is_new_provisioner = True
+                except etcd.EtcdAlreadyExist:
+                    pass
 
         # updating node context with latest tags
         Event(
@@ -67,7 +84,7 @@ def sync(sync_ttl=None):
                          }
             )
         )
-        NS.node_context = NS.tendrl.objects.NodeContext().load()
+        
         current_tags = list(NS.node_context.tags)
         tags += current_tags
         NS.node_context.tags = list(set(tags))
@@ -75,7 +92,7 @@ def sync(sync_ttl=None):
         current_tags.sort()
         if NS.node_context.tags != current_tags:
             NS.node_context.save()
-
+        
         # Update /indexes/tags/:tag = [node_ids]
         for tag in NS.node_context.tags:
             index_key = "/indexes/tags/%s" % tag
