@@ -104,7 +104,7 @@ def sync(sync_ttl=None):
            "tags": ["tendrl/node_%s" % NS.node_context.node_id],
            "run": "tendrl.flows.ConfigureMonitoring",
            "status": "new",
-           "parameters": {'Node[]': [NS.node_context.node_id]},
+           "parameters": {'TendrlContext.integration_id': NS.tendrl_context.integration_id},
            "type": "node"
             }
             _job_id = str(uuid.uuid4())
