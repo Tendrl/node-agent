@@ -1,4 +1,5 @@
 import json
+import uuid
 
 import etcd
 
@@ -46,7 +47,7 @@ def sync(sync_ttl=None):
                     tags.append("tendrl/monitor")
             s.save()
             
-        NS.node_context = NS.tendrl.objects.NodeContext().load()
+        
         _cluster = NS.tendrl.objects.Cluster(
                 integration_id=NS.tendrl_context.integration_id).load()
         if _cluster.is_managed == "yes":
@@ -54,15 +55,16 @@ def sync(sync_ttl=None):
             _tag = "provisioner/%s" % _cluster.integration_id
             _is_new_provisioner = False
             _is_old_provisioner = False
-            
-            if _tag in NS.node_context.tag:
+            NS.node_context = NS.tendrl.objects.NodeContext().load()
+            if _tag in NS.node_context.tags:
                 # check if this node is has stale tag "provisioner/$integration_id"
                 # If yes, then remove above provisioner tag from this node
                 # And also remove cluster level collectd plugins
                 _index_key = "/indexes/tags/%s" % _tag
                 if NS.node_context.node_id not in json.loads(etcd_utils.read(_index_key).value):
                     _is_old_provisioner = True
-                    NS.node_context.tag.remove(_tag)
+                    NS.node_context.tags.remove(_tag)
+                    NS.node_context.save()
             else:
                 try:
                     _index_key = "/indexes/tags/%s" % _tag
@@ -84,7 +86,7 @@ def sync(sync_ttl=None):
                          }
             )
         )
-        
+        NS.node_context = NS.tendrl.objects.NodeContext().load()
         current_tags = list(NS.node_context.tags)
         tags += current_tags
         NS.node_context.tags = list(set(tags))
@@ -93,6 +95,32 @@ def sync(sync_ttl=None):
         if NS.node_context.tags != current_tags:
             NS.node_context.save()
         
+        if _is_old_provisioner:
+            _msg = "node_sync, STALE provisioner node found! re-configuring monitoring on this node"
+        if _is_new_provisioner:
+            _msg = "node_sync, NEW provisioner node found! re-configuring monitoring on this node"
+        if _is_old_provisioner or _is_new_provisioner:
+            Event(
+                Message(
+                    priority="debug",
+                    publisher=NS.publisher_id,
+                    payload={"message": _msg
+                             }
+                )
+            )
+        
+            payload = {
+           "tags": ["tendrl/node_%s" % NS.node_context.node_id],
+           "run": "tendrl.flows.ConfigureMonitoring",
+           "status": "new",
+           "parameters": {'Node[]': [NS.node_context.node_id]},
+           "type": "node"
+            }
+            _job_id = str(uuid.uuid4())
+            Job(job_id=_job_id,
+            status="new",
+            payload=payload).save()
+            
         # Update /indexes/tags/:tag = [node_ids]
         for tag in NS.node_context.tags:
             index_key = "/indexes/tags/%s" % tag
