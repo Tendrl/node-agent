@@ -142,7 +142,7 @@ def sync(sync_ttl=None):
             _node_ids = list(set(_node_ids))
 
             etcd_utils.write(index_key, json.dumps(_node_ids))
-            if sync_ttl:
+            if sync_ttl and len(_node_ids) == 1:
                 etcd_utils.refresh(index_key, sync_ttl)
 
         Event(
