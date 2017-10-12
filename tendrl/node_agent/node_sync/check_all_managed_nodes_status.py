@@ -19,7 +19,7 @@ def run():
             pass
         try:
             _tc = NS.tendrl.objects.TendrlContext(node_id=node_id).load()
-             NS._int.client.write(
+            NS._int.client.write(
                 "/clusters/{0}/nodes/{1}/NodeContext/status".format(_tc.integration_id,
                                                                     node_id),
                 "DOWN",
