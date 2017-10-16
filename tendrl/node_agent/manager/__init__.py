@@ -1,10 +1,15 @@
 import signal
 import threading
 
+from etcd import EtcdKeyNotFound
+from etcd import EtcdException
+
 from tendrl.commons.event import Event
 from tendrl.commons import manager as commons_manager
 from tendrl.commons.message import Message
+from tendrl.commons.objects.node_alert_counters import NodeAlertCounters
 from tendrl.commons import TendrlNS
+from tendrl.commons.utils import etcd_utils
 from tendrl.node_agent.provisioner.ceph.manager import \
     ProvisioningManager as CephProvisioningManager
 from tendrl.node_agent.provisioner.gluster.manager import \
@@ -90,7 +95,13 @@ def main():
     if NS.config.data.get("with_internal_profiling", False):
         from tendrl.commons import profiler
         profiler.start()
-
+    # Initialize alert count
+    try:
+        key = '/nodes/%s/alert_counters' % NS.node_context.node_id
+        etcd_utils.read(key)
+    except(EtcdException)as ex:
+        if type(ex) == EtcdKeyNotFound:
+            NodeAlertCounters(node_id=NS.node_context.node_id).save()   
     m = NodeAgentManager()
     m.start()
 
