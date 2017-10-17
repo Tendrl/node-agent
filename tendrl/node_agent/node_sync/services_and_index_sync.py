@@ -6,6 +6,7 @@ import etcd
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
 from tendrl.commons.message import Message
+from tendrl.commons.objects.job import Job
 from tendrl.commons.utils import etcd_utils
 
 # TODO(darshan) this has to be moved to Definition file
