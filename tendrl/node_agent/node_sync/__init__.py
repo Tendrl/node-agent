@@ -1,10 +1,15 @@
 import threading
 import time
 
+from etcd import EtcdKeyNotFound
+from etcd import EtcdException
+
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
 from tendrl.commons.message import Message
+from tendrl.commons.objects.node_alert_counters import NodeAlertCounters
 from tendrl.commons import sds_sync
+from tendrl.commons.utils import etcd_utils
 from tendrl.commons.utils import time_utils
 
 from tendrl.node_agent.node_sync import check_all_managed_nodes_status
@@ -31,6 +36,13 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
         current_tags += ["tendrl/node_%s" % NS.node_context.node_id]
         NS.node_context.tags = list(set(current_tags))
         NS.node_context.save()
+        # Initialize alert count
+        try:
+            key = '/nodes/%s/alert_counters' % NS.node_context.node_id
+            etcd_utils.read(key)
+        except(EtcdException)as ex:
+            if type(ex) == EtcdKeyNotFound:
+                NodeAlertCounters(node_id=NS.node_context.node_id).save()
         _sync_ttl = int(NS.config.data.get("sync_interval", 10)) + 100
         while not self._complete.is_set():
             time.sleep(int(NS.config.data.get("sync_interval", 10)))
