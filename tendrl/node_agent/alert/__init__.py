@@ -43,6 +43,14 @@ def update_alert(message):
             raise InvalidAlertSeverity
         alert_notify = message.payload.get('alert_notify', False)
         if not alert_notify:
+            if (new_alert_obj.resource in
+                NS.tendrl.objects.ClusterAlert()._defs['relationship'][
+                    new_alert_obj.alert_type.lower()]):
+                new_alert_obj.classification.append(constants.CLUSTER_ALERT)
+            if (new_alert_obj.resource in
+                NS.tendrl.objects.NodeAlert()._defs['relationship'][
+                    new_alert_obj.alert_type.lower()]):
+                new_alert_obj.classification.append(constants.NODE_ALERT)
             alerts = utils.get_alerts(new_alert_obj)
             for curr_alert in alerts:
                 curr_alert.tags = json.loads(curr_alert.tags)
