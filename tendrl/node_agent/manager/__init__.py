@@ -14,9 +14,6 @@ from tendrl import node_agent
 from tendrl.node_agent.message.handler import MessageHandler
 from tendrl.node_agent import node_sync
 
-from tendrl.integrations.ceph import sds_sync as \
-    ceph_integrations_sds_sync
-
 from tendrl.integrations.gluster import GlusterIntegrationNS
 
 
@@ -91,14 +88,10 @@ def main():
         from tendrl.commons import profiler
         profiler.start()
 
+    NS.gluster_sds_sync_running = False
+
     m = NodeAgentManager()
     m.start()
-
-    if NS.tendrl_context.sds_name == "ceph" and \
-        NS.tendrl_context.integration_id:
-        NS.ceph_integrations_sync_thread = \
-            ceph_integrations_sds_sync.CephIntegrtaionsSyncThread()
-        NS.ceph_integrations_sync_thread.start()
 
     complete = threading.Event()
 
@@ -112,9 +105,9 @@ def main():
         )
         complete.set()
         m.stop()
-        if NS.tendrl_context.sds_name == "ceph" and \
-            NS.tendrl_context.integration_id:
-            NS.ceph_integrations_sync_thread.stop()
+
+        if NS.gluster_sds_sync_running:
+            NS.gluster_integrations_sync_thread.stop()
 
     def reload_config(signum, frame):
         Event(

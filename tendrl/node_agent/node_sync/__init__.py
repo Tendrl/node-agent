@@ -7,6 +7,9 @@ from tendrl.commons.message import Message
 from tendrl.commons import sds_sync
 from tendrl.commons.utils import time_utils
 
+from tendrl.integrations.gluster import sds_sync as \
+    gluster_integrations_sds_sync
+
 from tendrl.node_agent.node_sync import check_all_managed_nodes_status
 from tendrl.node_agent.node_sync import cluster_contexts_sync
 from tendrl.node_agent.node_sync import disk_sync
@@ -91,6 +94,13 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 check_all_managed_node_status_thread.daemon = True
                 check_all_managed_node_status_thread.start()
                 check_all_managed_node_status_thread.join()
+
+                if not NS.gluster_sds_sync_running:
+                    NS.gluster_integrations_sync_thread = \
+                        gluster_integrations_sds_sync.\
+                        GlusterIntegrtaionsSyncThread()
+                    NS.gluster_integrations_sync_thread.start()
+                    NS.gluster_sds_sync_running = True
 
             NS.node_context = NS.node_context.load()
             NS.node_context.sync_status = "done"
