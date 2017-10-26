@@ -67,28 +67,4 @@ namespace.node_agent:
       list: nodes/$NodeContext.node.id/Networks
       help: "Global subnet wise network interface"
       value: /networks
-    ClusterAlertCounters:
-      enabled: True
-      attrs:
-        warning_count:
-          help: "Count of warning alerts for the cluster"
-          type: int
-        integration_id:
-          help: "Id of the cluster"
-          type: String
-      value: /clusters/{0}/alert_counters
-      list: /clusters/{0}/alert_counters
-      help: "Cluster Alert Counter"
-    NodeAlertCounters:
-      enabled: True
-      attrs:
-        warning_count:
-          help: "Count of warning alerts for the node"
-          type: int
-        integration_id:
-          help: "Id of the node"
-          type: String
-      value: /nodes/{0}/alert_counters
-      list: /nodes/{0}/alert_counters
-      help: "Node Alert Counter"
 tendrl_schema_version: 0.3
