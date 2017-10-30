@@ -20,6 +20,9 @@ namespace.integrations.gluster:
           - volume_status
           - brick_status
           - quorum
+          - ec_min_bricks_up
+          - afr_quorum_state
+          - afr_subvol_state
       value: /clusters/{0}/Volumes/{1}
       list: /clusters/{0}/Volumes/{1}
       help: "Volume Alert Counter"
