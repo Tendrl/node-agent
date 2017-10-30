@@ -5,8 +5,8 @@ class VolumeAlertCounters(objects.BaseObject):
     def __init__(
         self,
         warn_count=0,
-        integration_id='',
-        volume_id='',
+        integration_id=None,
+        volume_id=None,
         *args,
         **kwargs
     ):
