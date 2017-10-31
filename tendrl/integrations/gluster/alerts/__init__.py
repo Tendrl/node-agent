@@ -4,11 +4,10 @@ from tendrl.commons.utils import etcd_utils
 from tendrl.commons.utils import log_utils as logger
 from tendrl.node_agent.alert import constants
 
-VOLUME_ALERT = "volume"
-
 
 def update_alert_count(alert, existing_alert):
-    if VOLUME_ALERT in alert.resource and 'volume_name' in alert.tags:
+    if alert.resource in NS.integrations.gluster.objects.VolumeAlertCounters(
+            )._defs['relationship'][alert.alert_type.lower()]:
         alert.tags['volume_id'] = find_volume_id(
             alert.tags['volume_name'],
             alert.tags['integration_id']

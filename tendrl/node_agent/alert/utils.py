@@ -2,24 +2,24 @@ from etcd import EtcdConnectionFailed
 from etcd import EtcdException
 from etcd import EtcdKeyNotFound
 from tendrl.commons.objects.cluster_alert import ClusterAlert
+from tendrl.commons.objects.cluster_alert_counters import \
+    ClusterAlertCounters
 from tendrl.commons.objects.node_alert import NodeAlert
+from tendrl.commons.objects.node_alert_counters import NodeAlertCounters
 from tendrl.commons.objects.notification_only_alert import \
     NotificationOnlyAlert
 from tendrl.integrations.gluster import alerts as gluster_alert
 from tendrl.node_agent.alert import constants
-from tendrl.node_agent.objects.cluster_alert_counters import \
-    ClusterAlertCounters
-from tendrl.node_agent.objects.node_alert_counters import NodeAlertCounters
 
 
 def get_alerts(alert):
     alerts_arr = []
     try:
-        if alert.classification == constants.NODE_ALERT:
+        if constants.NODE_ALERT in alert.classification:
             alerts_arr = NS.tendrl.objects.NodeAlert(
                 node_id=alert.node_id
             ).load_all()
-        elif alert.classification == constants.CLUSTER_ALERT:
+        elif constants.CLUSTER_ALERT in alert.classification:
             alerts_arr = NS.tendrl.objects.ClusterAlert(
                 tags=alert.tags
             ).load_all()
@@ -34,7 +34,7 @@ def get_alerts(alert):
 
 
 def classify_alert(alert, ttl=None):
-    if alert.classification == constants.NODE_ALERT:
+    if constants.NODE_ALERT in alert.classification:
         NodeAlert(
             alert_id=alert.alert_id,
             node_id=alert.node_id,
@@ -54,7 +54,7 @@ def classify_alert(alert, ttl=None):
             source=alert.source,
             delivered=alert.delivered
         ).save(ttl=ttl)
-    elif alert.classification == constants.CLUSTER_ALERT:
+    if constants.CLUSTER_ALERT in alert.classification:
         ClusterAlert(
             alert_id=alert.alert_id,
             node_id=alert.node_id,
@@ -105,11 +105,12 @@ def find_sds_name(integration_id):
 
 
 def update_alert_count(alert, existing_alert):
-    if alert.classification == constants.NODE_ALERT:
+    if constants.NODE_ALERT in alert.classification:
         counter_obj = NodeAlertCounters(
             node_id=alert.node_id
         ).load()
-    elif alert.classification == constants.CLUSTER_ALERT:
+        update_count(alert, counter_obj, existing_alert)
+    if constants.CLUSTER_ALERT in alert.classification:
         counter_obj = ClusterAlertCounters(
             integration_id=alert.tags['integration_id']
         ).load()
@@ -120,9 +121,14 @@ def update_alert_count(alert, existing_alert):
                 alert.tags['integration_id']
             )
         if sds_name == constants.GLUSTER:
+            # volume alert count
             gluster_alert.update_alert_count(
                 alert, existing_alert
             )
+        update_count(alert, counter_obj, existing_alert)
+
+
+def update_count(alert, counter_obj, existing_alert):
     warn_count = int(counter_obj.warning_count)
     if existing_alert:
         if alert.severity == constants.ALERT_SEVERITY["info"]:
@@ -136,38 +142,36 @@ def update_alert_count(alert, existing_alert):
 
 
 def remove_alert(alert):
-    try:
-        alert_key = (
-            '/alerting/alerts/%s' % alert.alert_id)
-        if alert.classification == constants.NODE_ALERT:
-            alert_classification_key = (
-                '/alerting/nodes/%s/%s' % (
-                    alert.node_id, alert.alert_id
-                )
+    alert_key = (
+        '/alerting/alerts/%s' % alert.alert_id)
+    remove(alert_key)
+    if constants.NODE_ALERT in alert.classification:
+        alert_classification_key = (
+            '/alerting/nodes/%s/%s' % (
+                alert.node_id, alert.alert_id
             )
-        elif alert.classification == constants.CLUSTER_ALERT:
-            alert_classification_key = (
-                '/alerting/clusters/%s/%s' % (
-                    alert.tags["integration_id"], alert.alert_id
-                )
-            )
-        NS._int.client.delete(
-            alert_key,
-            recursive=True
         )
+        remove(alert_classification_key)
+    if constants.CLUSTER_ALERT in alert.classification:
+        alert_classification_key = (
+            '/alerting/clusters/%s/%s' % (
+                alert.tags["integration_id"], alert.alert_id
+            )
+        )
+        remove(alert_classification_key)
+
+
+def remove(key):
+    try:
         NS._int.client.delete(
-            alert_classification_key,
+            key,
             recursive=True
         )
     except (EtcdConnectionFailed, EtcdException) as ex:
         if type(ex) != EtcdKeyNotFound:
             NS._int.wreconnect()
             NS._int.client.delete(
-                alert_key,
-                recursive=True
-            )
-            NS._int.client.delete(
-                alert_classification_key,
+                key,
                 recursive=True
             )
         # For etcd_key_not_found, clearing alert may deleted by ttl
