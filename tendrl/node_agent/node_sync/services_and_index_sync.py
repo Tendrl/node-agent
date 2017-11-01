@@ -55,18 +55,8 @@ def sync(sync_ttl=None):
             # Try to claim orphan "provisioner_%integration_id" tag
             _tag = "provisioner/%s" % _cluster.integration_id
             _is_new_provisioner = False
-            _is_old_provisioner = False
             NS.node_context = NS.tendrl.objects.NodeContext().load()
-            if _tag in NS.node_context.tags:
-                # check if this node is has stale tag "provisioner/$integration_id"
-                # If yes, then remove above provisioner tag from this node
-                # And also remove cluster level collectd plugins
-                _index_key = "/indexes/tags/%s" % _tag
-                if NS.node_context.node_id not in json.loads(etcd_utils.read(_index_key).value):
-                    _is_old_provisioner = True
-                    NS.node_context.tags.remove(_tag)
-                    NS.node_context.save()
-            else:
+            if _tag not in NS.node_context.tags:
                 try:
                     _index_key = "/indexes/tags/%s" % _tag
                     _node_id = json.dumps([NS.node_context.node_id])
@@ -98,11 +88,8 @@ def sync(sync_ttl=None):
             NS.node_context.save()
             
         if _cluster.is_managed == "yes":
-            if _is_old_provisioner:
-                _msg = "node_sync, STALE provisioner node found! re-configuring monitoring (job-id: %s) on this node"
             if _is_new_provisioner:
                 _msg = "node_sync, NEW provisioner node found! re-configuring monitoring (job-id: %s) on this node"
-            if _is_old_provisioner or _is_new_provisioner:        
                 payload = {
                "tags": ["tendrl/node_%s" % NS.node_context.node_id],
                "run": "tendrl.flows.ConfigureMonitoring",
