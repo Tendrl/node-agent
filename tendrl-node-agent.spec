@@ -93,7 +93,7 @@ py.test -v tendrl/node-agent/tests || :
 %config(noreplace) %{_sysconfdir}/rsyslog.d/tendrl-node-agent.conf
 
 %changelog
-* Thu Nov 02 2017 Rohan Kanade <rkanade@redhat.com> - 1.5.4-2
+* Thu Nov 02 2017 Rohan Kanade <rkanade@redhat.com> - 1.5.4-1
 - Release tendrl-node-agent v1.5.4
 
 * Fri Oct 13 2017 Rohan Kanade <rkanade@redhat.com> - 1.5.3-2
