@@ -18,6 +18,8 @@ glusterfs_repo: https://buildlogs.centos.org/centos/7/storage/x86_64/gluster-3.9
 with_internal_profiling: False
 graphite_host: 0.0.0.0
 graphite_port: 2003
+
+# interval at which node level object sync/alerts are processed. Warning, lower interval will result in more resource consumption
 sync_interval: 180
 tags:
   - tendrl/node
