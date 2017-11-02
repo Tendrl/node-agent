@@ -2,6 +2,7 @@ import json
 
 from etcd import EtcdException
 from etcd import EtcdKeyNotFound
+from etcd import Lock
 
 from tendrl.commons.objects.alert import AlertUtils
 from tendrl.commons.utils import log_utils as logger
@@ -19,6 +20,12 @@ class InvalidAlertSeverity(Exception):
 
 def update_alert(message):
     try:
+        lock = Lock(NS._int.client, 'alerting')
+        lock.acquire(blocking=True,
+                     lock_ttl=60)
+        if lock.is_acquired:
+            # renew a lock
+            lock.acquire(lock_ttl=60)
         existing_alert = False
         new_alert = json.loads(message.payload["message"])
         new_alert['alert_id'] = message.message_id
@@ -122,3 +129,5 @@ def update_alert(message):
                 )
             }
         )
+    finally:
+        lock.release()
