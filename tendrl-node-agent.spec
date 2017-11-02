@@ -1,6 +1,6 @@
 Name: tendrl-node-agent
 Version: 1.5.4
-Release: 2%{?dist}
+Release: 1%{?dist}
 BuildArch: noarch
 Summary: Module for Tendrl Node Agent
 Source0: %{name}-%{version}.tar.gz
