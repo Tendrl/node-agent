@@ -20,12 +20,7 @@ class InvalidAlertSeverity(Exception):
 
 def update_alert(message):
     try:
-        lock = Lock(NS._int.client, 'alerting')
-        lock.acquire(blocking=True,
-                     lock_ttl=60)
-        if lock.is_acquired:
-            # renew a lock
-            lock.acquire(lock_ttl=60)
+        lock = None
         existing_alert = False
         new_alert = json.loads(message.payload["message"])
         new_alert['alert_id'] = message.message_id
@@ -70,6 +65,16 @@ def update_alert(message):
                         new_alert_obj,
                         curr_alert
                     ):
+                        # Lock only if new alert matches with existing alert
+                        lock = Lock(
+                            NS._int.client,
+                            'alerting/alerts/%s' % new_alert_obj.alert_id
+                        )
+                        lock.acquire(blocking=True,
+                                     lock_ttl=60)
+                        if lock.is_acquired:
+                            # renew a lock
+                            lock.acquire(lock_ttl=60)
                         existing_alert = True
                         utils.update_alert_count(
                             new_alert_obj,
@@ -130,4 +135,5 @@ def update_alert(message):
             }
         )
     finally:
-        lock.release()
+        if isinstance(lock, Lock) and lock.is_acquired:
+            lock.release()
