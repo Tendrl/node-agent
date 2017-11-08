@@ -26,7 +26,7 @@ class TendrlBrickDeviceStatsPlugin(object):
                 port=int(self.CONFIG['etcd_port'])
             )
             etcd_ca_cert_file = self.CONFIG.get("etcd_ca_cert_file")
-            etcd_cert_file = self.CONFIG.get("etcd_ert_file")
+            etcd_cert_file = self.CONFIG.get("etcd_cert_file")
             etcd_key_file = self.CONFIG.get("etcd_key_file")
             if (
                 etcd_ca_cert_file and
@@ -103,7 +103,7 @@ class TendrlBrickDeviceStatsPlugin(object):
                         port=int(self.CONFIG['etcd_port'])
                     )
                     etcd_ca_cert_file = self.CONFIG.get("etcd_ca_cert_file")
-                    etcd_cert_file = self.CONFIG.get("etcd_ert_file")
+                    etcd_cert_file = self.CONFIG.get("etcd_cert_file")
                     etcd_key_file = self.CONFIG.get("etcd_key_file")
                     if (
                         etcd_ca_cert_file and
