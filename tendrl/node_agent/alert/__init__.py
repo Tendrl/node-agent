@@ -67,7 +67,7 @@ def update_alert(message):
                     ):
                         # Lock only if new alert matches with existing alert
                         lock = Lock(
-                            NS._int.client,
+                            NS._int.wclient,
                             'alerting/alerts/%s' % new_alert_obj.alert_id
                         )
                         lock.acquire(blocking=True,
