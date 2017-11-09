@@ -122,12 +122,13 @@ def sync(sync_ttl=None):
             except etcd.EtcdKeyNotFound:
                 pass
             
-            if "provisioner" in tag:
-                if sync_ttl and len(_node_ids) == 1:
-                    etcd_utils.refresh(index_key, sync_ttl)
-                continue
-
             if _node_ids:
+                if "provisioner" in tag:
+                    # Check if this is a stale provisioner
+                    if NS.node_context.node_id != _node_ids[0]:
+                        NS.node_context.tags.remove(tag)
+                        NS.node_context.save()
+                        continue
                 if NS.node_context.node_id in _node_ids:
                     continue
                 else:
@@ -139,7 +140,7 @@ def sync(sync_ttl=None):
             etcd_utils.write(index_key, json.dumps(_node_ids))
             if sync_ttl and len(_node_ids) == 1:
                 etcd_utils.refresh(index_key, sync_ttl)
-
+                
         Event(
             Message(
                 priority="debug",
