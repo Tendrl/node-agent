@@ -113,6 +113,7 @@ def sync(sync_ttl=None):
             
         # Update /indexes/tags/:tag = [node_ids]
         for tag in NS.node_context.tags:
+
             index_key = "/indexes/tags/%s" % tag
             _node_ids = []
             try:
@@ -120,6 +121,11 @@ def sync(sync_ttl=None):
                 _node_ids = json.loads(_node_ids)
             except etcd.EtcdKeyNotFound:
                 pass
+            
+            if "provisioner" in tag:
+                if sync_ttl and len(_node_ids) == 1:
+                    etcd_utils.refresh(index_key, sync_ttl)
+                continue
 
             if _node_ids:
                 if NS.node_context.node_id in _node_ids:
