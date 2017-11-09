@@ -5,8 +5,6 @@ from tendrl.commons.event import Event
 from tendrl.commons import manager as commons_manager
 from tendrl.commons.message import Message
 from tendrl.commons import TendrlNS
-from tendrl.node_agent.provisioner.ceph.manager import \
-    ProvisioningManager as CephProvisioningManager
 from tendrl.node_agent.provisioner.gluster.manager import \
     ProvisioningManager as GlusterProvisioningManager
 
@@ -76,10 +74,6 @@ def main():
     NS.publisher_id = "node_agent"
     NS.message_handler_thread = MessageHandler()
 
-    NS.ceph_provisioner = CephProvisioningManager(
-        NS.tendrl.definitions.get_parsed_defs()["namespace.tendrl"][
-            'ceph_provisioner']
-    )
     NS.gluster_provisioner = GlusterProvisioningManager(
         NS.tendrl.definitions.get_parsed_defs()["namespace.tendrl"][
             'gluster_provisioner']
