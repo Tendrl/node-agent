@@ -16,11 +16,11 @@ class GlusterIntegrtaionsSyncThread(sds_sync.StateSyncThread):
             {"message": "%s running" % self.__class__.__name__}
         )
         while not self._complete.is_set():
-            time.sleep(int(NS.config.data.get("sync_interval", 10)))
             try:
                 nodes = NS._int.client.read("/nodes")
             except etcd.EtcdKeyNotFound:
-                return
+                time.sleep(int(NS.config.data.get("sync_interval", 10)))
+                continue
 
             for node in nodes.leaves:
                 node_id = node.key.split('/')[-1]
@@ -73,6 +73,8 @@ class GlusterIntegrtaionsSyncThread(sds_sync.StateSyncThread):
                     )
                 except etcd.EtcdKeyNotFound:
                     pass
+                
+                time.sleep(int(NS.config.data.get("sync_interval", 10)))
 
     def update_brick_status(self, fqdn, integration_id, status):
         _job_id = str(uuid.uuid4())
