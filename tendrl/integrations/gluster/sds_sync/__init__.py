@@ -24,7 +24,7 @@ class GlusterIntegrtaionsSyncThread(sds_sync.StateSyncThread):
             try:
                 nodes = NS._int.client.read("/nodes")
             except etcd.EtcdKeyNotFound:
-                time.sleep(int(NS.config.data.get("sync_interval", 10)))
+                time.sleep(_sleep)
                 continue
 
             for node in nodes.leaves:
