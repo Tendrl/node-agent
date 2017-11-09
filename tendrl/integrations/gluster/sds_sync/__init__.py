@@ -74,7 +74,7 @@ class GlusterIntegrtaionsSyncThread(sds_sync.StateSyncThread):
                 except etcd.EtcdKeyNotFound:
                     pass
                 
-                time.sleep(int(NS.config.data.get("sync_interval", 10)))
+            time.sleep(int(NS.config.data.get("sync_interval", 10)))
 
     def update_brick_status(self, fqdn, integration_id, status):
         _job_id = str(uuid.uuid4())
