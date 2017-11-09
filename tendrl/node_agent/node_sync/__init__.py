@@ -47,7 +47,13 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
             if type(ex) == EtcdKeyNotFound:
                 NodeAlertCounters(node_id=NS.node_context.node_id).save()
         _sync_ttl = int(NS.config.data.get("sync_interval", 10)) + 100
+        _sleep = 0
         while not self._complete.is_set():
+            if _sleep > 5:
+                _sleep = int(NS.config.data.get("sync_interval", 10))
+            else:
+                _sleep += 1
+                
             NS.node_context = NS.node_context.load()
             NS.node_context.sync_status = "in_progress"
             NS.node_context.save(ttl=_sync_ttl)
@@ -88,7 +94,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 NS.node_context.sync_status = "failed"
                 NS.node_context.last_sync = str(time_utils.now())
                 NS.node_context.save(ttl=_sync_ttl)
-                time.sleep(int(NS.config.data.get("sync_interval", 10)))
+                time.sleep(_sleep)
 
             sync_disks_thread = threading.Thread(target=disk_sync.sync)
             sync_disks_thread.daemon = True
@@ -124,7 +130,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
             sync_cluster_contexts_thread.daemon = True
             sync_cluster_contexts_thread.start()
             sync_cluster_contexts_thread.join()
-            time.sleep(int(NS.config.data.get("sync_interval", 10)))
+            time.sleep(_sleep)
 
         Event(
             Message(
