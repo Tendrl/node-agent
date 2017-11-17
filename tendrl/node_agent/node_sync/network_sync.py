@@ -101,7 +101,7 @@ def get_node_network():
     network_interfaces = get_node_interface()
     cmd = cmd_utils.Command('hwinfo --network')
     out, err, rc = cmd.run()
-    if not err:
+    if not err or "vdsmdummy: command not found" in err:
         for interface in out.split('\n\n'):
             devlist = {"interface_id": "",
                        "sysfs_id": "",
