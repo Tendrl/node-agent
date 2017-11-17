@@ -72,7 +72,7 @@ class TendrlBrickDeviceStatsPlugin(object):
                 ).value
             )
             return brick_devices, brick_device_partitions, mount_point
-        except etcd.EtcdKeyNotFound:
+        except etcd.EtcdKeyNotFound, SyntaxError:
             return [], [], mount_point
 
     def get_brick_source_and_mount(self, brick_path):
