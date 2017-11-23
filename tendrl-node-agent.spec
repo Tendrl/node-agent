@@ -94,7 +94,7 @@ py.test -v tendrl/node-agent/tests || :
 
 %changelog
 * Fri Nov 24 2017 Rohan Kanade <rkanade@redhat.com> - 1.5.4-6
-- Bugfixes collectd.service dependency
+- Bugfixes
 
 * Tue Nov 21 2017 Rohan Kanade <rkanade@redhat.com> - 1.5.4-5
 - Remove collectd.service dependency
