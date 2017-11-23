@@ -35,6 +35,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
         )
 
         NS.node_context = NS.node_context.load()
+        NS.node_context.status = "UP"
         current_tags = list(NS.node_context.tags)
         current_tags += ["tendrl/node_%s" % NS.node_context.node_id]
         NS.node_context.tags = list(set(current_tags))
