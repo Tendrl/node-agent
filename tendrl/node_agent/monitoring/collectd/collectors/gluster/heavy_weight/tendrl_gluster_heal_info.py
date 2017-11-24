@@ -72,7 +72,7 @@ def get_volume_heal_info(vol):
                         ] == brick_heal_info[
                             'brick_index'
                         ]
-                    ):
+                    ) and sub_vol_brick['hostname'] == brick_heal_info["host_name"]:
                         vol_heal_info[idx][
                             'brick_path'
                         ] = sub_vol_brick['path']
