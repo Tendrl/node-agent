@@ -20,6 +20,6 @@ graphite_host: 0.0.0.0
 graphite_port: 2003
 
 # Interval in seconds at which node level object sync/alerts are processed. Warning, lower interval will result in more resource consumption
-sync_interval: 180
+sync_interval: 60
 tags:
   - tendrl/node
