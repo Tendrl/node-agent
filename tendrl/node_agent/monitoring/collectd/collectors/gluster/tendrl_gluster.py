@@ -92,7 +92,7 @@ class TendrlGlusterfsMonitoringBase(object):
         # locking issues) add additional latency of 37 s to execution of
         # such plugins
         if self.provisioner_only_plugin:
-            time.sleep(37)
+            time.sleep(13)
         # Get stats from current plugin's get_metrics function
         metrics = self.get_metrics()
         for metric_name, value in metrics.iteritems():

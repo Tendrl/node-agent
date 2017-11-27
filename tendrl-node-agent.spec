@@ -1,6 +1,6 @@
 Name: tendrl-node-agent
 Version: 1.5.4
-Release: 7%{?dist}
+Release: 8%{?dist}
 BuildArch: noarch
 Summary: Module for Tendrl Node Agent
 Source0: %{name}-%{version}.tar.gz
@@ -64,7 +64,7 @@ getent group tendrl >/dev/null || groupadd -r tendrl
 getent passwd tendrl-user >/dev/null || \
     useradd -r -g tendrl -d /var/lib/tendrl -s /sbin/nologin \
     -c "Tendrl node user" tendrl-user
-systemctl enable tendrl-node-agent
+systemctl enable tendrl-node-agent >/dev/null 2>&1 || :
 
 %systemd_post tendrl-node-agent.service
 
@@ -93,6 +93,10 @@ py.test -v tendrl/node-agent/tests || :
 %config(noreplace) %{_sysconfdir}/rsyslog.d/tendrl-node-agent.conf
 
 %changelog
+* Mon Nov 27 2017 Rohan Kanade <rkanade@redhat.com> - 1.5.4-8
+- Fixing volume heal info to update under correct brick
+- Supress service enable message during package update
+
 * Fri Nov 24 2017 Rohan Kanade <rkanade@redhat.com> - 1.5.4-7
 - Fix NodeContext.status in node_sync
 
