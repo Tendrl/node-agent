@@ -35,7 +35,7 @@ def sync(sync_ttl):
             NS.tendrl.objects.ClusterNodeContext(
                 node_id=NS.node_context.node_id,
                 fqdn=NS.node_context.fqdn,
-                status=NS.node_context.status,
+                status="UP",
                 tags=NS.node_context.tags
             ).save(ttl=sync_ttl)
     except Exception as ex:
