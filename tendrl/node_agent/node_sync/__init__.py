@@ -38,6 +38,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
         current_tags = list(NS.node_context.tags)
         current_tags += ["tendrl/node_%s" % NS.node_context.node_id]
         NS.node_context.tags = list(set(current_tags))
+        NS.node_context.status = "UP"
         NS.node_context.save()
         # Initialize alert count
         try:
@@ -94,6 +95,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 NS.node_context = NS.node_context.load()
                 NS.node_context.sync_status = "failed"
                 NS.node_context.last_sync = str(time_utils.now())
+                NS.node_context.status = "UP"
                 NS.node_context.save(ttl=_sync_ttl)
                 time.sleep(_sleep)
 
@@ -107,6 +109,18 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
             sync_networks_thread.start()
             sync_networks_thread.join()
 
+            NS.node_context = NS.node_context.load()
+            NS.node_context.sync_status = "done"
+            NS.node_context.last_sync = str(time_utils.now())
+            NS.node_context.status = "UP"
+            NS.node_context.save(ttl=_sync_ttl)
+
+            sync_cluster_contexts_thread = threading.Thread(
+                target=cluster_contexts_sync.sync, args=(_sync_ttl,))
+            sync_cluster_contexts_thread.daemon = True
+            sync_cluster_contexts_thread.start()
+            sync_cluster_contexts_thread.join()
+            
             if "tendrl/monitor" in NS.node_context.tags:
                 check_all_managed_node_status_thread = threading.Thread(
                     target=check_all_managed_nodes_status.run)
@@ -120,17 +134,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                         GlusterIntegrtaionsSyncThread()
                     NS.gluster_integrations_sync_thread.start()
                     NS.gluster_sds_sync_running = True
-
-            NS.node_context = NS.node_context.load()
-            NS.node_context.sync_status = "done"
-            NS.node_context.last_sync = str(time_utils.now())
-            NS.node_context.save(ttl=_sync_ttl)
-
-            sync_cluster_contexts_thread = threading.Thread(
-                target=cluster_contexts_sync.sync, args=(_sync_ttl,))
-            sync_cluster_contexts_thread.daemon = True
-            sync_cluster_contexts_thread.start()
-            sync_cluster_contexts_thread.join()
+                    
             time.sleep(_sleep)
 
         Event(
