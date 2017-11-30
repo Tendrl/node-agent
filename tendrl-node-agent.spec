@@ -1,6 +1,6 @@
 Name: tendrl-node-agent
 Version: 1.5.4
-Release: 8%{?dist}
+Release: 9%{?dist}
 BuildArch: noarch
 Summary: Module for Tendrl Node Agent
 Source0: %{name}-%{version}.tar.gz
@@ -93,6 +93,9 @@ py.test -v tendrl/node-agent/tests || :
 %config(noreplace) %{_sysconfdir}/rsyslog.d/tendrl-node-agent.conf
 
 %changelog
+* Thu Nov 30 2017 Rohan Kanade <rkanade@redhat.com> - 1.5.4-8=9
+- Bugfixes
+
 * Mon Nov 27 2017 Rohan Kanade <rkanade@redhat.com> - 1.5.4-8
 - Fixing volume heal info to update under correct brick
 - Supress service enable message during package update

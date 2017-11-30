@@ -302,3 +302,18 @@ def send_metric(
     if plugin_instance:
         metric.plugin_instance = plugin_instance
     metric.dispatch()
+
+
+def get_size_MB(size_str):
+    if size_str.endswith("Bytes"):
+        return float(size_str.split("Bytes")[0]) / (1024 * 1024)
+    if size_str.endswith("KB"):
+        return float(size_Str.split("KB")[0]) / 1024
+    if size_str.endswith("MB"):
+        return float(size_str.split("MB")[0])
+    if size_str.endswith("GB"):
+        return float(size_str.split("GB")[0]) * 1024
+    if size_str.endswith("TB"):
+        return float(size_str.split("TB")[0]) * 1024 * 1024
+    if size_str.endswith("PB"):
+        return float(size_str.split("PB")[0]) * 1024 * 1024 * 1024

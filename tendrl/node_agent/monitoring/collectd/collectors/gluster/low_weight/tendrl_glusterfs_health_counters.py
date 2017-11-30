@@ -2,6 +2,8 @@ import collectd
 import socket
 import traceback
 
+import utils as tendrl_glusterfs_utils
+
 
 from tendrl_gluster import TendrlGlusterfsMonitoringBase
 
@@ -24,12 +26,13 @@ class TendrlGlusterfsHealthCounters(
             ret_val[volume['name']] = snap_cnt
         return ret_val
 
-    def _get_vol_rebalance_bytes(self):
+    def _get_vol_rebalance_data(self):
         ret_val = {}
         volumes = self.CLUSTER_TOPOLOGY.get('volumes', [])
         for volume in volumes:
             rebalance_data = volume.get('rebalance_data', 0)
-            ret_val[volume['name']] = rebalance_data
+            ret_val[volume['name']] = \
+                tendrl_glusterfs_utils.get_size_MB(rebalance_data)
         return ret_val
 
     def _get_vol_rebalance_files(self):
@@ -94,7 +97,7 @@ class TendrlGlusterfsHealthCounters(
                     )
                 ] = snap_cnt
             # Push rebalance bytes progress
-            for vol_name, rebalance_bytes in self._get_vol_rebalance_bytes(
+            for vol_name, rebalance_data in self._get_vol_rebalance_data(
             ).iteritems():
                 ret_val[
                     'clusters.%s.volumes.%s.nodes.%s.rebalance_bytes' % (
@@ -102,7 +105,7 @@ class TendrlGlusterfsHealthCounters(
                         vol_name,
                         self.CONFIG['peer_name'].replace('.', '_')
                     )
-                ] = int(filter(str.isdigit, rebalance_bytes))
+                ] = rebalance_data
             # Push rebalance files progress
             for vol_name, rebalance_files in self._get_vol_rebalance_files(
             ).iteritems():

@@ -111,9 +111,8 @@ def main():
                 payload={"message": "Signal handler: SIGHUP"}
             )
         )
-        NS.config = NS.config.__class__()
-        NS.config.save()
-
+        NS.node_agent.ns.setup_common_objects()
+        
     signal.signal(signal.SIGTERM, shutdown)
     signal.signal(signal.SIGINT, shutdown)
     signal.signal(signal.SIGHUP, reload_config)
