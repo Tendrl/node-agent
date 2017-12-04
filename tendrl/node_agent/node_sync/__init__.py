@@ -12,6 +12,7 @@ from tendrl.commons import sds_sync
 from tendrl.commons.utils import etcd_utils
 from tendrl.commons.utils import time_utils
 
+from tendrl.integrations.gluster import check_cluster_status
 from tendrl.integrations.gluster import sds_sync as \
     gluster_integrations_sds_sync
 
@@ -127,6 +128,13 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 check_all_managed_node_status_thread.daemon = True
                 check_all_managed_node_status_thread.start()
                 check_all_managed_node_status_thread.join()
+
+                check_cluster_status_thread = threading.Thread(
+                    target=check_cluster_status.run
+                )
+                check_cluster_status_thread.daemon = True
+                check_cluster_status_thread.start()
+                check_cluster_status_thread.join()
 
                 if not NS.gluster_sds_sync_running:
                     NS.gluster_integrations_sync_thread = \
