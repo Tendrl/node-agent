@@ -61,6 +61,12 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
             NS.node_context.status = "UP"
             NS.node_context.save(ttl=_sync_ttl)
             NS.tendrl_context = NS.tendrl_context.load()
+            
+            sync_cluster_contexts_thread = threading.Thread(
+                target=cluster_contexts_sync.sync, args=(_sync_ttl,))
+            sync_cluster_contexts_thread.daemon = True
+            sync_cluster_contexts_thread.start()
+            sync_cluster_contexts_thread.join()
 
             platform_detect_thread = threading.Thread(
                 target=platform_detect.sync)
