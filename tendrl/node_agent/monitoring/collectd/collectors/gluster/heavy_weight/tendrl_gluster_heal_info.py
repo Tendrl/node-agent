@@ -20,7 +20,13 @@ def _parse_self_heal_info_stats(op):
             if "Brick " in line:
                 brick_name = line.split(" ")[1]
             if "Number of entries:" in line:
-                heal_pending_cnt = int(line.split(": ")[1])
+                try:
+                    heal_pending_cnt = int(line.split(": ")[1])
+                except ValueError:
+                    # Sometimes the values are returned as `-`
+                    # if brick disconnected. Default to 0 in
+                    # that case
+                    heal_pending_cnt = 0
         brick_heal_info['heal_pending_cnt'] = heal_pending_cnt
         volume_heal_info[brick_name] = brick_heal_info
 
@@ -38,7 +44,13 @@ def _parse_self_heal_info_split_brain_stats(op):
             if "Brick " in line:
                 brick_name = line.split(" ")[1]
             if "Number of entries in split-brain:" in line:
-                split_brain_cnt = int(line.split(": ")[1])
+                try:
+                    split_brain_cnt = int(line.split(": ")[1])
+                except ValueError:
+                    # Sometimes the values are returned as `-`
+                    # if brick disconnected. Default to 0 in
+                    # that case
+                    split_brain_cnt = 0
         brick_heal_info['split_brain_cnt'] = split_brain_cnt
         volume_heal_info[brick_name] = brick_heal_info
 
