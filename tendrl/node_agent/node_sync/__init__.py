@@ -48,9 +48,10 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
         except(EtcdException)as ex:
             if type(ex) == EtcdKeyNotFound:
                 NodeAlertCounters(node_id=NS.node_context.node_id).save()
-        _sync_ttl = int(NS.config.data.get("sync_interval", 10)) + 100
+
         _sleep = 0
         while not self._complete.is_set():
+            _sync_ttl = int(NS.config.data.get("sync_interval", 10)) + 100            
             if _sleep > 5:
                 _sleep = int(NS.config.data.get("sync_interval", 10))
             else:
