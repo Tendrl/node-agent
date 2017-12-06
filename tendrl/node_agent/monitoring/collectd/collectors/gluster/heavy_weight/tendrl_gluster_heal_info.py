@@ -135,6 +135,8 @@ def get_heal_info(volume, integration_id):
     vol_heal_info_stats = get_volume_heal_info_stats(volume)
     vol_heal_info_split_brain_stats = get_volume_heal_info_split_brain_stats(volume)
     for key, value in vol_heal_info_stats.iteritems():
+        if key == "" or value is None:
+            continue
         t_name = \
             "clusters.%s.volumes.%s.nodes.%s.bricks.%s.heal_pending_cnt"
         ret_val[
@@ -146,6 +148,8 @@ def get_heal_info(volume, integration_id):
             )
         ] = value['heal_pending_cnt']
     for key, value in vol_heal_info_split_brain_stats.iteritems():
+        if key == "" or value is None:
+            continue
         t_name = \
             "clusters.%s.volumes.%s.nodes.%s.bricks.%s.split_brain_cnt"
         ret_val[
