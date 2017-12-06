@@ -16,7 +16,7 @@ def run():
     for node in nodes.leaves:
         node_id = node.key.split('/')[-1]
         try:
-            NS._int.client.write(
+            NS._int.wclient.write(
                 "/nodes/{0}/NodeContext/status".format(node_id),
                 "DOWN",
                 prevExist=False

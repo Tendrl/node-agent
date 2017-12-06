@@ -92,6 +92,13 @@ def update_alert(message):
                             utils.classify_alert(new_alert_obj)
                             new_alert_obj.save()
                         return
+                    else:
+                        # Handle case where alert severity changes without
+                        # coming to normal. In this case the previous alert
+                        # should be overriden with new one
+                        utils.remove_alert(new_alert_obj)
+                        utils.classify_alert(new_alert_obj)
+                        new_alert_obj.save()
                     return
                 # else add this new alert to etcd
             if message.payload["alert_condition_state"] == \
