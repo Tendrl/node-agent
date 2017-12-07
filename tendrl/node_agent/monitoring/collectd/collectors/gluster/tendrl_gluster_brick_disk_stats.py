@@ -75,24 +75,24 @@ class TendrlBrickDeviceStatsPlugin(object):
             return brick_devices, brick_device_partitions, mount_point
         except urllib3.exceptions.TimeoutError:
             _msg = "Timeout error while fetching brick devices"
-            collectd.error(_msg)
-            collectd.error(traceback.format_exc())
+            collectd.warning(_msg)
+            collectd.warning(traceback.format_exc())
             return [], [], mount_point
         
         except SyntaxError:
             _msg = "Unable to parse brick device data for integration_id (%s), peer_name (%s), brick (%s)" % (self.CONFIG['integration_id'],
                                                                                                               self.CONFIG['peer_name'],
                                                                                                               brick_path.replace('/', '_').replace("_", "", 1))
-            collectd.error(_msg)
-            collectd.error(traceback.format_exc())
+            collectd.warning(_msg)
+            collectd.warning(traceback.format_exc())
             return [], [], mount_point
         
         except etcd.EtcdKeyNotFound:
             _msg = "Unable to parse brick device data for integration_id (%s), peer_name (%s), brick (%s)" % (self.CONFIG['integration_id'],
                                                                                                               self.CONFIG['peer_name'],
                                                                                                               brick_path.replace('/', '_').replace("_", "", 1))
-            collectd.error(_msg)
-            collectd.error(traceback.format_exc())
+            collectd.warning(_msg)
+            collectd.warning(traceback.format_exc())
             return [], [], mount_point
 
     def get_brick_source_and_mount(self, brick_path):
