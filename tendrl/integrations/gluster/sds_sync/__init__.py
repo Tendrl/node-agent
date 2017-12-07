@@ -63,7 +63,7 @@ class GlusterIntegrtaionsSyncThread(sds_sync.StateSyncThread):
                         try:
                             NS._int.wclient.write("{0}/status".format(brick.key),
                                                   "Stopped")
-                        except etcd.EtcdAlreadyExist:
+                        except (etcd.EtcdAlreadyExist, etcd.EtcdKeyNotFound):
                             pass
                         
                 except etcd.EtcdKeyNotFound:
