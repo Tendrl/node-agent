@@ -59,7 +59,6 @@ class GlusterIntegrtaionsSyncThread(sds_sync.StateSyncThread):
                         )
                     )
 
-                    bricks_marked_already = True
                     for brick in bricks.leaves:
                         try:
                             NS._int.wclient.write("{0}/status".format(brick.key),
