@@ -5,63 +5,46 @@ import traceback
 
 import utils as tendrl_glusterfs_utils
 
+try:
+    import xml.etree.cElementTree as ElementTree
+except ImportError:
+    import xml.etree.ElementTree as ElementTree
+
 
 ret_val = {}
 
 
-def _parse_self_heal_info_stats(op):
-    volume_heal_info = {}
-    info = op.split("\n\n")
-    for entry in info[:len(info) - 1]:
-        brick_heal_info = {}
-        brick_name = ""
-        heal_pending_cnt = 0
-        for line in entry.split("\n"):
-            if "Brick " in line:
-                brick_name = line.split(" ")[1]
-            if "Number of entries:" in line:
-                try:
-                    heal_pending_cnt = int(line.split(": ")[1])
-                except ValueError:
-                    # Sometimes the values are returned as `-`
-                    # if brick disconnected. Default to 0 in
-                    # that case
-                    heal_pending_cnt = 0
-        brick_heal_info['heal_pending_cnt'] = heal_pending_cnt
-        volume_heal_info[brick_name] = brick_heal_info
+def _parse_heal_info_stats(tree):
+    bricks_dict = {}
+    for brick in tree.findall("healInfo/bricks/brick"):
+        brick_name = brick.find("name").text
+        brick_host = brick_name.split(":")[0]
+        brick_path = brick_name.split(":")[1]
 
-    return volume_heal_info
+        # If brick host is returned as an IP conver to FQDN
+        try:
+            from IPy import IP
+            from dns import resolver, reversename
+            IP(brick_host)
+            addr = reversename.from_address(brick_host)
+            brick_host = str(resolver.query(addr, "PTR")[0])[:-1]
+        except ValueError:
+            pass
 
-
-def _parse_self_heal_info_split_brain_stats(op):
-    volume_heal_info = {}
-    info = op.split("\n\n")
-    for entry in info[:len(info) - 1]:
-        brick_heal_info = {}
-        brick_name = ""
-        split_brain_cnt = 0
-        for line in entry.split("\n"):
-            if "Brick " in line:
-                brick_name = line.split(" ")[1]
-            if "Number of entries in split-brain:" in line:
-                try:
-                    split_brain_cnt = int(line.split(": ")[1])
-                except ValueError:
-                    # Sometimes the values are returned as `-`
-                    # if brick disconnected. Default to 0 in
-                    # that case
-                    split_brain_cnt = 0
-        brick_heal_info['split_brain_cnt'] = split_brain_cnt
-        volume_heal_info[brick_name] = brick_heal_info
-
-    return volume_heal_info
+        no_of_entries = 0
+        try:
+            no_of_entries = int(brick.find("numberOfEntries").text)
+        except ValueError:
+            no_of_entries = 0
+        bricks_dict["%s:%s" % (brick_host, brick_path)] = no_of_entries
+    return bricks_dict
 
 
 def get_volume_heal_info_split_brain_stats(vol):
     for trial_cnt in xrange(0, 3):
         vol_heal_op, vol_heal_err = \
             tendrl_glusterfs_utils.exec_command(
-                "gluster volume heal %s info split-brain" % vol['name']
+                "gluster volume heal %s info split-brain --xml" % vol['name']
             )
         if vol_heal_err:
             time.sleep(5)
@@ -77,8 +60,8 @@ def get_volume_heal_info_split_brain_stats(vol):
         else:
             break
     try:
-        vol_heal_info = _parse_self_heal_info_split_brain_stats(
-            vol_heal_op
+        vol_heal_info = _parse_heal_info_stats(
+            ElementTree.fromstring(vol_heal_op)
         )
         return vol_heal_info
     except (
@@ -98,7 +81,7 @@ def get_volume_heal_info_stats(vol):
     for trial_cnt in xrange(0, 3):
         vol_heal_op, vol_heal_err = \
             tendrl_glusterfs_utils.exec_command(
-                "gluster volume heal %s info" % vol['name']
+                "gluster volume heal %s info --xml" % vol['name']
             )
         if vol_heal_err:
             time.sleep(5)
@@ -114,8 +97,8 @@ def get_volume_heal_info_stats(vol):
         else:
             break
     try:
-        vol_heal_info = _parse_self_heal_info_stats(
-            vol_heal_op
+        vol_heal_info = _parse_heal_info_stats(
+            ElementTree.fromstring(vol_heal_op)
         )
         return vol_heal_info
     except (
@@ -146,7 +129,7 @@ def get_heal_info(volume, integration_id):
                 key.split(":")[0].replace('.', '_'),
                 key.split(":")[1].replace('/', '|')
             )
-        ] = value['heal_pending_cnt']
+        ] = value
     for key, value in vol_heal_info_split_brain_stats.iteritems():
         if key == "" or value is None:
             continue
@@ -159,7 +142,7 @@ def get_heal_info(volume, integration_id):
                 key.split(":")[0].replace('.', '_'),
                 key.split(":")[1].replace('/', '|')
             )
-        ] = value['split_brain_cnt']
+        ] = value
 
 
 def get_metrics(CLUSTER_TOPOLOGY, CONFIG):
