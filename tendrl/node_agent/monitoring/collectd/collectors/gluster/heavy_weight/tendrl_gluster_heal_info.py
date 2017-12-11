@@ -145,6 +145,23 @@ def get_heal_info(volume, integration_id):
         ] = value
 
 
+def get_heal_info_disperse(volume, integration_id):
+    vol_heal_info_stats = get_volume_heal_info_stats(volume)
+    for key, value in vol_heal_info_stats.iteritems():
+        if key == "" or value is None:
+            continue
+        t_name = \
+            "clusters.%s.volumes.%s.nodes.%s.bricks.%s.heal_pending_cnt"
+        ret_val[
+            t_name % (
+                integration_id,
+                volume['name'],
+                key.split(":")[0].replace('.', '_'),
+                key.split(":")[1].replace('/', '|')
+            )
+        ] = value
+
+
 def get_metrics(CLUSTER_TOPOLOGY, CONFIG):
     global ret_val
     # threads = []
@@ -159,6 +176,8 @@ def get_metrics(CLUSTER_TOPOLOGY, CONFIG):
             # threads.append(
             #    thread
             # )
+        if 'Disperse' in volume.get('type', ''):
+            get_heal_info_disperse(volume, CONFIG['integration_id'])
     # for thread in threads:
     #    thread.join(1)
     # for thread in threads:
