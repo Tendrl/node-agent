@@ -18,6 +18,7 @@ namespace.integrations.gluster:
           - volume_utilization
         status:
           - volume_status
+          - volume_state
           - brick_status
           - quorum
           - ec_min_bricks_up
