@@ -10,6 +10,7 @@ from tendrl.commons.message import Message
 from tendrl.commons.objects.node_alert_counters import NodeAlertCounters
 from tendrl.commons import sds_sync
 from tendrl.commons.utils import etcd_utils
+from tendrl.commons.utils import event_utils
 from tendrl.commons.utils import time_utils
 
 from tendrl.integrations.gluster import check_cluster_status
@@ -50,6 +51,15 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 NodeAlertCounters(node_id=NS.node_context.node_id).save()
 
         _sleep = 0
+        msg = "Node {0} is UP".format(NS.node_context.fqdn)
+        event_utils.emit_event(
+            "node_status",
+            "UP",
+            msg,
+            "node_{0}".format(NS.node_context.fqdn),
+            "INFO",
+            node_id=NS.node_context.node_id
+        )
         while not self._complete.is_set():
             _sync_ttl = int(NS.config.data.get("sync_interval", 10)) + 100            
             if _sleep > 5:
@@ -59,6 +69,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 
             NS.node_context = NS.node_context.load()
             NS.node_context.sync_status = "in_progress"
+
             NS.node_context.status = "UP"
             NS.node_context.save(ttl=_sync_ttl)
             NS.tendrl_context = NS.tendrl_context.load()
