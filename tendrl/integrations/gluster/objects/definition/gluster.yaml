@@ -24,6 +24,7 @@ namespace.integrations.gluster:
           - ec_min_bricks_up
           - afr_quorum_state
           - afr_subvol_state
+          - georep_status
       value: /clusters/{0}/Volumes/{1}
       list: /clusters/{0}/Volumes/{1}
       help: "Volume Alert Counter"
