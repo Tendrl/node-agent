@@ -23,8 +23,9 @@ def _parse_heal_info_stats(tree):
 
         # If brick host is returned as an IP conver to FQDN
         try:
+            from dns import resolver
+            from dns import reversename
             from IPy import IP
-            from dns import resolver, reversename
             IP(brick_host)
             addr = reversename.from_address(brick_host)
             brick_host = str(resolver.query(addr, "PTR")[0])[:-1]
@@ -116,7 +117,9 @@ def get_volume_heal_info_stats(vol):
 
 def get_heal_info(volume, integration_id):
     vol_heal_info_stats = get_volume_heal_info_stats(volume)
-    vol_heal_info_split_brain_stats = get_volume_heal_info_split_brain_stats(volume)
+    vol_heal_info_split_brain_stats = get_volume_heal_info_split_brain_stats(
+        volume
+    )
     for key, value in vol_heal_info_stats.iteritems():
         if key == "" or value is None:
             continue

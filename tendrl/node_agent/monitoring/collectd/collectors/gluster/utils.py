@@ -308,7 +308,7 @@ def get_size_MB(size_str):
     if size_str.endswith("Bytes"):
         return float(size_str.split("Bytes")[0]) / (1024 * 1024)
     if size_str.endswith("KB"):
-        return float(size_Str.split("KB")[0]) / 1024
+        return float(size_str.split("KB")[0]) / 1024
     if size_str.endswith("MB"):
         return float(size_str.split("MB")[0])
     if size_str.endswith("GB"):

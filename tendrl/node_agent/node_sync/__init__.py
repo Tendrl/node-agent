@@ -1,8 +1,8 @@
 import threading
 import time
 
-from etcd import EtcdKeyNotFound
 from etcd import EtcdException
+from etcd import EtcdKeyNotFound
 
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
@@ -61,19 +61,19 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
             node_id=NS.node_context.node_id
         )
         while not self._complete.is_set():
-            _sync_ttl = int(NS.config.data.get("sync_interval", 10)) + 100            
+            _sync_ttl = int(NS.config.data.get("sync_interval", 10)) + 100
             if _sleep > 5:
                 _sleep = int(NS.config.data.get("sync_interval", 10))
             else:
                 _sleep += 1
-                
+
             NS.node_context = NS.node_context.load()
             NS.node_context.sync_status = "in_progress"
 
             NS.node_context.status = "UP"
             NS.node_context.save(ttl=_sync_ttl)
             NS.tendrl_context = NS.tendrl_context.load()
-            
+
             sync_cluster_contexts_thread = threading.Thread(
                 target=cluster_contexts_sync.sync, args=(_sync_ttl,))
             sync_cluster_contexts_thread.daemon = True
@@ -139,7 +139,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
             sync_cluster_contexts_thread.daemon = True
             sync_cluster_contexts_thread.start()
             sync_cluster_contexts_thread.join()
-            
+
             if "tendrl/monitor" in NS.node_context.tags:
                 check_all_managed_node_status_thread = threading.Thread(
                     target=check_all_managed_nodes_status.run)
@@ -160,7 +160,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                         GlusterIntegrtaionsSyncThread()
                     NS.gluster_integrations_sync_thread.start()
                     NS.gluster_sds_sync_running = True
-                    
+
             time.sleep(_sleep)
 
         Event(

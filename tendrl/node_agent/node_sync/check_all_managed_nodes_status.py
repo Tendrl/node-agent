@@ -2,8 +2,8 @@ import etcd
 import uuid
 
 from tendrl.commons.event import Event
-from tendrl.commons.objects.job import Job
 from tendrl.commons.message import Message
+from tendrl.commons.objects.job import Job
 from tendrl.commons.utils import etcd_utils
 from tendrl.commons.utils import event_utils
 
@@ -23,23 +23,14 @@ def run():
                 prevExist=False
             )
             _node_context = NS.tendrl.objects.NodeContext(
-                node_id=node_id).load()
-            _tc = NS.tendrl.objects.TendrlContext(node_id=node_id).load()
-            _cluster = NS.tendrl.objects.Cluster(
-                integration_id=_tc.integration_id).load()
-
-            msg = "Node {0} has gone DOWN".format(_node_context.fqdn)
-            event_utils.emit_event(
-                "node_status",
-                "DOWN",
-                msg,
-                "node_{0}".format(_node_context.fqdn),
-                "WARNING",
-                integration_id=_tc.integration_id,
-                cluster_name=_tc.cluster_name,
-                sds_name=_tc.sds_name,
                 node_id=node_id
-            )
+            ).load()
+            _tc = NS.tendrl.objects.TendrlContext(
+                node_id=node_id
+            ).load()
+            _cluster = NS.tendrl.objects.Cluster(
+                integration_id=_tc.integration_id
+            ).load()
 
             # Remove stale provisioner tag
             if _cluster.is_managed == "yes":
@@ -49,8 +40,9 @@ def run():
                     _node_context.tags.remove(_tag)
                     _node_context.save()
                     etcd_utils.delete(_index_key)
-                    _msg = "node_sync, STALE provisioner node found! re-"\
-                           "configuring monitoring (job-id: %s) on this node"
+                    _msg = "node_sync, STALE provisioner node "\
+                        "found! re-configuring monitoring "\
+                        "(job-id: %s) on this node"
                     payload = {
                         "tags": ["tendrl/node_%s" % node_id],
                         "run": "tendrl.flows.ConfigureMonitoring",
@@ -70,8 +62,7 @@ def run():
                         Message(
                             priority="debug",
                             publisher=NS.publisher_id,
-                            payload={"message": _msg % _job_id
-                                     }
+                            payload={"message": _msg % _job_id}
                         )
                     )
         except etcd.EtcdAlreadyExist:
