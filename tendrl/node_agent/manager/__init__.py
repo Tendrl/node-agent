@@ -112,7 +112,7 @@ def main():
             )
         )
         NS.node_agent.ns.setup_common_objects()
-        
+
     signal.signal(signal.SIGTERM, shutdown)
     signal.signal(signal.SIGINT, shutdown)
     signal.signal(signal.SIGHUP, reload_config)

@@ -47,10 +47,10 @@ def sync(sync_ttl=None):
                 if service_tag == "tendrl/server":
                     tags.append("tendrl/monitor")
             s.save()
-            
-        
+
         _cluster = NS.tendrl.objects.Cluster(
-                integration_id=NS.tendrl_context.integration_id).load()
+            integration_id=NS.tendrl_context.integration_id
+        ).load()
         if _cluster.is_managed == "yes":
             # Try to claim orphan "provisioner_%integration_id" tag
             _tag = "provisioner/%s" % _cluster.integration_id
@@ -86,31 +86,37 @@ def sync(sync_ttl=None):
         current_tags.sort()
         if NS.node_context.tags != current_tags:
             NS.node_context.save()
-            
+
         if _cluster.is_managed == "yes":
             if _is_new_provisioner:
-                _msg = "node_sync, NEW provisioner node found! re-configuring monitoring (job-id: %s) on this node"
+                _msg = "node_sync, NEW provisioner node found! "\
+                    "re-configuring monitoring (job-id: %s) on this node"
                 payload = {
-               "tags": ["tendrl/node_%s" % NS.node_context.node_id],
-               "run": "tendrl.flows.ConfigureMonitoring",
-               "status": "new",
-               "parameters": {'TendrlContext.integration_id': NS.tendrl_context.integration_id},
-               "type": "node"
+                    "tags": [
+                        "tendrl/node_%s" % NS.node_context.node_id
+                    ],
+                    "run": "tendrl.flows.ConfigureMonitoring",
+                    "status": "new",
+                    "parameters": {
+                        'TendrlContext.integration_id':
+                        NS.tendrl_context.integration_id
+                    },
+                    "type": "node"
                 }
                 _job_id = str(uuid.uuid4())
-                Job(job_id=_job_id,
-                status="new",
-                payload=payload).save()
+                Job(
+                    job_id=_job_id,
+                    status="new",
+                    payload=payload
+                ).save()
                 Event(
                     Message(
                         priority="debug",
                         publisher=NS.publisher_id,
-                        payload={"message": _msg % _job_id
-                                 }
+                        payload={"message": _msg % _job_id}
                     )
                 )
 
-            
         # Update /indexes/tags/:tag = [node_ids]
         for tag in NS.node_context.tags:
 
@@ -121,7 +127,7 @@ def sync(sync_ttl=None):
                 _node_ids = json.loads(_node_ids)
             except etcd.EtcdKeyNotFound:
                 pass
-            
+
             if _node_ids:
                 if "provisioner" in tag:
                     # Check if this is a stale provisioner
@@ -140,14 +146,15 @@ def sync(sync_ttl=None):
             etcd_utils.write(index_key, json.dumps(_node_ids))
             if sync_ttl and len(_node_ids) == 1:
                 etcd_utils.refresh(index_key, sync_ttl)
-                
+
         Event(
             Message(
                 priority="debug",
                 publisher=NS.publisher_id,
-                payload={"message": "node_sync, Updating detected "
-                                    "platform"
-                         }
+                payload={
+                    "message": "node_sync, Updating detected "
+                    "platform"
+                }
             )
         )
     except Exception as ex:

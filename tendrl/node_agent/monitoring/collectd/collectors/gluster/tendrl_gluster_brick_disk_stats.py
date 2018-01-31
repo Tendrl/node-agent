@@ -78,19 +78,25 @@ class TendrlBrickDeviceStatsPlugin(object):
             collectd.warning(_msg)
             collectd.warning(traceback.format_exc())
             return [], [], mount_point
-        
         except SyntaxError:
-            _msg = "Unable to parse brick device data for integration_id (%s), peer_name (%s), brick (%s)" % (self.CONFIG['integration_id'],
-                                                                                                              self.CONFIG['peer_name'],
-                                                                                                              brick_path.replace('/', '_').replace("_", "", 1))
+            _msg = "Unable to parse brick device data for "\
+                "integration_id (%s), peer_name (%s), brick "\
+                "(%s)" % (
+                    self.CONFIG['integration_id'],
+                    self.CONFIG['peer_name'],
+                    brick_path.replace('/', '_').replace("_", "", 1)
+                )
             collectd.warning(_msg)
             collectd.warning(traceback.format_exc())
             return [], [], mount_point
-        
         except etcd.EtcdKeyNotFound:
-            _msg = "Unable to parse brick device data for integration_id (%s), peer_name (%s), brick (%s)" % (self.CONFIG['integration_id'],
-                                                                                                              self.CONFIG['peer_name'],
-                                                                                                              brick_path.replace('/', '_').replace("_", "", 1))
+            _msg = "Unable to parse brick device data for "\
+                "integration_id (%s), peer_name (%s), brick "\
+                "(%s)" % (
+                    self.CONFIG['integration_id'],
+                    self.CONFIG['peer_name'],
+                    brick_path.replace('/', '_').replace("_", "", 1)
+                )
             collectd.warning(_msg)
             collectd.warning(traceback.format_exc())
             return [], [], mount_point

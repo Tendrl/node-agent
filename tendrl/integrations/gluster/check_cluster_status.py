@@ -28,10 +28,10 @@ def run():
                     prevExist=False
                 )
 
-                cluster_tendrl_context = NS.tendrl.objects.ClusterTendrlContext(
-                    integration_id=int_id
-                ).load()
-
+                cluster_tendrl_context = \
+                    NS.tendrl.objects.ClusterTendrlContext(
+                        integration_id=int_id
+                    ).load()
 
                 msg = "Cluster {0} moved to unhealthy state".format(
                     cluster_tendrl_context.cluster_name
@@ -40,7 +40,9 @@ def run():
                     "cluster_health_status",
                     "unhealthy",
                     msg,
-                    "cluster_{0}".format(cluster_tendrl_context.integration_id),
+                    "cluster_{0}".format(
+                        cluster_tendrl_context.integration_id
+                    ),
                     "WARNING",
                     integration_id=cluster_tendrl_context.integration_id,
                     cluster_name=cluster_tendrl_context.cluster_name,

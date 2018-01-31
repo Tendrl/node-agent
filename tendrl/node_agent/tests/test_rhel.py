@@ -3,9 +3,11 @@ from tendrl.node_agent.discovery.platform.plugins import rhel
 
 
 class TestRhel(object):
+    @classmethod
     def setup_method(self):
         self.obj = rhel.RHELPlugin()
 
+    @classmethod
     def test_discover_platform(self, monkeypatch):
         def mock_result():
             return ["rhel", "7.0"]

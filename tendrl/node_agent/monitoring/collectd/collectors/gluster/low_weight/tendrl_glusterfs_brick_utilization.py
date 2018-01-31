@@ -80,7 +80,7 @@ class TendrlBrickUtilizationPlugin(
                 )
             else:
                 out = stdout.split('\n')[:-1]
-                l = map(
+                lv_det = map(
                     lambda x: dict(x), map(
                         lambda x: [
                             e.split('=') for e in x
@@ -89,7 +89,7 @@ class TendrlBrickUtilizationPlugin(
                     )
                 )
                 d = {}
-                for i in l:
+                for i in lv_det:
                     if i['LVM2_LV_ATTR'][0] == 't':
                         k = "%s/%s" % (i['LVM2_VG_NAME'], i['LVM2_LV_NAME'])
                     else:

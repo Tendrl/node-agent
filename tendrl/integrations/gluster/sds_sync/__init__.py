@@ -1,11 +1,8 @@
 import etcd
 import time
 
-from tendrl.commons.objects.job import Job
 from tendrl.commons import sds_sync
 from tendrl.commons.utils import log_utils as logger
-
-import uuid
 
 
 class GlusterIntegrtaionsSyncThread(sds_sync.StateSyncThread):
@@ -61,12 +58,14 @@ class GlusterIntegrtaionsSyncThread(sds_sync.StateSyncThread):
 
                     for brick in bricks.leaves:
                         try:
-                            NS._int.wclient.write("{0}/status".format(brick.key),
-                                                  "Stopped")
+                            NS._int.wclient.write(
+                                "{0}/status".format(brick.key),
+                                "Stopped"
+                            )
                         except (etcd.EtcdAlreadyExist, etcd.EtcdKeyNotFound):
                             pass
-                        
+
                 except etcd.EtcdKeyNotFound:
                     pass
-                
+
             time.sleep(_sleep)
