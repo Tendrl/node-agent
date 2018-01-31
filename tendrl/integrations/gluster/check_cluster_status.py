@@ -1,6 +1,7 @@
 import etcd
 
 from tendrl.commons.utils import etcd_utils
+from tendrl.commons.utils import event_utils
 
 
 def run():
@@ -25,6 +26,25 @@ def run():
                     ),
                     "unhealthy",
                     prevExist=False
+                )
+
+                cluster_tendrl_context = NS.tendrl.objects.ClusterTendrlContext(
+                    integration_id=int_id
+                ).load()
+
+
+                msg = "Cluster {0} moved to unhealthy state".format(
+                    cluster_tendrl_context.cluster_name
+                )
+                event_utils.emit_event(
+                    "cluster_health_status",
+                    "unhealthy",
+                    msg,
+                    "cluster_{0}".format(cluster_tendrl_context.integration_id),
+                    "WARNING",
+                    integration_id=cluster_tendrl_context.integration_id,
+                    cluster_name=cluster_tendrl_context.cluster_name,
+                    sds_name=cluster_tendrl_context.sds_name
                 )
         except etcd.EtcdAlreadyExist:
             pass
