@@ -55,7 +55,6 @@ install -Dm 644 etc/tendrl/node-agent/*.sample $RPM_BUILD_ROOT%{_datadir}/tendrl
 mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/rsyslog.d
 install -Dm 644 etc/rsyslog.d/tendrl-node-agent.conf $RPM_BUILD_ROOT/%{_sysconfdir}/rsyslog.d/tendrl-node-agent.conf
 cp -a tendrl/node_agent/monitoring/collectd/collectors/* $RPM_BUILD_ROOT%{_libdir}/collectd/
-cp -a tendrl/node_agent/monitoring/collectd/templates/ceph/* $RPM_BUILD_ROOT%{_sysconfdir}/collectd_template/
 cp -a tendrl/node_agent/monitoring/collectd/templates/gluster/* $RPM_BUILD_ROOT%{_sysconfdir}/collectd_template/
 cp -a tendrl/node_agent/monitoring/collectd/templates/node/* $RPM_BUILD_ROOT%{_sysconfdir}/collectd_template/
 

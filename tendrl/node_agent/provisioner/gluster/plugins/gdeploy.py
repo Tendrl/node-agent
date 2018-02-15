@@ -1,7 +1,6 @@
 import importlib
 
-from tendrl.commons.event import Event
-from tendrl.commons.message import Message
+from tendrl.commons.utils import log_utils as logger
 from tendrl.commons.utils.ssh import generate_key
 from tendrl.node_agent.provisioner.gluster.provisioner_base import\
     ProvisionerBasePlugin
@@ -13,15 +12,11 @@ try:
     from python_gdeploy.actions import install_gluster
     from python_gdeploy.actions import remove_host
 except ImportError:
-    Event(
-        Message(
-            priority="debug",
-            publisher=NS.publisher_id,
-            payload={
-                "message": "python-gdeploy is not installed in this node"
-            },
-            cluster_id=NS.tendrl_context.integration_id,
-        )
+    logger.log(
+        "debug",
+        NS.publisher_id,
+        {"message": "python-gdeploy is not installed in this node"},
+        integration_id=NS.tendrl_context.integration_id
     )
 
 
@@ -46,27 +41,19 @@ class GdeployPlugin(ProvisionerBasePlugin):
             repo
         )
         if rc == 0:
-            Event(
-                Message(
-                    priority="info",
-                    publisher=NS.publisher_id,
-                    payload={
-                        "message": "gluster packages installed successfully"
-                    },
-                    cluster_id=NS.tendrl_context.integration_id,
-                )
+            logger.log(
+                "info",
+                NS.publisher_id,
+                {"message": "gluster packages installed successfully"},
+                integration_id=NS.tendrl_context.integration_id
             )
         else:
-            Event(
-                Message(
-                    priority="info",
-                    publisher=NS.publisher_id,
-                    payload={
-                        "message": "Error while installing glusterfs packages"
-                        ". Details: %s" % str(out)
-                    },
-                    cluster_id=NS.tendrl_context.integration_id,
-                )
+            logger.log(
+                "error",
+                NS.publisher_id,
+                {"message": "Error while installing glusterfs packages"
+                 ". Details: %s" % str(out)},
+                integration_id=NS.tendrl_context.integration_id
             )
             return False
 
@@ -74,27 +61,19 @@ class GdeployPlugin(ProvisionerBasePlugin):
             hosts
         )
         if rc == 0:
-            Event(
-                Message(
-                    priority="debug",
-                    publisher=NS.publisher_id,
-                    payload={
-                        "message": "glusterd service started successfully"
-                    },
-                    cluster_id=NS.tendrl_context.integration_id,
-                )
+            logger.log(
+                "debug",
+                NS.publisher_id,
+                {"message": "glusterd service started successfully"},
+                integration_id=NS.tendrl_context.integration_id
             )
         else:
-            Event(
-                Message(
-                    priority="debug",
-                    publisher=NS.publisher_id,
-                    payload={
-                        "message": "Error while starting glusterd service"
-                        ". Details: %s" % str(out)
-                    },
-                    cluster_id=NS.tendrl_context.integration_id,
-                )
+            logger.log(
+                "debug",
+                NS.publisher_id,
+                {"message": "Error while starting glusterd service"
+                 ". Details: %s" % str(out)},
+                integration_id=NS.tendrl_context.integration_id
             )
             return False
 
@@ -106,28 +85,20 @@ class GdeployPlugin(ProvisionerBasePlugin):
         #    hosts
         # )
         # if rc == 0:
-        #    Event(
-        #        Message(
-        #            priority="info",
-        #            publisher=NS.publisher_id,
-        #            payload={
-        #                "message": "gluster firewall configured successfully"
-        #            },
-        #            cluster_id=NS.tendrl_context.integration_id,
-        #        )
-        #    )
+        #    logger.log(
+        #         "info",
+        #         NS.publisher_id,
+        #         {"message": "gluster firewall configured successfully"},
+        #         integration_id=NS.tendrl_context.integration_id
+        #     )
         # else:
-        #    Event(
-        #        Message(
-        #            priority="error",
-        #            publisher=NS.publisher_id,
-        #            payload={
-        #                "message": "Error while configuring gluster firewall"
-        #                ". Details: %s" % str(out)
-        #            },
-        #            cluster_id=NS.tendrl_context.integration_id,
-        #        )
-        #    )
+        #     logger.log(
+        #         "error",
+        #         NS.publisher_id,
+        #         {"message": "Error while configuring gluster firewall"
+        #          ". Details: %s" % str(out)},
+        #         integration_id=NS.tendrl_context.integration_id
+        #     )
         #    return False
         return True
 
@@ -137,27 +108,19 @@ class GdeployPlugin(ProvisionerBasePlugin):
             hosts
         )
         if rc == 0:
-            Event(
-                Message(
-                    priority="info",
-                    publisher=NS.publisher_id,
-                    payload={
-                        "message": "gluster cluster created successfully"
-                    },
-                    cluster_id=NS.tendrl_context.integration_id,
-                )
+            logger.log(
+                "info",
+                NS.publisher_id,
+                {"message": "gluster cluster created successfully"},
+                integration_id=NS.tendrl_context.integration_id
             )
         else:
-            Event(
-                Message(
-                    priority="debug",
-                    publisher=NS.publisher_id,
-                    payload={
-                        "message": "Error while creating gluster cluster"
-                        ". Details: %s" % str(out)
-                    },
-                    cluster_id=NS.tendrl_context.integration_id,
-                )
+            logger.log(
+                "debug",
+                NS.publisher_id,
+                {"message": "Error while creating gluster cluster"
+                 ". Details: %s" % str(out)},
+                integration_id=NS.tendrl_context.integration_id
             )
             return False
         return True
@@ -169,27 +132,19 @@ class GdeployPlugin(ProvisionerBasePlugin):
             [current_host, host]
         )
         if rc == 0:
-            Event(
-                Message(
-                    priority="info",
-                    publisher=NS.publisher_id,
-                    payload={
-                        "message": "gluster cluster expandeded successfully"
-                    },
-                    cluster_id=NS.tendrl_context.integration_id,
-                )
+            logger.log(
+                "info",
+                NS.publisher_id,
+                {"message": "gluster cluster expandeded successfully"},
+                integration_id=NS.tendrl_context.integration_id
             )
         else:
-            Event(
-                Message(
-                    priority="debug",
-                    publisher=NS.publisher_id,
-                    payload={
-                        "message": "Error while expanding gluster cluster"
-                        ". Details: %s" % str(out)
-                    },
-                    cluster_id=NS.tendrl_context.integration_id,
-                )
+            logger.log(
+                "debug",
+                NS.publisher_id,
+                {"message": "Error while expanding gluster cluster"
+                 ". Details: %s" % str(out)},
+                integration_id=NS.tendrl_context.integration_id
             )
             return False
         return True
@@ -201,27 +156,19 @@ class GdeployPlugin(ProvisionerBasePlugin):
             [current_host, host]
         )
         if rc == 0:
-            Event(
-                Message(
-                    priority="info",
-                    publisher=NS.publisher_id,
-                    payload={
-                        "message": "gluster cluster shrinked successfully"
-                    },
-                    cluster_id=NS.tendrl_context.integration_id,
-                )
+            logger.log(
+                "info",
+                NS.publisher_id,
+                {"message": "gluster cluster shrinked successfully"},
+                integration_id=NS.tendrl_context.integration_id
             )
         else:
-            Event(
-                Message(
-                    priority="debug",
-                    publisher=NS.publisher_id,
-                    payload={
-                        "message": "Error while shrinking gluster cluster"
-                        ". Details: %s" % str(out)
-                    },
-                    cluster_id=NS.tendrl_context.integration_id,
-                )
+            logger.log(
+                "debug",
+                NS.publisher_id,
+                {"message": "Error while shrinking gluster cluster"
+                 ". Details: %s" % str(out)},
+                integration_id=NS.tendrl_context.integration_id
             )
             return False
         return True

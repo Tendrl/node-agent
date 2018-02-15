@@ -5,9 +5,9 @@ import etcd
 
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
-from tendrl.commons.message import Message
 from tendrl.commons.objects.job import Job
 from tendrl.commons.utils import etcd_utils
+from tendrl.commons.utils import log_utils as logger
 
 # TODO(darshan) this has to be moved to Definition file
 
@@ -28,13 +28,10 @@ def sync(sync_ttl=None):
     try:
         tags = []
         # update node agent service details
-
-        Event(
-            Message(
-                priority="debug",
-                publisher=NS.publisher_id,
-                payload={"message": "node_sync, Updating Service data"}
-            )
+        logger.log(
+            "debug",
+            NS.publisher_id,
+            {"message": "node_sync, Updating Service data"}
         )
         for service in TENDRL_SERVICES:
             s = NS.tendrl.objects.Service(service=service)
@@ -69,14 +66,11 @@ def sync(sync_ttl=None):
                     pass
 
         # updating node context with latest tags
-        Event(
-            Message(
-                priority="debug",
-                publisher=NS.publisher_id,
-                payload={"message": "node_sync, updating node context "
-                                    "data with tags"
-                         }
-            )
+        logger.log(
+            "debug",
+            NS.publisher_id,
+            {"message": "node_sync, updating node context "
+                        "data with tags"}
         )
         NS.node_context = NS.tendrl.objects.NodeContext().load()
         current_tags = list(NS.node_context.tags)
@@ -109,12 +103,10 @@ def sync(sync_ttl=None):
                     status="new",
                     payload=payload
                 ).save()
-                Event(
-                    Message(
-                        priority="debug",
-                        publisher=NS.publisher_id,
-                        payload={"message": _msg % _job_id}
-                    )
+                logger.log(
+                    "debug",
+                    NS.publisher_id,
+                    {"message": _msg % _job_id}
                 )
 
         # Update /indexes/tags/:tag = [node_ids]
@@ -146,16 +138,11 @@ def sync(sync_ttl=None):
             etcd_utils.write(index_key, json.dumps(_node_ids))
             if sync_ttl and len(_node_ids) == 1:
                 etcd_utils.refresh(index_key, sync_ttl)
-
-        Event(
-            Message(
-                priority="debug",
-                publisher=NS.publisher_id,
-                payload={
-                    "message": "node_sync, Updating detected "
-                    "platform"
-                }
-            )
+        logger.log(
+            "debug",
+            NS.publisher_id,
+            {"message": "node_sync, Updating detected "
+             "platform"}
         )
     except Exception as ex:
         Event(
