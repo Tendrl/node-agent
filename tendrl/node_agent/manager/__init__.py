@@ -1,10 +1,9 @@
 import signal
 import threading
 
-from tendrl.commons.event import Event
 from tendrl.commons import manager as commons_manager
-from tendrl.commons.message import Message
 from tendrl.commons import TendrlNS
+from tendrl.commons.utils import log_utils as logger
 from tendrl.node_agent.provisioner.gluster.manager import \
     ProvisioningManager as GlusterProvisioningManager
 
@@ -90,12 +89,10 @@ def main():
     complete = threading.Event()
 
     def shutdown(signum, frame):
-        Event(
-            Message(
-                priority="debug",
-                publisher=NS.publisher_id,
-                payload={"message": "Signal handler: stopping"}
-            )
+        logger.log(
+            "debug",
+            NS.publisher_id,
+            {"message": "Signal handler: stopping"}
         )
         complete.set()
         m.stop()
@@ -104,12 +101,10 @@ def main():
             NS.gluster_integrations_sync_thread.stop()
 
     def reload_config(signum, frame):
-        Event(
-            Message(
-                priority="debug",
-                publisher=NS.publisher_id,
-                payload={"message": "Signal handler: SIGHUP"}
-            )
+        logger.log(
+            "debug",
+            NS.publisher_id,
+            {"message": "Signal handler: SIGHUP"}
         )
         NS.node_agent.ns.setup_common_objects()
 

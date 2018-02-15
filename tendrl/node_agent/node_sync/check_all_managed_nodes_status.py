@@ -1,10 +1,9 @@
 import etcd
 import uuid
 
-from tendrl.commons.event import Event
-from tendrl.commons.message import Message
 from tendrl.commons.objects.job import Job
 from tendrl.commons.utils import etcd_utils
+from tendrl.commons.utils import log_utils as logger
 
 
 def run():
@@ -57,12 +56,10 @@ def run():
                         status="new",
                         payload=payload
                     ).save()
-                    Event(
-                        Message(
-                            priority="debug",
-                            publisher=NS.publisher_id,
-                            payload={"message": _msg % _job_id}
-                        )
+                    logger.log(
+                        "debug",
+                        NS.publisher_id,
+                        {"message": _msg % _job_id}
                     )
         except etcd.EtcdAlreadyExist:
             pass

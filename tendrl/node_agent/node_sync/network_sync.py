@@ -4,8 +4,8 @@ import netifaces as ni
 
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
-from tendrl.commons.message import Message
 from tendrl.commons.utils import cmd_utils
+from tendrl.commons.utils import log_utils as logger
 
 
 def sync():
@@ -149,14 +149,11 @@ def get_node_network():
                 network_interfaces[interface_name].update(devlist)
                 rv.append(network_interfaces[interface_name])
     else:
-        Event(
-            Message(
-                priority="debug",
-                publisher=NS.publisher_id,
-                payload={"message": err}
-            )
+        logger.log(
+            "debug",
+            NS.publisher_id,
+            {"message": err}
         )
-
     return rv
 
 
@@ -193,14 +190,11 @@ def get_node_interface():
                     for ipv6_addr_detail in ipv6_addr_list:
                         ipv6.append(ipv6_addr_detail['addr'])
             else:
-                Event(
-                    Message(
-                        priority="debug",
-                        publisher=NS.publisher_id,
-                        payload={"message": err}
-                    )
+                logger.log(
+                    "debug",
+                    NS.publisher_id,
+                    {"message": err}
                 )
-
             rv[interface] = (
                 {
                     "ipv4": ipv4,

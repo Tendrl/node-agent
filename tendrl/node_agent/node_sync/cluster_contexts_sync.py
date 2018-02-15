@@ -1,21 +1,17 @@
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
-from tendrl.commons.message import Message
+from tendrl.commons.utils import log_utils as logger
 
 
 def sync(sync_ttl):
     try:
         if NS.tendrl_context.integration_id:
-            Event(
-                Message(
-                    priority="debug",
-                    publisher=NS.publisher_id,
-                    payload={"message": "node_sync, updating "
-                                        "cluster tendrl context"
-                             }
-                )
+            logger.log(
+                "debug",
+                NS.publisher_id,
+                {"message": "node_sync, updating "
+                            "cluster tendrl context"}
             )
-
             NS.tendrl.objects.ClusterTendrlContext(
                 integration_id=NS.tendrl_context.integration_id,
                 cluster_id=NS.tendrl_context.cluster_id,
@@ -23,14 +19,11 @@ def sync(sync_ttl):
                 sds_name=NS.tendrl_context.sds_name,
                 sds_version=NS.tendrl_context.sds_version
             ).save()
-            Event(
-                Message(
-                    priority="debug",
-                    publisher=NS.publisher_id,
-                    payload={"message": "node_sync, Updating"
-                                        "cluster node context"
-                             }
-                )
+            logger.log(
+                "debug",
+                NS.publisher_id,
+                {"message": "node_sync, Updating"
+                            "cluster node context"}
             )
             NS.tendrl.objects.ClusterNodeContext(
                 node_id=NS.node_context.node_id,

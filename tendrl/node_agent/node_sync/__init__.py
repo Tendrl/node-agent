@@ -6,11 +6,11 @@ from etcd import EtcdKeyNotFound
 
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
-from tendrl.commons.message import Message
 from tendrl.commons.objects.node_alert_counters import NodeAlertCounters
 from tendrl.commons import sds_sync
 from tendrl.commons.utils import etcd_utils
 from tendrl.commons.utils import event_utils
+from tendrl.commons.utils import log_utils as logger
 from tendrl.commons.utils import time_utils
 
 from tendrl.integrations.gluster import check_cluster_status
@@ -28,14 +28,11 @@ from tendrl.node_agent.node_sync import services_and_index_sync
 
 class NodeAgentSyncThread(sds_sync.StateSyncThread):
     def run(self):
-        Event(
-            Message(
-                priority="info",
-                publisher=NS.publisher_id,
-                payload={"message": "%s running" % self.__class__.__name__}
-            )
+        logger.log(
+            "info",
+            NS.publisher_id,
+            {"message": "%s running" % self.__class__.__name__}
         )
-
         NS.node_context = NS.node_context.load()
         current_tags = list(NS.node_context.tags)
         current_tags += ["tendrl/node_%s" % NS.node_context.node_id]
@@ -162,11 +159,8 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                     NS.gluster_sds_sync_running = True
 
             time.sleep(_sleep)
-
-        Event(
-            Message(
-                priority="info",
-                publisher=NS.publisher_id,
-                payload={"message": "%s complete" % self.__class__.__name__}
-            )
+        logger.log(
+            "info",
+            NS.publisher_id,
+            {"message": "%s complete" % self.__class__.__name__}
         )

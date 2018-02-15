@@ -5,19 +5,16 @@ import etcd
 
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
-from tendrl.commons.message import Message
-
+from tendrl.commons.utils import log_utils as logger
 from tendrl.node_agent.discovery.sds import manager as sds_manager
 
 
 def sync():
     try:
-        Event(
-            Message(
-                priority="debug",
-                publisher=NS.publisher_id,
-                payload={"message": "Running SDS detection"}
-            )
+        logger.log(
+            "debug",
+            NS.publisher_id,
+            {"message": "Running SDS detection"}
         )
         try:
             sds_discovery_manager = sds_manager.SDSDiscoveryManager()
