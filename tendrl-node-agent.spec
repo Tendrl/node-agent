@@ -1,5 +1,5 @@
 Name: tendrl-node-agent
-Version: 1.5.5
+Version: 1.6.0
 Release: 1%{?dist}
 BuildArch: noarch
 Summary: Module for Tendrl Node Agent
@@ -92,6 +92,9 @@ py.test -v tendrl/node-agent/tests || :
 %config(noreplace) %{_sysconfdir}/rsyslog.d/tendrl-node-agent.conf
 
 %changelog
+* Sat Feb 17 2018 Rohan Kanade <rkanade@redhat.com> - 1.6.0-1
+- API to un-manage clusters managed by Tendrl
+
 * Fri Feb 02 2018 Rohan Kanade <rkanade@redhat.com> - 1.5.5-1
 - Raise alert when node goes down, when cluster health changes
 - Add georep related alert also for volume alert count increment
