@@ -1,5 +1,6 @@
 [Unit]
 Description= A python agent local to every managed storage node in the sds cluster
+Documentation=https://github.com/Tendrl/node-agent/tree/master/doc/source
 Wants=network-online.target
 After=network.target network-online.target
 Requires=tendrl-node-agent.socket
