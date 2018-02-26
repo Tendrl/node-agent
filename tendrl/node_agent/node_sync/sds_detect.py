@@ -41,6 +41,22 @@ def sync():
                         integration_index_key = \
                             "indexes/detected_cluster_id_to_integration_id/" \
                             "%s" % sds_details['detected_cluster_id']
+
+                        if "provisioner/%s" % NS.tendrl_context.integration_id \
+                            in NS.node_context.tags:
+                            dc = NS.tendrl.objects.DetectedCluster().load()
+                            if dc.detected_cluster_id:
+                                if dc.detected_cluster_id != sds_details.get(
+                                    'detected_cluster_id'):
+                                    integration_id = \
+                                        NS.tendrl_context.integration_id
+                            else:
+                                integration_id = str(uuid.uuid4())
+                                
+                            etcd_utils.write(integration_index_key,
+                                             integration_id
+                            )
+
                         while True:
                             # Wait till provisioner node assigns
                             # integration_id for this detected_cluster_id
