@@ -48,15 +48,33 @@ def sync():
                             if dc.detected_cluster_id:
                                 if dc.detected_cluster_id != sds_details.get(
                                     'detected_cluster_id'):
+                                    # Gluster peer list has changed
                                     integration_id = \
                                         NS.tendrl_context.integration_id
+                                    etcd_utils.write(
+                                        integration_index_key,
+                                        integration_id
+                                    )
+                                    params = {
+                                        'TendrlContext.integration_id': integration_id,
+                                    }
+                                    payload = {
+                                        "tags": ["provisioner/%s" % integration_id],
+                                        "run": "tendrl.flows.ExpandClusterWithDetectedPeers",
+                                        "status": "new",
+                                        "parameters": params,
+                                        "type": "node"
+                                    }
+                                    _job_id = str(uuid.uuid4())
+                                    Job(job_id=_job_id, status="new",
+                                        payload=payload).save()
                             else:
                                 integration_id = str(uuid.uuid4())
-                                
-                            etcd_utils.write(integration_index_key,
-                                             integration_id
-                            )
+                                etcd_utils.write(integration_index_key,
+                                                 integration_id
+                                )
 
+                                
                         while True:
                             # Wait till provisioner node assigns
                             # integration_id for this detected_cluster_id
