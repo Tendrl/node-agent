@@ -21,7 +21,7 @@ def sync(sync_ttl):
                     sds_name=NS.tendrl_context.sds_name,
                     sds_version=NS.tendrl_context.sds_version
                 ).save()
-            
+
             logger.log(
                 "debug",
                 NS.publisher_id,
