@@ -2,8 +2,8 @@ import os
 
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
-from tendrl.commons.message import Message
 from tendrl.commons.utils import cmd_utils
+from tendrl.commons.utils import log_utils as logger
 
 
 def sync():
@@ -325,12 +325,10 @@ def get_node_block_devices(disks_map):
                 block_devices['free'].append(parent['device_name'])
             block_devices['all'].append(parent)
     else:
-        Event(
-            Message(
-                priority="debug",
-                publisher=NS.publisher_id,
-                payload={"message": err}
-            )
+        logger.log(
+            "debug",
+            NS.publisher_id,
+            {"message": err}
         )
     return block_devices
 
@@ -355,12 +353,10 @@ def get_raw_reference():
                 line = line.replace("  ", " ")
                 raw_reference[path].append(line.split(' ', 8)[-1])
         else:
-            Event(
-                Message(
-                    priority="debug",
-                    publisher=NS.publisher_id,
-                    payload={"message": err}
-                )
+            logger.log(
+                "debug",
+                NS.publisher_id,
+                {"message": err}
             )
     return raw_reference
 

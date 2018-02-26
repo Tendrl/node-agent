@@ -5,9 +5,9 @@ import etcd
 
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
-from tendrl.commons.message import Message
 from tendrl.commons.objects.job import Job
 from tendrl.commons.utils import etcd_utils
+from tendrl.commons.utils import log_utils as logger
 
 # TODO(darshan) this has to be moved to Definition file
 
@@ -28,13 +28,10 @@ def sync(sync_ttl=None):
     try:
         tags = []
         # update node agent service details
-
-        Event(
-            Message(
-                priority="debug",
-                publisher=NS.publisher_id,
-                payload={"message": "node_sync, Updating Service data"}
-            )
+        logger.log(
+            "debug",
+            NS.publisher_id,
+            {"message": "node_sync, Updating Service data"}
         )
         for service in TENDRL_SERVICES:
             s = NS.tendrl.objects.Service(service=service)
@@ -47,10 +44,10 @@ def sync(sync_ttl=None):
                 if service_tag == "tendrl/server":
                     tags.append("tendrl/monitor")
             s.save()
-            
-        
+
         _cluster = NS.tendrl.objects.Cluster(
-                integration_id=NS.tendrl_context.integration_id).load()
+            integration_id=NS.tendrl_context.integration_id
+        ).load()
         if _cluster.is_managed == "yes":
             # Try to claim orphan "provisioner_%integration_id" tag
             _tag = "provisioner/%s" % _cluster.integration_id
@@ -69,14 +66,11 @@ def sync(sync_ttl=None):
                     pass
 
         # updating node context with latest tags
-        Event(
-            Message(
-                priority="debug",
-                publisher=NS.publisher_id,
-                payload={"message": "node_sync, updating node context "
-                                    "data with tags"
-                         }
-            )
+        logger.log(
+            "debug",
+            NS.publisher_id,
+            {"message": "node_sync, updating node context "
+                        "data with tags"}
         )
         NS.node_context = NS.tendrl.objects.NodeContext().load()
         current_tags = list(NS.node_context.tags)
@@ -86,31 +80,35 @@ def sync(sync_ttl=None):
         current_tags.sort()
         if NS.node_context.tags != current_tags:
             NS.node_context.save()
-            
+
         if _cluster.is_managed == "yes":
             if _is_new_provisioner:
-                _msg = "node_sync, NEW provisioner node found! re-configuring monitoring (job-id: %s) on this node"
+                _msg = "node_sync, NEW provisioner node found! "\
+                    "re-configuring monitoring (job-id: %s) on this node"
                 payload = {
-               "tags": ["tendrl/node_%s" % NS.node_context.node_id],
-               "run": "tendrl.flows.ConfigureMonitoring",
-               "status": "new",
-               "parameters": {'TendrlContext.integration_id': NS.tendrl_context.integration_id},
-               "type": "node"
+                    "tags": [
+                        "tendrl/node_%s" % NS.node_context.node_id
+                    ],
+                    "run": "tendrl.flows.ConfigureMonitoring",
+                    "status": "new",
+                    "parameters": {
+                        'TendrlContext.integration_id':
+                        NS.tendrl_context.integration_id
+                    },
+                    "type": "node"
                 }
                 _job_id = str(uuid.uuid4())
-                Job(job_id=_job_id,
-                status="new",
-                payload=payload).save()
-                Event(
-                    Message(
-                        priority="debug",
-                        publisher=NS.publisher_id,
-                        payload={"message": _msg % _job_id
-                                 }
-                    )
+                Job(
+                    job_id=_job_id,
+                    status="new",
+                    payload=payload
+                ).save()
+                logger.log(
+                    "debug",
+                    NS.publisher_id,
+                    {"message": _msg % _job_id}
                 )
 
-            
         # Update /indexes/tags/:tag = [node_ids]
         for tag in NS.node_context.tags:
 
@@ -121,7 +119,7 @@ def sync(sync_ttl=None):
                 _node_ids = json.loads(_node_ids)
             except etcd.EtcdKeyNotFound:
                 pass
-            
+
             if _node_ids:
                 if "provisioner" in tag:
                     # Check if this is a stale provisioner
@@ -140,15 +138,11 @@ def sync(sync_ttl=None):
             etcd_utils.write(index_key, json.dumps(_node_ids))
             if sync_ttl and len(_node_ids) == 1:
                 etcd_utils.refresh(index_key, sync_ttl)
-                
-        Event(
-            Message(
-                priority="debug",
-                publisher=NS.publisher_id,
-                payload={"message": "node_sync, Updating detected "
-                                    "platform"
-                         }
-            )
+        logger.log(
+            "debug",
+            NS.publisher_id,
+            {"message": "node_sync, Updating detected "
+             "platform"}
         )
     except Exception as ex:
         Event(

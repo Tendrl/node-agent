@@ -2,21 +2,17 @@ import etcd
 
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
-from tendrl.commons.message import Message
-
+from tendrl.commons.utils import log_utils as logger
 from tendrl.node_agent.discovery.platform import manager as platform_manager
 
 
 def sync():
     try:
         # platform plugins
-        Event(
-            Message(
-                priority="debug",
-                publisher=NS.publisher_id,
-                payload={"message": "Running Platform detection"
-                         }
-            )
+        logger.log(
+            "debug",
+            NS.publisher_id,
+            {"message": "Running Platform detection"}
         )
         try:
             p_mgr = platform_manager.PlatformManager()

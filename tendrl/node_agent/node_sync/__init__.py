@@ -1,17 +1,19 @@
 import threading
 import time
 
-from etcd import EtcdKeyNotFound
 from etcd import EtcdException
+from etcd import EtcdKeyNotFound
 
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
-from tendrl.commons.message import Message
 from tendrl.commons.objects.node_alert_counters import NodeAlertCounters
 from tendrl.commons import sds_sync
 from tendrl.commons.utils import etcd_utils
+from tendrl.commons.utils import event_utils
+from tendrl.commons.utils import log_utils as logger
 from tendrl.commons.utils import time_utils
 
+from tendrl.integrations.gluster import check_cluster_status
 from tendrl.integrations.gluster import sds_sync as \
     gluster_integrations_sds_sync
 
@@ -26,18 +28,16 @@ from tendrl.node_agent.node_sync import services_and_index_sync
 
 class NodeAgentSyncThread(sds_sync.StateSyncThread):
     def run(self):
-        Event(
-            Message(
-                priority="info",
-                publisher=NS.publisher_id,
-                payload={"message": "%s running" % self.__class__.__name__}
-            )
+        logger.log(
+            "info",
+            NS.publisher_id,
+            {"message": "%s running" % self.__class__.__name__}
         )
-
         NS.node_context = NS.node_context.load()
         current_tags = list(NS.node_context.tags)
         current_tags += ["tendrl/node_%s" % NS.node_context.node_id]
         NS.node_context.tags = list(set(current_tags))
+        NS.node_context.status = "UP"
         NS.node_context.save()
         # Initialize alert count
         try:
@@ -46,19 +46,36 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
         except(EtcdException)as ex:
             if type(ex) == EtcdKeyNotFound:
                 NodeAlertCounters(node_id=NS.node_context.node_id).save()
-        _sync_ttl = int(NS.config.data.get("sync_interval", 10)) + 100
+
         _sleep = 0
+        msg = "Node {0} is UP".format(NS.node_context.fqdn)
+        event_utils.emit_event(
+            "node_status",
+            "UP",
+            msg,
+            "node_{0}".format(NS.node_context.fqdn),
+            "INFO",
+            node_id=NS.node_context.node_id
+        )
         while not self._complete.is_set():
+            _sync_ttl = int(NS.config.data.get("sync_interval", 10)) + 100
             if _sleep > 5:
                 _sleep = int(NS.config.data.get("sync_interval", 10))
             else:
                 _sleep += 1
-                
+
             NS.node_context = NS.node_context.load()
             NS.node_context.sync_status = "in_progress"
+
             NS.node_context.status = "UP"
             NS.node_context.save(ttl=_sync_ttl)
             NS.tendrl_context = NS.tendrl_context.load()
+
+            sync_cluster_contexts_thread = threading.Thread(
+                target=cluster_contexts_sync.sync, args=(_sync_ttl,))
+            sync_cluster_contexts_thread.daemon = True
+            sync_cluster_contexts_thread.start()
+            sync_cluster_contexts_thread.join()
 
             platform_detect_thread = threading.Thread(
                 target=platform_detect.sync)
@@ -94,6 +111,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 NS.node_context = NS.node_context.load()
                 NS.node_context.sync_status = "failed"
                 NS.node_context.last_sync = str(time_utils.now())
+                NS.node_context.status = "UP"
                 NS.node_context.save(ttl=_sync_ttl)
                 time.sleep(_sleep)
 
@@ -107,12 +125,31 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
             sync_networks_thread.start()
             sync_networks_thread.join()
 
+            NS.node_context = NS.node_context.load()
+            NS.node_context.sync_status = "done"
+            NS.node_context.last_sync = str(time_utils.now())
+            NS.node_context.status = "UP"
+            NS.node_context.save(ttl=_sync_ttl)
+
+            sync_cluster_contexts_thread = threading.Thread(
+                target=cluster_contexts_sync.sync, args=(_sync_ttl,))
+            sync_cluster_contexts_thread.daemon = True
+            sync_cluster_contexts_thread.start()
+            sync_cluster_contexts_thread.join()
+
             if "tendrl/monitor" in NS.node_context.tags:
                 check_all_managed_node_status_thread = threading.Thread(
                     target=check_all_managed_nodes_status.run)
                 check_all_managed_node_status_thread.daemon = True
                 check_all_managed_node_status_thread.start()
                 check_all_managed_node_status_thread.join()
+
+                check_cluster_status_thread = threading.Thread(
+                    target=check_cluster_status.run
+                )
+                check_cluster_status_thread.daemon = True
+                check_cluster_status_thread.start()
+                check_cluster_status_thread.join()
 
                 if not NS.gluster_sds_sync_running:
                     NS.gluster_integrations_sync_thread = \
@@ -121,22 +158,9 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                     NS.gluster_integrations_sync_thread.start()
                     NS.gluster_sds_sync_running = True
 
-            NS.node_context = NS.node_context.load()
-            NS.node_context.sync_status = "done"
-            NS.node_context.last_sync = str(time_utils.now())
-            NS.node_context.save(ttl=_sync_ttl)
-
-            sync_cluster_contexts_thread = threading.Thread(
-                target=cluster_contexts_sync.sync, args=(_sync_ttl,))
-            sync_cluster_contexts_thread.daemon = True
-            sync_cluster_contexts_thread.start()
-            sync_cluster_contexts_thread.join()
             time.sleep(_sleep)
-
-        Event(
-            Message(
-                priority="info",
-                publisher=NS.publisher_id,
-                payload={"message": "%s complete" % self.__class__.__name__}
-            )
+        logger.log(
+            "info",
+            NS.publisher_id,
+            {"message": "%s complete" % self.__class__.__name__}
         )

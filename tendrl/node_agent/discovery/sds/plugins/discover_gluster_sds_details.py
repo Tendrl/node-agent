@@ -1,9 +1,7 @@
 import hashlib
 import subprocess
 
-from tendrl.commons.event import Event
-from tendrl.commons.message import Message
-
+from tendrl.commons.utils import log_utils as logger
 from tendrl.node_agent.discovery.sds.discover_sds_plugin \
     import DiscoverSDSPlugin
 
@@ -19,12 +17,10 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
         out, err = cmd.communicate()
         if err or out is None or "Connection failed" in out:
             _msg = "Could not detect SDS:Gluster installation"
-            Event(
-                Message(
-                    priority="debug",
-                    publisher=NS.publisher_id,
-                    payload={"message": _msg}
-                )
+            logger.log(
+                "debug",
+                NS.publisher_id,
+                {"message": _msg}
             )
             return ""
         lines = out.split('\n')[1:]
@@ -55,12 +51,10 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
         )
         out, err = cmd.communicate()
         if err and 'command not found' in err:
-            Event(
-                Message(
-                    priority="debug",
-                    publisher=NS.publisher_id,
-                    payload={"message": "gluster not installed on host"}
-                )
+            logger.log(
+                "debug",
+                NS.publisher_id,
+                {"message": "gluster not installed on host"}
             )
             return ret_val
         lines = out.split('\n')

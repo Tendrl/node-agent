@@ -18,6 +18,6 @@ class ClusterMessage(objects.BaseObject, CommonMessage):
                                              'message_retention_time'])
 
     def render(self):
-        self.value = self.value.format(self.cluster_id,
+        self.value = self.value.format(self.integration_id,
                                        self.message_id)
         return super(ClusterMessage, self).render()

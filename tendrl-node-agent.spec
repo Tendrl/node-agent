@@ -1,6 +1,6 @@
 Name: tendrl-node-agent
-Version: 1.5.4
-Release: 7%{?dist}
+Version: 1.6.0
+Release: 1%{?dist}
 BuildArch: noarch
 Summary: Module for Tendrl Node Agent
 Source0: %{name}-%{version}.tar.gz
@@ -55,7 +55,6 @@ install -Dm 644 etc/tendrl/node-agent/*.sample $RPM_BUILD_ROOT%{_datadir}/tendrl
 mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/rsyslog.d
 install -Dm 644 etc/rsyslog.d/tendrl-node-agent.conf $RPM_BUILD_ROOT/%{_sysconfdir}/rsyslog.d/tendrl-node-agent.conf
 cp -a tendrl/node_agent/monitoring/collectd/collectors/* $RPM_BUILD_ROOT%{_libdir}/collectd/
-cp -a tendrl/node_agent/monitoring/collectd/templates/ceph/* $RPM_BUILD_ROOT%{_sysconfdir}/collectd_template/
 cp -a tendrl/node_agent/monitoring/collectd/templates/gluster/* $RPM_BUILD_ROOT%{_sysconfdir}/collectd_template/
 cp -a tendrl/node_agent/monitoring/collectd/templates/node/* $RPM_BUILD_ROOT%{_sysconfdir}/collectd_template/
 
@@ -64,7 +63,7 @@ getent group tendrl >/dev/null || groupadd -r tendrl
 getent passwd tendrl-user >/dev/null || \
     useradd -r -g tendrl -d /var/lib/tendrl -s /sbin/nologin \
     -c "Tendrl node user" tendrl-user
-systemctl enable tendrl-node-agent
+systemctl enable tendrl-node-agent >/dev/null 2>&1 || :
 
 %systemd_post tendrl-node-agent.service
 
@@ -93,6 +92,42 @@ py.test -v tendrl/node-agent/tests || :
 %config(noreplace) %{_sysconfdir}/rsyslog.d/tendrl-node-agent.conf
 
 %changelog
+* Sat Feb 17 2018 Rohan Kanade <rkanade@redhat.com> - 1.6.0-1
+- API to un-manage clusters managed by Tendrl
+
+* Fri Feb 02 2018 Rohan Kanade <rkanade@redhat.com> - 1.5.5-1
+- Raise alert when node goes down, when cluster health changes
+- Add georep related alert also for volume alert count increment
+- Add volume status related alert also for volume alert count increment
+
+* Mon Dec 11 2017 Rohan Kanade <rkanade@redhat.com> - 1.5.4-16
+- Bugfixes
+
+* Sat Dec 09 2017 Rohan Kanade <rkanade@redhat.com> - 1.5.4-15
+- Bugfixes
+
+* Thu Dec 07 2017 Rohan Kanade <rkanade@redhat.com> - 1.5.4-14
+- Bugfixes
+
+* Thu Dec 07 2017 Rohan Kanade <rkanade@redhat.com> - 1.5.4-13
+- Bugfixes
+
+* Wed Dec 06 2017 Rohan Kanade <rkanade@redhat.com> - 1.5.4-12
+- Bugfixes
+
+* Wed Dec 06 2017 Rohan Kanade <rkanade@redhat.com> - 1.5.4-11
+- Bugfixes
+
+* Tue Dec 05 2017 Rohan Kanade <rkanade@redhat.com> - 1.5.4-10
+- Bugfixes
+
+* Thu Nov 30 2017 Rohan Kanade <rkanade@redhat.com> - 1.5.4-9
+- Bugfixes
+
+* Mon Nov 27 2017 Rohan Kanade <rkanade@redhat.com> - 1.5.4-8
+- Fixing volume heal info to update under correct brick
+- Supress service enable message during package update
+
 * Fri Nov 24 2017 Rohan Kanade <rkanade@redhat.com> - 1.5.4-7
 - Fix NodeContext.status in node_sync
 
