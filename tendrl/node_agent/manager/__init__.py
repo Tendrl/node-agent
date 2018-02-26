@@ -23,9 +23,6 @@ class NodeAgentManager(commons_manager.Manager):
             message_handler_thread=NS.message_handler_thread
         )
 
-        node_sync.platform_detect.sync()
-        node_sync.sds_detect.sync()
-
 
 def main():
     # NS.node_agent contains the config object,
