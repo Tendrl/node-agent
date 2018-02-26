@@ -6,19 +6,22 @@ from tendrl.commons.utils import log_utils as logger
 def sync(sync_ttl):
     try:
         if NS.tendrl_context.integration_id:
-            logger.log(
-                "debug",
-                NS.publisher_id,
-                {"message": "node_sync, updating "
-                            "cluster tendrl context"}
-            )
-            NS.tendrl.objects.ClusterTendrlContext(
-                integration_id=NS.tendrl_context.integration_id,
-                cluster_id=NS.tendrl_context.cluster_id,
-                cluster_name=NS.tendrl_context.cluster_name,
-                sds_name=NS.tendrl_context.sds_name,
-                sds_version=NS.tendrl_context.sds_version
-            ).save()
+            if "provisioner/%s" % NS.tendrl_context.integration_id \
+                in NS.node_context.tags:
+                logger.log(
+                    "debug",
+                    NS.publisher_id,
+                    {"message": "node_sync, updating "
+                                "cluster tendrl context"}
+                )
+                NS.tendrl.objects.ClusterTendrlContext(
+                    integration_id=NS.tendrl_context.integration_id,
+                    cluster_id=NS.tendrl_context.cluster_id,
+                    cluster_name=NS.tendrl_context.cluster_name,
+                    sds_name=NS.tendrl_context.sds_name,
+                    sds_version=NS.tendrl_context.sds_version
+                ).save()
+
             logger.log(
                 "debug",
                 NS.publisher_id,
