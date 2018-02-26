@@ -5,6 +5,7 @@ import etcd
 
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
+from tendrl.commons.utils import etcd_utils
 from tendrl.commons.utils import log_utils as logger
 from tendrl.node_agent.discovery.sds import manager as sds_manager
 
@@ -37,49 +38,30 @@ def sync():
                     'detected_cluster_id'] != ""):
                 if sds_details:
                     try:
-                        dc = NS.tendrl.objects.DetectedCluster().load()
-                        dc_changed = False
-                        if dc.detected_cluster_id:
-                            if dc.detected_cluster_id != sds_details.get(
-                                'detected_cluster_id'
-                            ):
-                                dc_changed = True
-                        else:
-                            time.sleep(3)
-
                         integration_index_key = \
                             "indexes/detected_cluster_id_to_integration_id/" \
                             "%s" % sds_details['detected_cluster_id']
-                        try:
-                            if dc_changed:
-                                integration_id = \
-                                    NS.tendrl_context.integration_id
-                                NS._int.wclient.write(
-                                    integration_index_key,
-                                    integration_id
-                                )
-                            else:
-                                integration_id = str(uuid.uuid4())
-                                NS._int.wclient.write(
-                                    integration_index_key,
-                                    integration_id,
-                                    prevExist=False
-                                )
-                        except etcd.EtcdAlreadyExist:
-                            if not dc_changed:
-                                integration_id = NS._int.client.read(
-                                    integration_index_key).value
-                        finally:
-                            NS.tendrl_context.integration_id = integration_id
-                            NS.tendrl_context.cluster_id = sds_details.get(
-                                'detected_cluster_id')
-                            NS.tendrl_context.cluster_name = sds_details.get(
-                                'detected_cluster_name')
-                            NS.tendrl_context.sds_name = sds_details.get(
-                                'pkg_name')
-                            NS.tendrl_context.sds_version = sds_details.get(
-                                'pkg_version')
-                            NS.tendrl_context.save()
+                        while True:
+                            # Wait till provisioner node assigns
+                            # integration_id for this detected_cluster_id
+                            try:
+                                time.sleep(5)
+                                integration_id = etcd_utils.read(
+                                        integration_index_key).value
+                                break
+                            except etcd.EtcdKeyNotFound:
+                                continue
+
+                        NS.tendrl_context.integration_id = integration_id
+                        NS.tendrl_context.cluster_id = sds_details.get(
+                            'detected_cluster_id')
+                        NS.tendrl_context.cluster_name = sds_details.get(
+                            'detected_cluster_name')
+                        NS.tendrl_context.sds_name = sds_details.get(
+                            'pkg_name')
+                        NS.tendrl_context.sds_version = sds_details.get(
+                            'pkg_version')
+                        NS.tendrl_context.save()
 
                         NS.node_context = NS.node_context.load()
                         integration_tag = "tendrl/integration/%s" % \
@@ -91,9 +73,6 @@ def sync():
                                                  integration_tag]
                         NS.node_context.tags = list(set(NS.node_context.tags))
                         NS.node_context.save()
-                        _cluster = NS.tendrl.objects.Cluster(
-                            integration_id=NS.tendrl_context.integration_id
-                        ).load()
 
                         NS.tendrl.objects.DetectedCluster(
                             detected_cluster_id=sds_details.get(
@@ -103,12 +82,6 @@ def sync():
                             sds_pkg_name=sds_details.get('pkg_name'),
                             sds_pkg_version=sds_details.get('pkg_version'),
                         ).save()
-
-                        if _cluster.is_managed == "yes":
-                            continue
-                        else:
-                            _cluster.is_managed = "no"
-                            _cluster.save()
 
                     except (etcd.EtcdException, KeyError) as ex:
                         Event(
