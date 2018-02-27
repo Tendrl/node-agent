@@ -66,8 +66,12 @@ def sync():
                                         "type": "node"
                                     }
                                     _job_id = str(uuid.uuid4())
-                                    Job(job_id=_job_id, status="new",
+                                    _job = Job(job_id=_job_id, status="new",
                                         payload=payload).save()
+                                    while True:
+                                        _job = _job.load()
+                                        if _job.status in ["finished", "failed"]:
+                                            break
                             else:
                                 integration_id = str(uuid.uuid4())
                                 etcd_utils.write(integration_index_key,
