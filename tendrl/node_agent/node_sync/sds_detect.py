@@ -44,10 +44,12 @@ def sync():
                             "%s" % sds_details['detected_cluster_id']
                         _ptag = "provisioner/%s" % \
                             NS.tendrl_context.integration_id
+                        _flow = "tendrl.flows."
+                            "ExpandClusterWithDetectedPeers"
                         if _ptag in NS.node_context.tags:
                             dc = NS.tendrl.objects.DetectedCluster().load()
                             if dc.detected_cluster_id and \
-                            dc.detected_cluster_id != sds_details.get(
+                                dc.detected_cluster_id != sds_details.get(
                                     'detected_cluster_id'):
                                 # Gluster peer list has changed
                                 integration_id = \
@@ -64,17 +66,18 @@ def sync():
                                     integration_id,
                                 }
                                 payload = {
-                                "tags": [_ptag],
-                                "run": "tendrl.flows.ExpandClusterWithDetectedPeers",
-                                "status": "new",
-                                "parameters": params,
-                                "type": "node"
+                                    "tags": [_ptag],
+                                    "run": _flow,
+                                    "status": "new",
+                                    "parameters": params,
+                                    "type": "node"
                                 }
                                 _job_id = str(uuid.uuid4())
-                                _job = Job(job_id=_job_id,
-                                           status="new",
-                                           payload=payload
-                                    ).save()
+                                _job = Job(
+                                    job_id=_job_id,
+                                    status="new",
+                                    payload=payload
+                                ).save()
                                 while True:
                                     _job = _job.load()
                                     if _job.status in ["finished",
