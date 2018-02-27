@@ -42,13 +42,13 @@ def sync():
                         integration_index_key = \
                             "indexes/detected_cluster_id_to_integration_id/" \
                             "%s" % sds_details['detected_cluster_id']
-
-                        if "provisioner/%s" % NS.tendrl_context.integration_id \
-                            in NS.node_context.tags:
+                        _ptag = "provisioner/%s" % \
+                            NS.tendrl_context.integration_id
+                        if _ptag in NS.node_context.tags:
                             dc = NS.tendrl.objects.DetectedCluster().load()
-                            if dc.detected_cluster_id and
+                            if dc.detected_cluster_id and \
                             dc.detected_cluster_id != sds_details.get(
-                                    'detected_cluster_id')::
+                                    'detected_cluster_id'):
                                 # Gluster peer list has changed
                                 integration_id = \
                                     NS.tendrl_context.integration_id
@@ -56,7 +56,7 @@ def sync():
                                     integration_index_key,
                                     integration_id
                                 )
-                                # Let other nodes sync up with 
+                                # Let other nodes sync up with
                                 # integration_id
                                 time.sleep(10)
                                 params = {
@@ -64,17 +64,17 @@ def sync():
                                     integration_id,
                                 }
                                 payload = {
-                                    "tags": ["provisioner/%s" % integration_id],
-                                    "run": "tendrl.flows.ExpandClusterWithDetectedPeers",
-                                    "status": "new",
-                                    "parameters": params,
-                                    "type": "node"
+                                "tags": [_ptag],
+                                "run": "tendrl.flows.ExpandClusterWithDetectedPeers",
+                                "status": "new",
+                                "parameters": params,
+                                "type": "node"
                                 }
                                 _job_id = str(uuid.uuid4())
                                 _job = Job(job_id=_job_id,
                                            status="new",
                                            payload=payload
-                                          ).save()
+                                    ).save()
                                 while True:
                                     _job = _job.load()
                                     if _job.status in ["finished",
@@ -83,9 +83,8 @@ def sync():
                             else:
                                 integration_id = str(uuid.uuid4())
                                 etcd_utils.write(integration_index_key,
-                                                 integration_id
-                                )
- 
+                                                 integration_id)
+
                         while True:
                             # Wait till provisioner node assigns
                             # integration_id for this detected_cluster_id
