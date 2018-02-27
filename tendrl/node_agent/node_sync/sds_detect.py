@@ -55,6 +55,8 @@ def sync():
                                         integration_index_key,
                                         integration_id
                                     )
+                                    # Let other nodes sync up with integration_id
+                                    time.sleep(10)
                                     params = {
                                         'TendrlContext.integration_id': integration_id,
                                     }
