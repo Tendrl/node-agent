@@ -5,6 +5,7 @@ import etcd
 
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
+from tendrl.commons.objects.job import Job
 from tendrl.commons.utils import etcd_utils
 from tendrl.commons.utils import log_utils as logger
 from tendrl.node_agent.discovery.sds import manager as sds_manager
@@ -45,49 +46,53 @@ def sync():
                         if "provisioner/%s" % NS.tendrl_context.integration_id \
                             in NS.node_context.tags:
                             dc = NS.tendrl.objects.DetectedCluster().load()
-                            if dc.detected_cluster_id:
-                                if dc.detected_cluster_id != sds_details.get(
-                                    'detected_cluster_id'):
-                                    # Gluster peer list has changed
-                                    integration_id = \
-                                        NS.tendrl_context.integration_id
-                                    etcd_utils.write(
-                                        integration_index_key,
-                                        integration_id
-                                    )
-                                    # Let other nodes sync up with integration_id
-                                    time.sleep(10)
-                                    params = {
-                                        'TendrlContext.integration_id': integration_id,
-                                    }
-                                    payload = {
-                                        "tags": ["provisioner/%s" % integration_id],
-                                        "run": "tendrl.flows.ExpandClusterWithDetectedPeers",
-                                        "status": "new",
-                                        "parameters": params,
-                                        "type": "node"
-                                    }
-                                    _job_id = str(uuid.uuid4())
-                                    _job = Job(job_id=_job_id, status="new",
-                                        payload=payload).save()
-                                    while True:
-                                        _job = _job.load()
-                                        if _job.status in ["finished", "failed"]:
-                                            break
+                            if dc.detected_cluster_id and
+                            dc.detected_cluster_id != sds_details.get(
+                                    'detected_cluster_id')::
+                                # Gluster peer list has changed
+                                integration_id = \
+                                    NS.tendrl_context.integration_id
+                                etcd_utils.write(
+                                    integration_index_key,
+                                    integration_id
+                                )
+                                # Let other nodes sync up with 
+                                # integration_id
+                                time.sleep(10)
+                                params = {
+                                    'TendrlContext.integration_id':
+                                    integration_id,
+                                }
+                                payload = {
+                                    "tags": ["provisioner/%s" % integration_id],
+                                    "run": "tendrl.flows.ExpandClusterWithDetectedPeers",
+                                    "status": "new",
+                                    "parameters": params,
+                                    "type": "node"
+                                }
+                                _job_id = str(uuid.uuid4())
+                                _job = Job(job_id=_job_id,
+                                           status="new",
+                                           payload=payload
+                                          ).save()
+                                while True:
+                                    _job = _job.load()
+                                    if _job.status in ["finished",
+                                                       "failed"]:
+                                        break
                             else:
                                 integration_id = str(uuid.uuid4())
                                 etcd_utils.write(integration_index_key,
                                                  integration_id
                                 )
-
-                                
+ 
                         while True:
                             # Wait till provisioner node assigns
                             # integration_id for this detected_cluster_id
                             try:
                                 time.sleep(5)
                                 integration_id = etcd_utils.read(
-                                        integration_index_key).value
+                                    integration_index_key).value
                                 break
                             except etcd.EtcdKeyNotFound:
                                 continue
