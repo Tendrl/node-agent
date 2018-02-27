@@ -44,7 +44,7 @@ def sync():
                             "%s" % sds_details['detected_cluster_id']
                         _ptag = "provisioner/%s" % \
                             NS.tendrl_context.integration_id
-                        _flow = "tendrl.flows."
+                        _flow = "tendrl.flows." \
                             "ExpandClusterWithDetectedPeers"
                         if _ptag in NS.node_context.tags:
                             dc = NS.tendrl.objects.DetectedCluster().load()
