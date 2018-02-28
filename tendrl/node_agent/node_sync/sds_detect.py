@@ -105,7 +105,8 @@ def sync():
                             time.sleep(5)
                             integration_id = etcd_utils.read(
                                 integration_index_key).value
-                            break
+                            if integration_id:
+                                break
                         except etcd.EtcdKeyNotFound:
                             loop_count += 1
                             continue
