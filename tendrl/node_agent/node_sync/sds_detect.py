@@ -141,6 +141,10 @@ def sync():
                         sds_pkg_name=sds_details.get('pkg_name'),
                         sds_pkg_version=sds_details.get('pkg_version'),
                     ).save()
+                    _cluster = NS.tendrl.objects.Cluster(
+                        integration_id=NS.tendrl_context.integration_id
+                    ).load()
+                    _cluster.save()
 
                 except (etcd.EtcdException, KeyError) as ex:
                     Event(
