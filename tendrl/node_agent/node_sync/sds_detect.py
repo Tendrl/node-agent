@@ -43,17 +43,23 @@ def sync():
                     integration_index_key = \
                         "indexes/detected_cluster_id_to_integration_id/" \
                         "%s" % sds_details['detected_cluster_id']
+                    dc = NS.tendrl.objects.DetectedCluster().load()
+                    if dc is None or dc.detected_cluster_id is None:
+                        integration_id = str(uuid.uuid4())
+                        try:
+                            NS._int.wclient.write(
+                                integration_index_key,
+                                integration_id,
+                                prevExist=False
+                            )
+                        except etcd.EtcdAlreadyExist:
+                            pass
+
                     _ptag = "provisioner/%s" % \
                         NS.tendrl_context.integration_id
                     _flow = "tendrl.flows." \
                         "ExpandClusterWithDetectedPeers"
                     if _ptag in NS.node_context.tags:
-                        dc = NS.tendrl.objects.DetectedCluster().load()
-                        if dc is None or dc.detected_cluster_id is None:
-                            integration_id = str(uuid.uuid4())
-                            etcd_utils.write(integration_index_key,
-                                             integration_id)
-
                         if dc.detected_cluster_id and \
                             dc.detected_cluster_id != sds_details.get(
                                 'detected_cluster_id'):
