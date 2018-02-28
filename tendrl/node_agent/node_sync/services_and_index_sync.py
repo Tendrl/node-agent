@@ -79,8 +79,9 @@ def sync(sync_ttl=None):
         current_tags.sort()
         if NS.node_context.tags != current_tags:
             NS.node_context.save()
-
-        if _is_new_provisioner:
+        
+        _cluster = _cluster.load()
+        if _is_new_provisioner and _cluster.is_managed == "yes":
             _msg = "node_sync, NEW provisioner node found! "\
                 "re-configuring monitoring (job-id: %s) on this node"
             payload = {
