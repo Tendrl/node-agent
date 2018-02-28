@@ -86,7 +86,14 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
             sds_detect_thread.daemon = True
             sds_detect_thread.start()
             sds_detect_thread.join()
-
+            
+            # At this stage of sync, sds_detect must
+            # set a integration_id, else skip
+            # rest of the sync till it is set
+            NS.tendrl_context = NS.tendrl_context.load()
+            if NS.tendrl_context.integration_id is None:
+                continue
+                
             sync_service_and_index_thread = threading.Thread(
                 target=services_and_index_sync.sync, args=(_sync_ttl,))
             sync_service_and_index_thread.daemon = True
