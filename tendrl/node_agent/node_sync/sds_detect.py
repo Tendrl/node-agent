@@ -102,7 +102,7 @@ def sync():
                         if loop_count >= 72:
                             return
                         try:
-                            time.sleep(10)
+                            time.sleep(5)
                             integration_id = etcd_utils.read(
                                 integration_index_key).value
                             break
