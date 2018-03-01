@@ -70,30 +70,55 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
             NS.node_context.status = "UP"
             NS.node_context.save(ttl=_sync_ttl)
             NS.tendrl_context = NS.tendrl_context.load()
+            
+            if "tendrl/monitor" in NS.node_context.tags:
+                check_all_managed_node_status_thread = threading.Thread(
+                    target=check_all_managed_nodes_status.run)
+                check_all_managed_node_status_thread.daemon = True
+                check_all_managed_node_status_thread.start()
+                check_all_managed_node_status_thread.join()
 
-            sync_cluster_contexts_thread = threading.Thread(
-                target=cluster_contexts_sync.sync, args=(_sync_ttl,))
-            sync_cluster_contexts_thread.daemon = True
-            sync_cluster_contexts_thread.start()
-            sync_cluster_contexts_thread.join()
+                check_cluster_status_thread = threading.Thread(
+                    target=check_cluster_status.run
+                )
+                check_cluster_status_thread.daemon = True
+                check_cluster_status_thread.start()
+                check_cluster_status_thread.join()
+
+                if not NS.gluster_sds_sync_running:
+                    NS.gluster_integrations_sync_thread = \
+                        gluster_integrations_sds_sync.\
+                        GlusterIntegrtaionsSyncThread()
+                    NS.gluster_integrations_sync_thread.start()
+                    NS.gluster_sds_sync_running = True
+
+            if "tendrl/monitor" not in NS.node_context.tags:
+                sync_cluster_contexts_thread = threading.Thread(
+                    target=cluster_contexts_sync.sync,
+                        args=(_sync_ttl,))
+                sync_cluster_contexts_thread.daemon = True
+                sync_cluster_contexts_thread.start()
+                sync_cluster_contexts_thread.join()
 
             platform_detect_thread = threading.Thread(
                 target=platform_detect.sync)
             platform_detect.daemon = True
             platform_detect_thread.start()
             platform_detect_thread.join()
-            sds_detect_thread = threading.Thread(target=sds_detect.sync,
-                                                 args=(_sync_ttl,))
-            sds_detect_thread.daemon = True
-            sds_detect_thread.start()
-            sds_detect_thread.join()
+            
+            if "tendrl/monitor" not in NS.node_context.tags:
+                sds_detect_thread = threading.Thread(
+                    target=sds_detect.sync,
+                        args=(_sleep,))
+
+                sds_detect_thread.daemon = True
+                sds_detect_thread.start()
+                sds_detect_thread.join()
             
             # At this stage of sync, sds_detect must
             # set an integration_id, else skip
             # rest of the sync till it is set
             NS.tendrl_context = NS.tendrl_context.load()
-            if NS.tendrl_context.integration_id is None:
-                continue
                 
             sync_service_and_index_thread = threading.Thread(
                 target=services_and_index_sync.sync, args=(_sync_ttl,))
@@ -139,32 +164,13 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
             NS.node_context.status = "UP"
             NS.node_context.save(ttl=_sync_ttl)
 
-            sync_cluster_contexts_thread = threading.Thread(
-                target=cluster_contexts_sync.sync, args=(_sync_ttl,))
-            sync_cluster_contexts_thread.daemon = True
-            sync_cluster_contexts_thread.start()
-            sync_cluster_contexts_thread.join()
-
-            if "tendrl/monitor" in NS.node_context.tags:
-                check_all_managed_node_status_thread = threading.Thread(
-                    target=check_all_managed_nodes_status.run)
-                check_all_managed_node_status_thread.daemon = True
-                check_all_managed_node_status_thread.start()
-                check_all_managed_node_status_thread.join()
-
-                check_cluster_status_thread = threading.Thread(
-                    target=check_cluster_status.run
-                )
-                check_cluster_status_thread.daemon = True
-                check_cluster_status_thread.start()
-                check_cluster_status_thread.join()
-
-                if not NS.gluster_sds_sync_running:
-                    NS.gluster_integrations_sync_thread = \
-                        gluster_integrations_sds_sync.\
-                        GlusterIntegrtaionsSyncThread()
-                    NS.gluster_integrations_sync_thread.start()
-                    NS.gluster_sds_sync_running = True
+            if "tendrl/monitor" not in NS.node_context.tags:
+                sync_cluster_contexts_thread = threading.Thread(
+                    target=cluster_contexts_sync.sync,
+                        args=(_sync_ttl,))
+                sync_cluster_contexts_thread.daemon = True
+                sync_cluster_contexts_thread.start()
+                sync_cluster_contexts_thread.join()
 
             time.sleep(_sleep)
         logger.log(
