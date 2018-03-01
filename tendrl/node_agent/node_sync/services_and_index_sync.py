@@ -44,25 +44,26 @@ def sync(sync_ttl=None):
                 if service_tag == "tendrl/server":
                     tags.append("tendrl/monitor")
             s.save()
-
-        _cluster = NS.tendrl.objects.Cluster(
-            integration_id=NS.tendrl_context.integration_id
-        ).load()
-        # Try to claim orphan "provisioner_%integration_id" tag
-        _tag = "provisioner/%s" % _cluster.integration_id
-        _is_new_provisioner = False
-        NS.node_context = NS.tendrl.objects.NodeContext().load()
-        if _tag not in NS.node_context.tags:
-            try:
-                _index_key = "/indexes/tags/%s" % _tag
-                _node_id = json.dumps([NS.node_context.node_id])
-                NS._int.wclient.write(_index_key, _node_id,
-                                      prevExist=False)
-                etcd_utils.refresh(_index_key, sync_ttl)
-                tags.append(_tag)
-                _is_new_provisioner = True
-            except etcd.EtcdAlreadyExist:
-                pass
+        
+        if "tendrl/monitor" not in tags:
+            _cluster = NS.tendrl.objects.Cluster(
+                integration_id=NS.tendrl_context.integration_id
+            ).load()
+            # Try to claim orphan "provisioner_%integration_id" tag
+            _tag = "provisioner/%s" % _cluster.integration_id
+            _is_new_provisioner = False
+            NS.node_context = NS.tendrl.objects.NodeContext().load()
+            if _tag not in NS.node_context.tags:
+                try:
+                    _index_key = "/indexes/tags/%s" % _tag
+                    _node_id = json.dumps([NS.node_context.node_id])
+                    NS._int.wclient.write(_index_key, _node_id,
+                                          prevExist=False)
+                    etcd_utils.refresh(_index_key, sync_ttl)
+                    tags.append(_tag)
+                    _is_new_provisioner = True
+                except etcd.EtcdAlreadyExist:
+                    pass
 
         # updating node context with latest tags
         logger.log(
@@ -80,33 +81,34 @@ def sync(sync_ttl=None):
         if NS.node_context.tags != current_tags:
             NS.node_context.save()
         
-        _cluster = _cluster.load()
-        if _is_new_provisioner and _cluster.is_managed == "yes":
-            _msg = "node_sync, NEW provisioner node found! "\
-                "re-configuring monitoring (job-id: %s) on this node"
-            payload = {
-                "tags": [
-                    "tendrl/node_%s" % NS.node_context.node_id
-                ],
-                "run": "tendrl.flows.ConfigureMonitoring",
-                "status": "new",
-                "parameters": {
-                    'TendrlContext.integration_id':
-                    NS.tendrl_context.integration_id
-                },
-                "type": "node"
-            }
-            _job_id = str(uuid.uuid4())
-            Job(
-                job_id=_job_id,
-                status="new",
-                payload=payload
-            ).save()
-            logger.log(
-                "debug",
-                NS.publisher_id,
-                {"message": _msg % _job_id}
-            )
+        if "tendrl/monitor" not in tags:
+            _cluster = _cluster.load()
+            if _is_new_provisioner and _cluster.is_managed == "yes":
+                _msg = "node_sync, NEW provisioner node found! "\
+                    "re-configuring monitoring (job-id: %s) on this node"
+                payload = {
+                    "tags": [
+                        "tendrl/node_%s" % NS.node_context.node_id
+                    ],
+                    "run": "tendrl.flows.ConfigureMonitoring",
+                    "status": "new",
+                    "parameters": {
+                        'TendrlContext.integration_id':
+                        NS.tendrl_context.integration_id
+                    },
+                    "type": "node"
+                }
+                _job_id = str(uuid.uuid4())
+                Job(
+                    job_id=_job_id,
+                    status="new",
+                    payload=payload
+                ).save()
+                logger.log(
+                    "debug",
+                    NS.publisher_id,
+                    {"message": _msg % _job_id}
+                )
 
         # Update /indexes/tags/:tag = [node_ids]
         for tag in NS.node_context.tags:
