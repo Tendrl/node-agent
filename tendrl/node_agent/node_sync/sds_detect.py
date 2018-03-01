@@ -58,7 +58,7 @@ def sync(sync_ttl):
 
                     _ptag = "provisioner/%s" % \
                         NS.tendrl_context.integration_id
-                    _target = "tendrl/node_%s" \
+                    _target = "tendrl/node_%s" % \
                         NS.node_context.node_id
                     _flow = "tendrl.flows." \
                         "ExpandClusterWithDetectedPeers"
