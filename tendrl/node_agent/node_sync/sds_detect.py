@@ -45,7 +45,7 @@ def sync(sync_ttl):
                         "%s" % sds_details['detected_cluster_id']
                     dc = NS.tendrl.objects.DetectedCluster().load()
                     if dc is None or dc.detected_cluster_id is None:                           
-                        time.sleep(sync_ttl + 10)
+                        time.sleep(sync_ttl)
                         integration_id = str(uuid.uuid4())
                         try:
                             NS._int.wclient.write(
@@ -58,6 +58,8 @@ def sync(sync_ttl):
 
                     _ptag = "provisioner/%s" % \
                         NS.tendrl_context.integration_id
+                    _target = "tendrl/node_%s" \
+                        NS.node_context.node_id
                     _flow = "tendrl.flows." \
                         "ExpandClusterWithDetectedPeers"
                     if _ptag in NS.node_context.tags:
@@ -73,13 +75,12 @@ def sync(sync_ttl):
                             )
                             # Let other nodes sync up with
                             # integration_id
-                            time.sleep(10)
                             params = {
                                 'TendrlContext.integration_id':
                                 integration_id,
                             }
                             payload = {
-                                "tags": [_ptag],
+                                "tags": [_target],
                                 "run": _flow,
                                 "status": "new",
                                 "parameters": params,
