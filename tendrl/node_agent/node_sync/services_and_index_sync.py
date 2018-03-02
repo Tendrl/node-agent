@@ -16,11 +16,7 @@ TENDRL_SERVICES = [
     "etcd",
     "tendrl-api",
     "tendrl-gluster-integration",
-    "tendrl-ceph-integration",
     "glusterd",
-    "ceph-mon@*",
-    "ceph-osd@*",
-    "ceph-installer"
 ]
 
 
@@ -44,7 +40,7 @@ def sync(sync_ttl=None):
                 if service_tag == "tendrl/server":
                     tags.append("tendrl/monitor")
             s.save()
-        
+
         if "tendrl/monitor" not in tags:
             _cluster = NS.tendrl.objects.Cluster(
                 integration_id=NS.tendrl_context.integration_id
@@ -80,7 +76,7 @@ def sync(sync_ttl=None):
         current_tags.sort()
         if NS.node_context.tags != current_tags:
             NS.node_context.save()
-        
+
         if "tendrl/monitor" not in tags:
             _cluster = _cluster.load()
             if _is_new_provisioner and _cluster.is_managed == "yes":
