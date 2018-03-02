@@ -44,7 +44,7 @@ def sync(sync_ttl):
                         "indexes/detected_cluster_id_to_integration_id/" \
                         "%s" % sds_details['detected_cluster_id']
                     dc = NS.tendrl.objects.DetectedCluster().load()
-                    if dc is None or dc.detected_cluster_id is None:                           
+                    if dc is None or dc.detected_cluster_id is None:
                         time.sleep(sync_ttl)
                         integration_id = str(uuid.uuid4())
                         try:
