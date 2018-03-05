@@ -23,6 +23,3 @@ def run():
                 _gc.watch_attrs()
             except ImportError:
                 pass
-
-
-    return
