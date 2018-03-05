@@ -14,8 +14,7 @@ from tendrl.commons.utils import log_utils as logger
 from tendrl.commons.utils import time_utils
 
 from tendrl.integrations.gluster import check_cluster_status
-from tendrl.integrations.gluster import sds_sync as \
-    gluster_integrations_sds_sync
+
 
 from tendrl.node_agent.node_sync import check_all_managed_nodes_status
 from tendrl.node_agent.node_sync import cluster_contexts_sync
@@ -91,13 +90,6 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 check_cluster_status_thread.daemon = True
                 check_cluster_status_thread.start()
                 check_cluster_status_thread.join()
-
-                if not NS.gluster_sds_sync_running:
-                    NS.gluster_integrations_sync_thread = \
-                        gluster_integrations_sds_sync.\
-                        GlusterIntegrtaionsSyncThread()
-                    NS.gluster_integrations_sync_thread.start()
-                    NS.gluster_sds_sync_running = True
 
             if "tendrl/monitor" not in NS.node_context.tags:
                 sync_cluster_contexts_thread = threading.Thread(
