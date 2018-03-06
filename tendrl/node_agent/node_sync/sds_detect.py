@@ -55,49 +55,55 @@ def sync(sync_ttl):
                             )
                         except etcd.EtcdAlreadyExist:
                             pass
+                    
+                    _ptag = None
+                    if NS.tendrl_context.integration_id:
+                        _ptag = "provisioner/%s" % \
+                            NS.tendrl_context.integration_id
+                        
+                        _target = "tendrl/node_%s" % \
+                            NS.node_context.node_id
+                        _flow = "tendrl.flows." \
+                            "ExpandClusterWithDetectedPeers"
 
-                    _ptag = "provisioner/%s" % \
-                        NS.tendrl_context.integration_id
-                    _target = "tendrl/node_%s" % \
-                        NS.node_context.node_id
-                    _flow = "tendrl.flows." \
-                        "ExpandClusterWithDetectedPeers"
-                    if _ptag in NS.node_context.tags:
-                        if dc.detected_cluster_id and \
-                            dc.detected_cluster_id != sds_details.get(
-                                'detected_cluster_id'):
-                            # Gluster peer list has changed
-                            integration_id = \
-                                NS.tendrl_context.integration_id
-                            etcd_utils.write(
-                                integration_index_key,
-                                integration_id
-                            )
-                            # Let other nodes sync up with
-                            # integration_id
-                            params = {
-                                'TendrlContext.integration_id':
-                                integration_id,
-                            }
-                            payload = {
-                                "tags": [_target],
-                                "run": _flow,
-                                "status": "new",
-                                "parameters": params,
-                                "type": "node"
-                            }
-                            _job_id = str(uuid.uuid4())
-                            _job = Job(
-                                job_id=_job_id,
-                                status="new",
-                                payload=payload,
-                                timeout="no"
-                            ).save()
-                            while True:
-                                _job = _job.load()
-                                if _job.status in ["finished",
-                                                   "failed"]:
-                                    break
+                        if _ptag in NS.node_context.tags:
+                            if dc.detected_cluster_id and \
+                                dc.detected_cluster_id != sds_details.get(
+                                    'detected_cluster_id'):
+                                
+                                # Gluster peer list has changed
+                                integration_id = \
+                                    NS.tendrl_context.integration_id
+                                etcd_utils.write(
+                                    integration_index_key,
+                                    integration_id
+                                )
+                                # Let other nodes sync up with
+                                # integration_id
+                                params = {
+                                    'TendrlContext.integration_id':
+                                    integration_id,
+                                }
+                                payload = {
+                                    "tags": [_target],
+                                    "run": _flow,
+                                    "status": "new",
+                                    "parameters": params,
+                                    "type": "node"
+                                }
+                                _job_id = str(uuid.uuid4())
+                                _job = Job(
+                                    job_id=_job_id,
+                                    status="new",
+                                    payload=payload,
+                                    timeout="no"
+                                ).save()
+                                while True:
+                                    _job = _job.load()
+                                    if _job.status in ["finished",
+                                                       "failed"]:
+                                        break
+
                     loop_count = 0
                     while True:
                         # Wait till provisioner node assigns
