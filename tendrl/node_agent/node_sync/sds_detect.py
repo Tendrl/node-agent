@@ -90,7 +90,8 @@ def sync(sync_ttl):
                             _job = Job(
                                 job_id=_job_id,
                                 status="new",
-                                payload=payload
+                                payload=payload,
+                                timeout="no"
                             ).save()
                             while True:
                                 _job = _job.load()
