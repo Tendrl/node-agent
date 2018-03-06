@@ -41,7 +41,8 @@ def sync(sync_ttl=None):
                     tags.append("tendrl/monitor")
             s.save()
 
-        if "tendrl/monitor" not in tags:
+        if "tendrl/monitor" not in tags and \
+            NS.tendrl_context.integration_id:
             _cluster = NS.tendrl.objects.Cluster(
                 integration_id=NS.tendrl_context.integration_id
             ).load()
@@ -77,7 +78,8 @@ def sync(sync_ttl=None):
         if NS.node_context.tags != current_tags:
             NS.node_context.save()
 
-        if "tendrl/monitor" not in tags:
+        if "tendrl/monitor" not in tags and \
+            NS.tendrl_context.integration_id:
             _cluster = _cluster.load()
             if _is_new_provisioner and _cluster.is_managed == "yes":
                 _msg = "node_sync, NEW provisioner node found! "\
@@ -112,7 +114,7 @@ def sync(sync_ttl=None):
             index_key = "/indexes/tags/%s" % tag
             _node_ids = []
             try:
-                _node_ids = NS._int.client.read(index_key).value
+                _node_ids = etcd_utils.read(index_key).value
                 _node_ids = json.loads(_node_ids)
             except etcd.EtcdKeyNotFound:
                 pass
