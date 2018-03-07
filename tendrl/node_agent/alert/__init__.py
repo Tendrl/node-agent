@@ -111,7 +111,7 @@ def update_alert(message):
                 new_alert_obj.save()
             else:
                 logger.log(
-                    "error",
+                    "debug",
                     NS.publisher_id,
                     {
                         "message": "New alert can't be a clearing alert %s" % (
