@@ -55,12 +55,12 @@ def sync(sync_ttl):
                             )
                         except etcd.EtcdAlreadyExist:
                             pass
-                    
+
                     _ptag = None
                     if NS.tendrl_context.integration_id:
                         _ptag = "provisioner/%s" % \
                             NS.tendrl_context.integration_id
-                        
+
                         _target = "tendrl/node_%s" % \
                             NS.node_context.node_id
                         _flow = "tendrl.flows." \
@@ -70,7 +70,7 @@ def sync(sync_ttl):
                             if dc.detected_cluster_id and \
                                 dc.detected_cluster_id != sds_details.get(
                                     'detected_cluster_id'):
-                                
+
                                 # Gluster peer list has changed
                                 integration_id = \
                                     NS.tendrl_context.integration_id
