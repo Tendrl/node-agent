@@ -23,7 +23,7 @@ class TendrlGlusterfsHealthCounters(
         volumes = self.CLUSTER_TOPOLOGY.get('volumes', [])
         for volume in volumes:
             ret_val[volume['name']] = {}
-            # snap counts 
+            # snap counts
             ret_val[volume['name']]['snap_count'] = \
                 volume.get('snap_count', 0)
             # rebalance_data
@@ -104,7 +104,8 @@ class TendrlGlusterfsHealthCounters(
                     ] = rebalance_info[vol_name]['rebalance_files']
                     # Push rebalance failures
                     ret_val[
-                        'clusters.%s.volumes.%s.nodes.%s.rebalance_failures' % (
+                        'clusters.%s.volumes.%s.nodes.%s.'
+                        'rebalance_failures' % (
                             self.CONFIG['integration_id'],
                             vol_name,
                             self.CONFIG['peer_name'].replace('.', '_')
