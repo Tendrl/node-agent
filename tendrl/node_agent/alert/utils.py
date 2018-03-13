@@ -104,7 +104,14 @@ def find_sds_name(integration_id):
     return sds_name
 
 
-def update_alert_count(alert, existing_alert):
+def update_alert_count(alert, existing_alert=None):
+    if existing_alert:
+        if(alert.severity == constants.ALERT_SEVERITY['warning'] and
+           existing_alert.severity == constants.ALERT_SEVERITY['critical']) or \
+               (alert.severity == constants.ALERT_SEVERITY['critical'] and
+                existing_alert.severity == constants.ALERT_SEVERITY['warning']):
+                    # no need to increment alert_count
+                    return 
     if constants.NODE_ALERT in alert.classification:
         counter_obj = NodeAlertCounters(
             node_id=alert.node_id
@@ -123,21 +130,20 @@ def update_alert_count(alert, existing_alert):
         if sds_name == constants.GLUSTER:
             # volume alert count
             gluster_alert.update_alert_count(
-                alert, existing_alert
+                alert
             )
-        update_count(alert, counter_obj, existing_alert)
+        update_count(alert, counter_obj)
 
 
-def update_count(alert, counter_obj, existing_alert):
-    warn_count = int(counter_obj.warning_count)
-    if existing_alert:
-        if alert.severity == constants.ALERT_SEVERITY["info"]:
-            warn_count -= 1
-        elif alert.severity == constants.ALERT_SEVERITY["warning"]:
-            warn_count += 1
-    else:
-        warn_count += 1
-    counter_obj.warning_count = warn_count
+def update_count(alert, counter_obj):
+    alert_count = int(counter_obj.alert_count)
+    if alert.severity == constants.ALERT_SEVERITY["info"]:
+        alert_count -= 1
+    elif alert.severity == constants.ALERT_SEVERITY["warning"]:
+        alert_count += 1
+    elif alert.severity == constants.ALERT_SEVERITY["critical"]:
+        alert_count += 1
+    counter_obj.alert_count = alert_count
     counter_obj.save()
 
 
