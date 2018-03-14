@@ -55,7 +55,7 @@ def sync():
             raw_reference,
             ttl=_keep_alive_for,
         )
-    except Exception as ex:
+    except(Exception, KeyError) as ex:
         _msg = "node_sync disks sync failed: " + ex.message
         Event(
             ExceptionMessage(
@@ -110,10 +110,12 @@ def get_node_disks():
                     if key.strip() == "Config Status":
                         devlist["config_status"] = \
                             partition.split(':')[1].lstrip()
-
-                part_name = devlist["partition_name"]
-                parent = disks_map[devlist["parent_hardware_id"]]
-                disks[parent]["partitions"][part_name] = devlist
+                # checking if partition parent id is in collected
+                # disk_ids or not
+                if devlist["parent_hardware_id"] in disks_map:
+                    part_name = devlist["partition_name"]
+                    parent = disks_map[devlist["parent_hardware_id"]]
+                    disks[parent]["partitions"][part_name] = devlist
     return disks
 
 
@@ -236,10 +238,23 @@ def get_disk_details():
                     "serial_no"])
             else:
                 devlist['disk_id'] = devlist['disk_name']
-
-            disks[devlist["disk_id"]] = devlist
-            disks_map[devlist['hardware_id']] = devlist["disk_id"]
-
+            if devlist["disk_id"] in disks.keys():
+                # Multipath is like multiple I/O paths between
+                # server nodes and storage arrays into a single device
+                # If single device is connected with more than one path
+                # then hwinfo and lsblk will give same device details with
+                # different device names. To avoid this duplicate entry,
+                # If multiple devices exists with same disk_id then
+                # device_name which is lower in alphabetical order is stored.
+                # It will avoid redundacy of disks and next sync it will
+                # make sure same device detail is populated
+                if devlist["disk_name"] < disks[
+                        devlist['disk_id']]['disk_name']:
+                    disks[devlist["disk_id"]] = devlist
+                    disks_map[devlist['hardware_id']] = devlist["disk_id"]
+            else:
+                disks[devlist["disk_id"]] = devlist
+                disks_map[devlist['hardware_id']] = devlist["disk_id"]
     return disks, disks_map, err
 
 
@@ -262,6 +277,7 @@ def get_node_block_devices(disks_map):
             out.splitlines())
         all_parents = []
         parent_ids = []
+        multipath = {}
         for dev_info in devlist:
             device = dict()
             device['device_name'] = dev_info['NAME']
@@ -306,15 +322,26 @@ def get_node_block_devices(disks_map):
 
             if dev_info['TYPE'] == 'part':
                 device['used'] = True
-                device['disk_id'] = disks_map[dev_info['PKNAME']]['disk_id']
-                block_devices['all'].append(device)
-                block_devices['used'].append(device['device_name'])
+                # if partition is under multipath then parent of multipath
+                # is assigned
+                if dev_info['PKNAME'] in multipath.keys():
+                    dev_info['PKNAME'] = multipath[dev_info['PKNAME']]
+                if dev_info['PKNAME'] in disks_map.keys():
+                    device['disk_id'] = disks_map[
+                        dev_info['PKNAME']]['disk_id']
+                    block_devices['all'].append(device)
+                    block_devices['used'].append(device['device_name'])
 
             if dev_info['TYPE'] == 'disk':
-                device['disk_id'] = disks_map[dev_info['NAME']]['disk_id']
-                disks_map[dev_info['NAME']]['ssd'] = device['ssd']
-                all_parents.append(device)
+                if dev_info['NAME'] in disks_map.keys():
+                    device['disk_id'] = disks_map[dev_info['NAME']]['disk_id']
+                    disks_map[dev_info['NAME']]['ssd'] = device['ssd']
+                    all_parents.append(device)
+            if dev_info['TYPE'] == 'mpath':
+                multipath[device['device_kernel_name']] = dev_info['PKNAME']
             else:
+                if dev_info['PKNAME'] in multipath.keys():
+                    dev_info['PKNAME'] = multipath[dev_info['PKNAME']]
                 parent_ids.append(dev_info['PKNAME'])
         for parent in all_parents:
             if parent['device_name'] in parent_ids:
