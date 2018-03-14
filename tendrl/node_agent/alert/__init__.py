@@ -104,16 +104,16 @@ def update_alert(message):
                             new_alert_obj.save()
                         return
                     else:
-                        # Handle case where alert severity changes without
-                        # coming to normal. In this case the previous alert
-                        # should be overriden with new one
+                        # If alert raised again with same severity,
+                        # then update the alert 
                         utils.remove_alert(new_alert_obj)
                         utils.classify_alert(new_alert_obj)
                         new_alert_obj.save()
                     return
                 # else add this new alert to etcd
-            if message.payload["alert_condition_state"] == \
-                constants.ALERT_SEVERITY["warning"]:
+            severity = message.payload["alert_condition_state"]            
+            if(severity == constants.ALERT_SEVERITY["warning"]) or \
+                    (severity == constants.ALERT_SEVERITY["critical"]):
                 utils.update_alert_count(
                     new_alert_obj
                 )

@@ -116,7 +116,7 @@ def update_alert_count(alert, existing_alert=None):
         counter_obj = NodeAlertCounters(
             node_id=alert.node_id
         ).load()
-        update_count(alert, counter_obj, existing_alert)
+        update_count(alert, counter_obj)
     if constants.CLUSTER_ALERT in alert.classification:
         counter_obj = ClusterAlertCounters(
             integration_id=alert.tags['integration_id']
