@@ -106,12 +106,15 @@ def find_sds_name(integration_id):
 
 def update_alert_count(alert, existing_alert=None):
     if existing_alert:
-        if(alert.severity == constants.ALERT_SEVERITY['warning'] and
-           existing_alert.severity == constants.ALERT_SEVERITY['critical']) or \
-               (alert.severity == constants.ALERT_SEVERITY['critical'] and
-                existing_alert.severity == constants.ALERT_SEVERITY['warning']):
-                    # no need to increment alert_count
-                    return 
+        if(
+            alert.severity == constants.ALERT_SEVERITY['warning'] and
+            existing_alert.severity == constants.ALERT_SEVERITY['critical']
+        ) or (
+            alert.severity == constants.ALERT_SEVERITY['critical'] and
+            existing_alert.severity == constants.ALERT_SEVERITY['warning']
+        ):
+            # no need to increment alert_count
+            return
     if constants.NODE_ALERT in alert.classification:
         counter_obj = NodeAlertCounters(
             node_id=alert.node_id

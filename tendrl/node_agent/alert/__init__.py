@@ -21,7 +21,6 @@ class InvalidAlertSeverity(Exception):
 def update_alert(message):
     try:
         lock = None
-        existing_alert = False
         new_alert = json.loads(message.payload["message"])
         new_alert['alert_id'] = message.message_id
         new_alert_obj = AlertUtils().to_obj(new_alert)
@@ -57,16 +56,19 @@ def update_alert(message):
             for curr_alert in alerts:
                 curr_alert.tags = json.loads(curr_alert.tags)
                 if AlertUtils().is_same(new_alert_obj, curr_alert):
-                    if new_alert_obj.severity == constants.ALERT_SEVERITY["info"]:
+                    if new_alert_obj.severity == \
+                            constants.ALERT_SEVERITY["info"]:
                         if "clear_alert" in new_alert_obj.tags.keys():
                             if new_alert_obj.tags['clear_alert'] != \
                                     curr_alert.severity:
-                                # only warning clearing alert can clear the warning alert
-                                # and critical clearing alert can clear the critical alert
-                                # Because critical/warning alert panels in grafana
-                                # are indipendent from one another, So after critical
-                                # alert raised if warning clearing came then tendrl
-                                # can show only clearing alert, So this logic will help
+                                # only warning clearing alert can clear
+                                # the warning alert and critical clearing alert
+                                # can clear the critical alert,
+                                # Because critical/warning alert panels in
+                                # grafana are indipendent from one another,
+                                # So after critical alert raised if warning
+                                # clearing came then tendrl can show only
+                                # clearing alert, So this logic will help
                                 # to prevent from the above case.
                                 return
                     new_alert_obj = AlertUtils().update(
@@ -105,13 +107,13 @@ def update_alert(message):
                         return
                     else:
                         # If alert raised again with same severity,
-                        # then update the alert 
+                        # then update the alert
                         utils.remove_alert(new_alert_obj)
                         utils.classify_alert(new_alert_obj)
                         new_alert_obj.save()
                     return
                 # else add this new alert to etcd
-            severity = message.payload["alert_condition_state"]            
+            severity = message.payload["alert_condition_state"]
             if(severity == constants.ALERT_SEVERITY["warning"]) or \
                     (severity == constants.ALERT_SEVERITY["critical"]):
                 utils.update_alert_count(
