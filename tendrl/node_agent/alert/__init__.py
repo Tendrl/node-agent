@@ -21,7 +21,6 @@ class InvalidAlertSeverity(Exception):
 def update_alert(message):
     try:
         lock = None
-        existing_alert = False
         new_alert = json.loads(message.payload["message"])
         new_alert['alert_id'] = message.message_id
         new_alert_obj = AlertUtils().to_obj(new_alert)
@@ -57,6 +56,21 @@ def update_alert(message):
             for curr_alert in alerts:
                 curr_alert.tags = json.loads(curr_alert.tags)
                 if AlertUtils().is_same(new_alert_obj, curr_alert):
+                    if new_alert_obj.severity == \
+                            constants.ALERT_SEVERITY["info"]:
+                        if "clear_alert" in new_alert_obj.tags.keys():
+                            if new_alert_obj.tags['clear_alert'] != \
+                                    curr_alert.severity:
+                                # only warning clearing alert can clear
+                                # the warning alert and critical clearing alert
+                                # can clear the critical alert,
+                                # Because critical/warning alert panels in
+                                # grafana are indipendent from one another,
+                                # So after critical alert raised if warning
+                                # clearing came then tendrl can show only
+                                # clearing alert, So this logic will help
+                                # to prevent from the above case.
+                                return
                     new_alert_obj = AlertUtils().update(
                         new_alert_obj,
                         curr_alert
@@ -75,10 +89,9 @@ def update_alert(message):
                         if lock.is_acquired:
                             # renew a lock
                             lock.acquire(lock_ttl=60)
-                        existing_alert = True
                         utils.update_alert_count(
                             new_alert_obj,
-                            existing_alert
+                            curr_alert
                         )
                         if message.payload["alert_condition_unset"]:
                             keep_alive = int(
@@ -93,19 +106,18 @@ def update_alert(message):
                             new_alert_obj.save()
                         return
                     else:
-                        # Handle case where alert severity changes without
-                        # coming to normal. In this case the previous alert
-                        # should be overriden with new one
+                        # If alert raised again with same severity,
+                        # then update the alert
                         utils.remove_alert(new_alert_obj)
                         utils.classify_alert(new_alert_obj)
                         new_alert_obj.save()
                     return
                 # else add this new alert to etcd
-            if message.payload["alert_condition_state"] == \
-                constants.ALERT_SEVERITY["warning"]:
+            severity = message.payload["alert_condition_state"]
+            if(severity == constants.ALERT_SEVERITY["warning"]) or \
+                    (severity == constants.ALERT_SEVERITY["critical"]):
                 utils.update_alert_count(
-                    new_alert_obj,
-                    existing_alert
+                    new_alert_obj
                 )
                 utils.classify_alert(new_alert_obj)
                 new_alert_obj.save()
