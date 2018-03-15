@@ -127,6 +127,10 @@ def sync(sync_ttl=None):
                         NS.node_context.save()
                         continue
                 if NS.node_context.node_id in _node_ids:
+                    if sync_ttl and len(_node_ids) == 1:
+                        etcd_utils.refresh(index_key,
+                                           sync_ttl + 50)
+
                     continue
                 else:
                     _node_ids += [NS.node_context.node_id]
