@@ -5,7 +5,7 @@ from tendrl.commons.utils import log_utils as logger
 from tendrl.node_agent.alert import constants
 
 
-def update_alert_count(alert, existing_alert):
+def update_alert_count(alert):
     if alert.resource in NS.integrations.gluster.objects.VolumeAlertCounters(
             )._defs['relationship'][alert.alert_type.lower()]:
         alert.tags['volume_id'] = find_volume_id(
@@ -16,15 +16,14 @@ def update_alert_count(alert, existing_alert):
             integration_id=alert.tags['integration_id'],
             volume_id=alert.tags['volume_id']
         ).load()
-        warn_count = int(counter_obj.warning_count)
-        if existing_alert:
-            if alert.severity == constants.ALERT_SEVERITY["info"]:
-                warn_count -= 1
-            elif alert.severity == constants.ALERT_SEVERITY["warning"]:
-                warn_count += 1
-        else:
-            warn_count += 1
-        counter_obj.warning_count = warn_count
+        alert_count = int(counter_obj.alert_count)
+        if alert.severity == constants.ALERT_SEVERITY["info"]:
+            alert_count -= 1
+        elif alert.severity == constants.ALERT_SEVERITY["warning"]:
+            alert_count += 1
+        elif alert.severity == constants.ALERT_SEVERITY["critical"]:
+            alert_count += 1
+        counter_obj.alert_count = alert_count
         counter_obj.save()
 
 

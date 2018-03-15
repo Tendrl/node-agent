@@ -5,12 +5,14 @@ SUPPORTED_ALERT_TYPES = [
 
 SUPPORTED_ALERT_SEVERITY = [
     "INFO",
-    "WARNING"
+    "WARNING",
+    "CRITICAL"
 ]
 
 ALERT_SEVERITY = {
     "info": "INFO",
-    "warning": "WARNING"
+    "warning": "WARNING",
+    "critical": "CRITICAL"
 }
 
 NODE_ALERT = "node"
