@@ -1,3 +1,4 @@
+import json
 import time
 import uuid
 
@@ -5,8 +6,8 @@ import etcd
 
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
-from tendrl.commons.objects.job import Job
 from tendrl.commons.utils import etcd_utils
+from tendrl.commons.utils import event_utils
 from tendrl.commons.utils import log_utils as logger
 from tendrl.node_agent.discovery.sds import manager as sds_manager
 
@@ -61,11 +62,6 @@ def sync(sync_ttl):
                         _ptag = "provisioner/%s" % \
                             NS.tendrl_context.integration_id
 
-                        _target = "tendrl/node_%s" % \
-                            NS.node_context.node_id
-                        _flow = "tendrl.flows." \
-                            "ExpandClusterWithDetectedPeers"
-
                         if _ptag in NS.node_context.tags:
                             if dc.detected_cluster_id and \
                                 dc.detected_cluster_id != sds_details.get(
@@ -78,32 +74,62 @@ def sync(sync_ttl):
                                     integration_index_key,
                                     integration_id
                                 )
-                                # Let other nodes sync up with
-                                # integration_id
-                                params = {
-                                    'TendrlContext.integration_id':
-                                    integration_id,
-                                }
-                                payload = {
-                                    "tags": [_target],
-                                    "run": _flow,
-                                    "status": "new",
-                                    "parameters": params,
-                                    "type": "node"
-                                }
-                                _job_id = str(uuid.uuid4())
-                                _job = Job(
-                                    job_id=_job_id,
-                                    status="new",
-                                    payload=payload,
-                                    timeout="no"
-                                ).save()
-                                while True:
-                                    _job = _job.load()
-                                    if _job.status in ["finished",
-                                                       "failed"]:
-                                        break
-
+                                # Raise an alert regarding the same
+                                msg = "New peers identified in cluster: %s. " \
+                                    "Make sure tendrl-ansible is executed " \
+                                    "for the new nodes so that expand " \
+                                    "cluster option can be triggered" % \
+                                    integration_id
+                                event_utils.emit_event(
+                                    "cluster_status",
+                                    "new_peers_detected",
+                                    msg,
+                                    "cluster_{0}".format(integration_id),
+                                    "WARNING",
+                                    integration_id=integration_id
+                                )
+                                # Set the cluster status as new peer detected
+                                _cluster = NS.tendrl.objects.Cluster(
+                                    integration_id=integration_id
+                                ).load()
+                                _cluster.status = "new_peers_detected"
+                                _cluster.save()
+                            integration_id = NS.tendrl_context.integration_id
+                            nodes_ids = json.loads(etcd_utils.read(
+                                "indexes/tags/tendrl/integration/%s" %
+                                integration_id
+                            ).value)
+                            cluster_peers = []
+                            try:
+                                cluster_peers = etcd_utils.read(
+                                    "/clusters/%s/Peers" % integration_id
+                                )
+                            except etcd.EtcdKeyNotFound:
+                                pass
+                            peer_count = 0
+                            for peer in cluster_peers.leaves:
+                                peer_count += 1
+                            _cluster = NS.tendrl.objects.Cluster(
+                                integration_id=integration_id
+                            ).load()
+                            if len(nodes_ids) == peer_count and \
+                                _cluster.status == "new_peers_detected":
+                                # All the nodes are having node-agents running
+                                # and known to tendrl
+                                msg = "New nodes in cluster: %s have node " \
+                                    "agents running now. Cluster is ready " \
+                                    "to expand." % integration_id
+                                event_utils.emit_event(
+                                    "cluster_status",
+                                    "expand_pending",
+                                    msg,
+                                    "cluster_{0}".format(integration_id),
+                                    "INFO",
+                                    integration_id=integration_id
+                                )
+                                # Set the cluster status accordingly
+                                _cluster.status = 'expand_pending'
+                                _cluster.save()
                     loop_count = 0
                     while True:
                         # Wait till provisioner node assigns
