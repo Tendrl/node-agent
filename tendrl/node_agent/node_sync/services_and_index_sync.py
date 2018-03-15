@@ -56,7 +56,7 @@ def sync(sync_ttl=None):
                     _node_id = json.dumps([NS.node_context.node_id])
                     NS._int.wclient.write(_index_key, _node_id,
                                           prevExist=False)
-                    etcd_utils.refresh(_index_key, sync_ttl)
+                    etcd_utils.refresh(_index_key, sync_ttl + 50)
                     tags.append(_tag)
                     _is_new_provisioner = True
                 except etcd.EtcdAlreadyExist:
@@ -136,7 +136,7 @@ def sync(sync_ttl=None):
 
             etcd_utils.write(index_key, json.dumps(_node_ids))
             if sync_ttl and len(_node_ids) == 1:
-                etcd_utils.refresh(index_key, sync_ttl)
+                etcd_utils.refresh(index_key, sync_ttl + 50)
         logger.log(
             "debug",
             NS.publisher_id,
