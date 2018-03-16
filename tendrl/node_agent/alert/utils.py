@@ -2,10 +2,7 @@ from etcd import EtcdConnectionFailed
 from etcd import EtcdException
 from etcd import EtcdKeyNotFound
 from tendrl.commons.objects.cluster_alert import ClusterAlert
-from tendrl.commons.objects.cluster_alert_counters import \
-    ClusterAlertCounters
 from tendrl.commons.objects.node_alert import NodeAlert
-from tendrl.commons.objects.node_alert_counters import NodeAlertCounters
 from tendrl.commons.objects.notification_only_alert import \
     NotificationOnlyAlert
 from tendrl.integrations.gluster import alerts as gluster_alert
@@ -116,12 +113,19 @@ def update_alert_count(alert, existing_alert=None):
             # no need to increment alert_count
             return
     if constants.NODE_ALERT in alert.classification:
-        counter_obj = NodeAlertCounters(
+        counter_obj = NS.tendrl.objects.NodeAlertCounters(
             node_id=alert.node_id
         ).load()
         update_count(alert, counter_obj)
+        # Update cluster node alert count
+        if "integration_id" in alert.tags:
+            counter_obj = NS.tendrl.objects.ClusterNodeAlertCounters(
+                node_id=alert.node_id,
+                integration_id=alert.tags['integration_id']
+            ).load()
+            update_count(alert, counter_obj)
     if constants.CLUSTER_ALERT in alert.classification:
-        counter_obj = ClusterAlertCounters(
+        counter_obj = NS.tendrl.objects.ClusterAlertCounters(
             integration_id=alert.tags['integration_id']
         ).load()
         if "sds_name" in alert.tags:
