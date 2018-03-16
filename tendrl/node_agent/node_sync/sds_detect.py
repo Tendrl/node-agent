@@ -1,8 +1,9 @@
+import etcd
 import json
+import subprocess
 import time
 import uuid
 
-import etcd
 
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
@@ -94,42 +95,51 @@ def sync(sync_ttl):
                                 ).load()
                                 _cluster.status = "new_peers_detected"
                                 _cluster.save()
-                            integration_id = NS.tendrl_context.integration_id
-                            nodes_ids = json.loads(etcd_utils.read(
-                                "indexes/tags/tendrl/integration/%s" %
-                                integration_id
-                            ).value)
-                            cluster_peers = []
-                            try:
-                                cluster_peers = etcd_utils.read(
-                                    "/clusters/%s/Peers" % integration_id
-                                )
-                            except etcd.EtcdKeyNotFound:
-                                pass
-                            peer_count = 0
-                            for peer in cluster_peers.leaves:
-                                peer_count += 1
                             _cluster = NS.tendrl.objects.Cluster(
-                                integration_id=integration_id
+                                integration_id=NS.tendrl_context.integration_id
                             ).load()
-                            if len(nodes_ids) == peer_count and \
-                                _cluster.status == "new_peers_detected":
-                                # All the nodes are having node-agents running
-                                # and known to tendrl
-                                msg = "New nodes in cluster: %s have node " \
-                                    "agents running now. Cluster is ready " \
-                                    "to expand." % integration_id
-                                event_utils.emit_event(
-                                    "cluster_status",
-                                    "expand_pending",
-                                    msg,
-                                    "cluster_{0}".format(integration_id),
-                                    "INFO",
-                                    integration_id=integration_id
+                            if _cluster.status == "new_peers_detected":
+                                peers = []
+                                cmd = subprocess.Popen(
+                                    "gluster pool list",
+                                    shell=True,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE
                                 )
-                                # Set the cluster status accordingly
-                                _cluster.status = 'expand_pending'
-                                _cluster.save()
+                                out, err = cmd.communicate()
+                                if err or out is None or \
+                                    "Connection failed" in out:
+                                    pass  # set the no of peers as zero
+                                if out:
+                                    lines = out.split('\n')[1:]
+                                    for line in lines:
+                                        if line.strip() != '':
+                                            peers.append(line.split()[0])
+                                nodes_ids = json.loads(etcd_utils.read(
+                                    "indexes/tags/tendrl/integration/%s" %
+                                    NS.tendrl_context.integration_id
+                                ).value)
+                                if len(nodes_ids) == len(peers):
+                                    # All the nodes are having node-agents
+                                    # running and known to tendrl
+                                    msg = "New nodes in cluster: %s have " \
+                                        "node agents running now. Cluster " \
+                                        "is ready to expand." % \
+                                        NS.tendrl_context.integration_id
+                                    event_utils.emit_event(
+                                        "cluster_status",
+                                        "expand_pending",
+                                        msg,
+                                        "cluster_{0}".format(
+                                            NS.tendrl_context.integration_id
+                                        ),
+                                        "INFO",
+                                        integration_id=NS.tendrl_context.
+                                        integration_id
+                                    )
+                                    # Set the cluster status accordingly
+                                    _cluster.status = 'expand_pending'
+                                    _cluster.save()
                     loop_count = 0
                     while True:
                         # Wait till provisioner node assigns
