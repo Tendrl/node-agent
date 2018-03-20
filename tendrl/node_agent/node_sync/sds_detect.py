@@ -189,7 +189,9 @@ def sync(sync_ttl):
                     _cluster = NS.tendrl.objects.Cluster(
                         integration_id=NS.tendrl_context.integration_id
                     ).load()
-                    _cluster.save()
+                    if _cluster.current_job.get('status', '') in \
+                        ['', 'finished', 'failed']:
+                        _cluster.save()
 
                 except (etcd.EtcdException, KeyError) as ex:
                     Event(
