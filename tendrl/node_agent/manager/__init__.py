@@ -31,10 +31,6 @@ def main():
     # Init NS.tendrl
     TendrlNS()
 
-    # Init NS.provisioning
-    # TODO(team) remove NS.provisioner and use NS.provisioning.{ceph, gluster}
-    # provisioning.ProvisioningNS()
-
     # Init NS.integrations.ceph
     # TODO(team) add all short circuited ceph(import/create) NS.tendrl.flows
     #  to NS.integrations.ceph
