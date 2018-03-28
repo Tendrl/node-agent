@@ -2,13 +2,10 @@ import threading
 import time
 
 from etcd import EtcdException
-from etcd import EtcdKeyNotFound
 
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
-from tendrl.commons.objects.node_alert_counters import NodeAlertCounters
 from tendrl.commons import sds_sync
-from tendrl.commons.utils import etcd_utils
 from tendrl.commons.utils import event_utils
 from tendrl.commons.utils import log_utils as logger
 from tendrl.commons.utils import time_utils
@@ -38,14 +35,6 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
         NS.node_context.tags = list(set(current_tags))
         NS.node_context.status = "UP"
         NS.node_context.save()
-        # Initialize alert count
-        try:
-            key = '/nodes/%s/alert_counters' % NS.node_context.node_id
-            etcd_utils.read(key)
-        except(EtcdException)as ex:
-            if type(ex) == EtcdKeyNotFound:
-                NodeAlertCounters(node_id=NS.node_context.node_id).save()
-
         _sleep = 0
         msg = "Node {0} is UP".format(NS.node_context.fqdn)
         event_utils.emit_event(
@@ -164,10 +153,39 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 sync_cluster_contexts_thread.daemon = True
                 sync_cluster_contexts_thread.start()
                 sync_cluster_contexts_thread.join()
-
+            # Update node alert count
+            update_node_alert_count()
             time.sleep(_sleep)
         logger.log(
             "info",
             NS.publisher_id,
             {"message": "%s complete" % self.__class__.__name__}
+        )
+
+
+def update_node_alert_count():
+    alert_count = 0
+    severity = ["WARNING", "CRITICAL"]
+    try:
+        alerts_arr = NS.tendrl.objects.NodeAlert(
+            node_id=NS.node_context.node_id
+        ).load_all()
+        for alert in alerts_arr:
+            if alert.severity in severity:
+                alert_count += 1
+        NS.tendrl.objects.NodeAlertCounters(
+            node_id=NS.node_context.node_id,
+            alert_count=alert_count
+        ).save()
+        if NS.tendrl_context.integration_id:
+            NS.tendrl.objects.ClusterNodeAlertCounters(
+                integration_id=NS.tendrl_context.integration_id,
+                node_id=NS.node_context.node_id,
+                alert_count=alert_count
+            ).save()
+    except EtcdException as ex:
+        logger.log(
+            "debug",
+            NS.publisher_id,
+            {"message": "Unable to update alert count.err: %s" % ex}
         )
