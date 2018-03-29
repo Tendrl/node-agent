@@ -154,7 +154,8 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 sync_cluster_contexts_thread.start()
                 sync_cluster_contexts_thread.join()
             # Update node alert count
-            update_node_alert_count()
+            if not NS.tendrl.objects.NodeAlertCounters().exists():
+                update_node_alert_count()
             time.sleep(_sleep)
         logger.log(
             "info",
