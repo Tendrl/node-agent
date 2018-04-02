@@ -118,7 +118,8 @@ def update_alert_count(alert, existing_alert=None):
         ).load()
         update_count(alert, counter_obj)
         # Update cluster node alert count
-        if "integration_id" in alert.tags:
+        integration_id = alert.tags.get("integration_id", None)
+        if integration_id:
             counter_obj = NS.tendrl.objects.ClusterNodeAlertCounters(
                 node_id=alert.node_id,
                 integration_id=alert.tags['integration_id']
