@@ -5,7 +5,6 @@ import etcd
 
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
-from tendrl.commons.objects.job import Job
 from tendrl.commons.utils import etcd_utils
 from tendrl.commons.utils import log_utils as logger
 
@@ -97,7 +96,7 @@ def sync(sync_ttl=None):
                     "type": "node"
                 }
                 _job_id = str(uuid.uuid4())
-                Job(
+                NS.tendrl.objects.Job(
                     job_id=_job_id,
                     status="new",
                     payload=payload
