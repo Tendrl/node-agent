@@ -3,6 +3,7 @@ import os
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
 from tendrl.commons.utils import cmd_utils
+from tendrl.commons.utils import etcd_utils
 from tendrl.commons.utils import log_utils as logger
 
 
@@ -35,21 +36,21 @@ def sync():
         for device in block_devices['all']:
             NS.tendrl.objects.BlockDevice(**device).save(ttl=_keep_alive_for)
         for device_id in block_devices['used']:
-            NS._int.wclient.write(
+            etcd_utils.write(
                 "nodes/%s/LocalStorage/BlockDevices/used/%s" %
                 (NS.node_context.node_id,
                  device_id.replace("/", "_").replace("_", "", 1)),
                 device_id, ttl=_keep_alive_for
             )
         for device_id in block_devices['free']:
-            NS._int.wclient.write(
+            etcd_utils.write(
                 "nodes/%s/LocalStorage/BlockDevices/free/%s" %
                 (NS.node_context.node_id,
                  device_id.replace("/", "_").replace("_", "", 1)),
                 device_id, ttl=_keep_alive_for
             )
         raw_reference = get_raw_reference()
-        NS._int.wclient.write(
+        etcd_utils.write(
             "nodes/%s/LocalStorage/DiskRawReference" %
             NS.node_context.node_id,
             raw_reference,

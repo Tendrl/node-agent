@@ -1,16 +1,11 @@
-import etcd
-
-
 def run():
-    try:
-        nodes = NS._int.client.read("/nodes")
-    except etcd.EtcdKeyNotFound:
+    nodes = NS.tendrl.objects.Node().load_all()
+    if nodes is None:
         return
 
-    for node in nodes.leaves:
-        node_id = node.key.split('/')[-1]
+    for node in nodes:
         _node_context = NS.tendrl.objects.NodeContext(
-            node_id=node_id
+            node_id=node.node_id
         ).load()
         _node_context.watch_attrs()
     return

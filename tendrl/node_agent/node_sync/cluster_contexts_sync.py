@@ -28,12 +28,22 @@ def sync(sync_ttl):
                 {"message": "node_sync, Updating"
                             "cluster node context"}
             )
-            NS.tendrl.objects.ClusterNodeContext(
-                node_id=NS.node_context.node_id,
-                fqdn=NS.node_context.fqdn,
-                status="UP",
-                tags=NS.node_context.tags
-            ).save(ttl=sync_ttl)
+            if NS.tendrl.objects.ClusterNodeContext(
+                node_id=NS.node_context.node_id
+            ).exists():
+                _cnc = NS.tendrl.objects.ClusterNodeContext(
+                    node_id=NS.node_context.node_id
+                ).load()
+                _cnc.tags = NS.node_context.tags
+                _cnc.status = 'UP'
+                _cnc.save()
+            else:
+                NS.tendrl.objects.ClusterNodeContext(
+                   node_id=NS.node_context.node_id,
+                    fqdn=NS.node_context.fqdn,
+                    status="UP",
+                    tags=NS.node_context.tags
+                ).save(ttl=sync_ttl)
     except Exception as ex:
         Event(
             ExceptionMessage(
