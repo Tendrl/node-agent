@@ -7,7 +7,7 @@
         integration_id "{{integration_id}}"
         graphite_host "{{ graphite_host }}"
         graphite_port "{{ graphite_port }}"
-        peer_name "{{ hostname }}"
+        peer_name "{{ fqdn }}"
         provisioner {{ is_provisioner_node }}
         etcd_host "{{ etcd_host }}"
         etcd_port {{ etcd_port }}

@@ -41,11 +41,9 @@ def sync(sync_ttl):
                 break
 
             if "peers" in sds_details and NS.tendrl_context.integration_id:
-                _cluster = NS.tendrl.objects.Cluster(
-                    integration_id=NS.tendrl_context.integration_id
-                ).load()
+                _cnc = NS.tendrl.objects.ClusterNodeContext().load()
                 this_peer_uuid = ""
-                if _cluster.is_managed != "yes":
+                if _cnc.is_managed != "yes":
                     for peer_uuid, data in sds_details.get("peers", {}):
                         peer = NS.tendrl.objects.GlusterPeer(
                             peer_uuid=peer_uuid,

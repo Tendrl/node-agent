@@ -21,17 +21,6 @@ def _parse_heal_info_stats(tree):
         brick_host = brick_name.split(":")[0]
         brick_path = brick_name.split(":")[1]
 
-        # If brick host is returned as an IP conver to FQDN
-        try:
-            from dns import resolver
-            from dns import reversename
-            from IPy import IP
-            IP(brick_host)
-            addr = reversename.from_address(brick_host)
-            brick_host = str(resolver.query(addr, "PTR")[0])[:-1]
-        except ValueError:
-            pass
-
         no_of_entries = 0
         try:
             no_of_entries = int(brick.find("numberOfEntries").text)
