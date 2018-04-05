@@ -24,24 +24,29 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
             )
             return ""
         lines = out.split('\n')[1:]
-        gfs_peers = []
+        gfs_peers_uuid = []
+        gfs_peer_data = {}
         for line in lines:
             if line != '':
                 peer = line.split()
                 # Use the gluster generated pool UUID as unique key
-                gfs_peers.append(peer[0])
+                gfs_peers_uuid.append(peer[0])
+                gfs_peer_data[peer[0]] = {"connected": peer[-1],
+                                          "hostname": peer[-2]}
 
-        gfs_peers.sort()
-        return hashlib.sha256("".join(gfs_peers)).hexdigest()
+        gfs_peers_uuid.sort()
+        return (hashlib.sha256("".join(gfs_peers_uuid)).hexdigest(),
+                gfs_peer_data)
 
     def discover_storage_system(self):
         ret_val = {}
 
         # get the gluster version details
         # form the temporary cluster_id
-        cluster_id = self._derive_cluster_id()
+        cluster_id, gfs_peers = self._derive_cluster_id()
         ret_val['detected_cluster_id'] = cluster_id
         ret_val['detected_cluster_name'] = "gluster-%s" % cluster_id
+        ret_val['peers'] = gfs_peers
 
         cmd = subprocess.Popen(
             "gluster --version",

@@ -39,6 +39,40 @@ def sync(sync_ttl):
             sds_details = plugin.discover_storage_system()
             if sds_details is None:
                 break
+
+            if "peers" in sds_details and NS.tendrl_context.integration_id:
+                _cnc = NS.tendrl.objects.ClusterNodeContext().load()
+                this_peer_uuid = ""
+                if _cnc.is_managed != "yes":
+                    for peer_uuid, data in sds_details.get("peers", {}):
+                        peer = NS.tendrl.objects.GlusterPeer(
+                            peer_uuid=peer_uuid,
+                            hostname=data['hostname'],
+                            connected=data['connected']
+                        )
+                        peer.save()
+                        if data['hostname'] == "localhost":
+                            this_peer_uuid = peer_uuid
+
+                    # Figure out the hostname used to probe this peer
+                    integration_id_index_key = \
+                        "indexes/tags/tendrl/integration/%s" %\
+                        NS.tendrl_context.integration_id
+                    _node_ids = etcd_utils.read(integration_id_index_key).value
+                    _node_ids = json.loads(_node_ids)
+                    peer_node_id = ""
+                    for _node_id in _node_ids:
+                        if _node_id != NS.node_context.node_id:
+                            peer_node_id = _node_id
+                            break
+
+                    if peer_node_id:
+                        peer = NS.tendrl.objects.GlusterPeer(
+                            peer_uuid=this_peer_uuid, node_id=peer_node_id
+                        ).load()
+                        NS.node_context.pkey = peer.hostname
+                        NS.node_context.fqdn = peer.hostname
+
             if ('detected_cluster_id' in sds_details and sds_details[
                     'detected_cluster_id'] != ""):
                 try:
