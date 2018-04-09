@@ -3,7 +3,6 @@
 import json
 import os
 import platform
-import socket
 from sys import argv
 
 
@@ -37,7 +36,7 @@ TEMPLATE_ROOT = '/etc/collectd_template'
 
 class TendrlMonitoringConfigManager(object):
 
-    def __init__(self, conf_name, data):
+    def __init__(self, fqdn, conf_name, data):
         self.template_path = '%s/%s.jinja' % (TEMPLATE_ROOT, conf_name)
         if conf_name == 'collectd':
             self.config_path = collectd_os_specifics['config']
@@ -46,7 +45,7 @@ class TendrlMonitoringConfigManager(object):
                 collectd_os_specifics['pluginconf'], conf_name)
         self.data = data
         self.data.update(collectd_os_specifics)
-        self.data['hostname'] = socket.getfqdn()
+        self.data['fqdn'] = fqdn
 
     def generate_config_file(self):
         j2_env = Environment(
@@ -62,9 +61,10 @@ class TendrlMonitoringConfigManager(object):
 
 
 def main():
-    conf_name = argv[1]
-    data = json.loads(argv[2])
-    TendrlMonitoringConfigManager(conf_name, data).generate_config_file()
+    fqdn = argv[1]
+    conf_name = argv[2]
+    data = json.loads(argv[3])
+    TendrlMonitoringConfigManager(fqdn, conf_name, data).generate_config_file()
     return 0
 
 
