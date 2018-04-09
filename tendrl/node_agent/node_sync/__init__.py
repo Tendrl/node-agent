@@ -36,7 +36,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
         NS.node_context.status = "UP"
         NS.node_context.save()
         _sleep = 0
-        msg = "Node {0} is UP".format(NS.node_context.fqdn)
+        msg = "{0} is UP".format(NS.node_context.fqdn)
         event_utils.emit_event(
             "node_status",
             "UP",
