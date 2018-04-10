@@ -1,4 +1,5 @@
-Hostname "{{ hostname }}"
+Hostname "{{ fqdn }}"
+FQDNLookup false
 BaseDir "/var/lib/collectd"
 PluginDir "{{ moduledirconfig }}"
 
@@ -22,10 +23,6 @@ LoadPlugin "aggregation"
   SocketGroup "{{ socketgroup }}"
   SocketPerms "0770"
   DeleteSocket true
-</Plugin>
-
-<Plugin "exec">
-    NotificationExec "tendrl-user" "{{ moduledirconfig }}handle_collectd_notification.py"
 </Plugin>
 
 Include "/etc/collectd.d/*.conf"
