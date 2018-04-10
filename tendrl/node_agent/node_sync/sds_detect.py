@@ -73,6 +73,7 @@ def sync(sync_ttl):
                         ).load()
                         NS.node_context.pkey = peer.hostname
                         NS.node_context.fqdn = peer.hostname
+                        NS.node_context.save()
 
             if ('detected_cluster_id' in sds_details and sds_details[
                     'detected_cluster_id'] != ""):
