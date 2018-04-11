@@ -224,10 +224,10 @@ class TendrlBrickUtilizationPlugin(
                     # Check if current brick is from localhost else utilization
                     # of brick from some other host can't be computed here..
                     if (
-                        brick_hostname == socket.gethostbyname(
+                        socket.gethostbyname(brick_hostname) ==
+                        socket.gethostbyname(
                             self.CONFIG['peer_name']
-                        ) or
-                        brick_hostname == self.CONFIG['peer_name']
+                        )
                     ):
                         thread = threading.Thread(
                             target=self.calc_brick_utilization,
