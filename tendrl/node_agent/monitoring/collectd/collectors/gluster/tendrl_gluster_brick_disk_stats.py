@@ -533,7 +533,7 @@ class TendrlBrickDeviceStatsPlugin(object):
 
     def get_metrics(self):
         self.initial_io_stats = psutil.disk_io_counters(perdisk=True)
-        curr_host_name = socket.gethostbyname(
+        curr_host_ip = socket.gethostbyname(
             self.CONFIG['peer_name']
         )
         time.sleep(self.STAT_INTERVAL_FOR_PER_SEC_COUNTER)
@@ -545,16 +545,16 @@ class TendrlBrickDeviceStatsPlugin(object):
                 []
             ).iteritems():
                 for brick in sub_volume_bricks:
-                    brick_hostname = brick['hostname']
+                    brick_ip = socket.gethostbyname(brick['hostname'])
                     if (
-                        brick_hostname == curr_host_name or
-                        brick_hostname == self.CONFIG['peer_name']
+                        brick_ip == curr_host_ip or
+                        brick['hostname'] == self.CONFIG['peer_name']
                     ):
                         thread = threading.Thread(
                             target=self.populate_disk_details,
                             args=(
                                 volume['name'],
-                                brick['hostname'],
+                                self.CONFIG['peer_name'],
                                 brick['path'],
                             )
                         )

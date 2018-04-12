@@ -1,5 +1,4 @@
 import collectd
-import socket
 import time
 import traceback
 # import threading
@@ -15,13 +14,15 @@ except ImportError:
 ret_val = {}
 
 
-def _parse_heal_info_stats(tree):
+def _parse_heal_info_stats(tree, integration_id, etcd_client):
     bricks_dict = {}
     for brick in tree.findall("healInfo/bricks/brick"):
         brick_name = brick.find("name").text
         brick_host = brick_name.split(":")[0]
         brick_path = brick_name.split(":")[1]
-        brick_host = socket.getfqdn(brick_host)
+        brick_host = tendrl_glusterfs_utils.find_brick_host(
+            etcd_client, integration_id, brick_host
+        )
 
         try:
             no_of_entries = int(brick.find("numberOfEntries").text)
@@ -31,7 +32,7 @@ def _parse_heal_info_stats(tree):
     return bricks_dict
 
 
-def get_volume_heal_info_split_brain_stats(vol):
+def get_volume_heal_info_split_brain_stats(vol, integration_id, etcd_client):
     for trial_cnt in xrange(0, 3):
         vol_heal_op, vol_heal_err = \
             tendrl_glusterfs_utils.exec_command(
@@ -52,7 +53,8 @@ def get_volume_heal_info_split_brain_stats(vol):
             break
     try:
         vol_heal_info = _parse_heal_info_stats(
-            ElementTree.fromstring(vol_heal_op)
+            ElementTree.fromstring(vol_heal_op),
+            integration_id, etcd_client
         )
         return vol_heal_info
     except (
@@ -68,7 +70,7 @@ def get_volume_heal_info_split_brain_stats(vol):
         return {}
 
 
-def get_volume_heal_info_stats(vol):
+def get_volume_heal_info_stats(vol, integration_id, etcd_client):
     for trial_cnt in xrange(0, 3):
         vol_heal_op, vol_heal_err = \
             tendrl_glusterfs_utils.exec_command(
@@ -89,7 +91,8 @@ def get_volume_heal_info_stats(vol):
             break
     try:
         vol_heal_info = _parse_heal_info_stats(
-            ElementTree.fromstring(vol_heal_op)
+            ElementTree.fromstring(vol_heal_op),
+            integration_id, etcd_client
         )
         return vol_heal_info
     except (
@@ -105,10 +108,11 @@ def get_volume_heal_info_stats(vol):
         return {}
 
 
-def get_heal_info(volume, integration_id):
-    vol_heal_info_stats = get_volume_heal_info_stats(volume)
+def get_heal_info(volume, integration_id, etcd_client):
+    vol_heal_info_stats = get_volume_heal_info_stats(volume, integration_id,
+                                                     etcd_client)
     vol_heal_info_split_brain_stats = get_volume_heal_info_split_brain_stats(
-        volume
+        volume, integration_id, etcd_client
     )
     for key, value in vol_heal_info_stats.iteritems():
         if key == "" or value is None:
@@ -138,8 +142,9 @@ def get_heal_info(volume, integration_id):
         ] = value
 
 
-def get_heal_info_disperse(volume, integration_id):
-    vol_heal_info_stats = get_volume_heal_info_stats(volume)
+def get_heal_info_disperse(volume, integration_id, etcd_client):
+    vol_heal_info_stats = get_volume_heal_info_stats(volume, integration_id,
+                                                     etcd_client)
     for key, value in vol_heal_info_stats.iteritems():
         if key == "" or value is None:
             continue
@@ -155,12 +160,12 @@ def get_heal_info_disperse(volume, integration_id):
         ] = value
 
 
-def get_metrics(CLUSTER_TOPOLOGY, CONFIG):
+def get_metrics(CLUSTER_TOPOLOGY, CONFIG, etcd_client):
     global ret_val
     # threads = []
     for volume in CLUSTER_TOPOLOGY.get('volumes', []):
         if 'Replicate' in volume.get('type', ''):
-            get_heal_info(volume, CONFIG['integration_id'])
+            get_heal_info(volume, CONFIG['integration_id'], etcd_client)
             # thread = threading.Thread(
             #    target=get_heal_info,
             #    args=(volume, CONFIG['integration_id'],)
@@ -170,7 +175,8 @@ def get_metrics(CLUSTER_TOPOLOGY, CONFIG):
             #    thread
             # )
         if 'Disperse' in volume.get('type', ''):
-            get_heal_info_disperse(volume, CONFIG['integration_id'])
+            get_heal_info_disperse(volume, CONFIG['integration_id'],
+                                   etcd_client)
     # for thread in threads:
     #    thread.join(1)
     # for thread in threads:
