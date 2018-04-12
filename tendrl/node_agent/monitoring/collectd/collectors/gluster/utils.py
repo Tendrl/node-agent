@@ -1,4 +1,5 @@
 import ConfigParser
+import json
 import os
 import shlex
 import socket
@@ -10,7 +11,8 @@ import uuid
 
 
 import collectd
-
+import etcd
+import urllib3
 
 from tendrl.commons.utils import ini2json
 
@@ -317,3 +319,28 @@ def get_size_MB(size_str):
         return float(size_str.split("TB")[0]) * 1024 * 1024
     if size_str.endswith("PB"):
         return float(size_str.split("PB")[0]) * 1024 * 1024 * 1024
+
+
+def find_brick_host(etcd_client, integration_id, brick_host):
+    if etcd_client:
+        try:
+            int_id = integration_id
+            _key = "indexes/tags/tendrl/integration/%s" % int_id
+            all_nodes = etcd_client.read(_key).value
+            all_nodes = json.loads(all_nodes)
+            for node_id in all_nodes:
+                fqdn = "/nodes/%s/NodeContext/fqdn" % node_id
+                fqdn = etcd_client.read(fqdn).value
+
+                if brick_host in fqdn:
+                    return fqdn
+
+                ip = "/nodes/%s/NodeContext/ipv4_addr" % node_id
+                ip = etcd_client.read(ip).value
+                if brick_host in ip:
+                    return fqdn
+
+        except (urllib3.exceptions.TimeoutError, etcd.EtcdKeyNotFound):
+            _msg = "Error finding fqdn/ip for brick %s" % brick_host
+            collectd.warning(_msg)
+            collectd.warning(traceback.format_exc())

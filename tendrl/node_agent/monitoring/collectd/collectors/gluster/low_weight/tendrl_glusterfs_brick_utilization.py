@@ -246,7 +246,7 @@ class TendrlBrickUtilizationPlugin(
     def calc_brick_utilization(self, vol_name, brick):
         try:
             brick_path = brick['path']
-            brick_hostname = brick['hostname']
+            brick_hostname = self.CONFIG['peer_name']
             utilization = self.brick_utilization(
                 brick['path']
             )
@@ -264,7 +264,7 @@ class TendrlBrickUtilizationPlugin(
                 'Failed to fetch utilization of brick %s of'
                 ' host %s. Error %s' % (
                     brick['path'],
-                    brick['hostname'],
+                    self.CONFIG['peer_name'],
                     traceback.format_exc()
                 )
             )

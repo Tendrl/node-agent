@@ -31,9 +31,12 @@ class TestTendrlGlusterfsProfileInfo(object):
            "gluster.utils.ini2json")
     def test_gluster_profile_info(self, ini2json, execu):
         profile_info.tendrl_gluster_heal_info = MagicMock()
+        profile_info.TendrlHealInfoAndProfileInfoPlugin.etcd_client = \
+            MagicMock()
         gluster_state = mock_gluster_state.gluster_state()
         execu.return_value = self.volume_profile()
         ini2json.ini_to_dict.return_value = gluster_state
+        utils.find_brick_host = MagicMock(return_value="10.70.43.214")
         obj = profile_info.TendrlHealInfoAndProfileInfoPlugin()
         obj.CLUSTER_TOPOLOGY = utils.get_gluster_cluster_topology()
         with open("tendrl/node_agent/tests/output/"

@@ -54,12 +54,12 @@ class TendrlGlusterfsHealthCounters(
                     {}
                 ).iteritems():
                     for brick in sub_volume_bricks:
-                        brick_hostname = brick.get('hostname')
+                        brick_ip = socket.gethostbyname(brick.get('hostname'))
                         if (
-                            brick_hostname == socket.gethostbyname(
+                            brick_ip == socket.gethostbyname(
                                 self.CONFIG['peer_name']
                             ) or
-                            brick_hostname == self.CONFIG['peer_name']
+                            brick.get('hostname') == self.CONFIG['peer_name']
                         ):
                             brick_found_for_curr_node = True
                             # Push brick client connections

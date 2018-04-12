@@ -1,7 +1,9 @@
 import collectd
+import etcd
 import time
 import traceback
 # import threading
+
 try:
     import xml.etree.cElementTree as ElementTree
 except ImportError:
@@ -72,9 +74,39 @@ ENTRY_OPS = [
 class TendrlHealInfoAndProfileInfoPlugin(
     TendrlGlusterfsMonitoringBase
 ):
+    etcd_client = {}
+
     def __init__(self):
         self.provisioner_only_plugin = True
         TendrlGlusterfsMonitoringBase.__init__(self)
+
+        if not self.etcd_client:
+            _etcd_args = dict(
+                host=self.CONFIG['etcd_host'],
+                port=int(self.CONFIG['etcd_port'])
+            )
+            etcd_ca_cert_file = self.CONFIG.get("etcd_ca_cert_file")
+            etcd_cert_file = self.CONFIG.get("etcd_cert_file")
+            etcd_key_file = self.CONFIG.get("etcd_key_file")
+            if (
+                etcd_ca_cert_file and
+                str(etcd_ca_cert_file) != "" and
+                etcd_cert_file and
+                str(etcd_cert_file) != "" and
+                etcd_key_file and
+                str(etcd_key_file) != ""
+            ):
+                _etcd_args.update(
+                    {
+                        "ca_cert": str(self.CONFIG['etcd_ca_cert_file']),
+                        "cert": (
+                            str(self.CONFIG['etcd_cert_file']),
+                            str(self.CONFIG['etcd_key_file'])
+                        ),
+                        "protocol": "https"
+                    }
+                )
+            self.etcd_client = etcd.Client(**_etcd_args)
 
     def _parseVolumeProfileInfo(self, tree, nfs=False):
         bricks = []
@@ -219,6 +251,9 @@ class TendrlHealInfoAndProfileInfoPlugin(
         for brick_det in vol_iops.get('bricks', {}):
             brickName = brick_det.get('brick', '')
             brick_host = brick_det.get('brick', '').split(':')[0]
+            brick_host = tendrl_glusterfs_utils.find_brick_host(
+                self.etcd_client, self.CONFIG['integration_id'], brick_host
+            )
             t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s.iops." \
                 "gauge-read"
             self.profile_info[
@@ -460,7 +495,8 @@ class TendrlHealInfoAndProfileInfoPlugin(
         profile_info = self.get_volume_profile_metrics()
         heal_stats = tendrl_gluster_heal_info.get_metrics(
             self.CLUSTER_TOPOLOGY,
-            self.CONFIG
+            self.CONFIG,
+            self.etcd_client
         )
         profile_info.update(heal_stats)
         return profile_info
