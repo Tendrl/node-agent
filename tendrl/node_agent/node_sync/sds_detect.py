@@ -1,5 +1,6 @@
 import etcd
 import json
+import socket
 import subprocess
 import time
 import uuid
@@ -73,6 +74,9 @@ def sync(sync_ttl):
                         ).load()
                         NS.node_context.pkey = peer.hostname
                         NS.node_context.fqdn = peer.hostname
+                        NS.node_context.ipv4_addr = socket.gethostbyname(
+                            peer.hostname
+                        )
                         NS.node_context.save()
 
             if ('detected_cluster_id' in sds_details and sds_details[
