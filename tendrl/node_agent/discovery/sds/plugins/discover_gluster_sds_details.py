@@ -1,4 +1,6 @@
 import hashlib
+import json
+import os
 import subprocess
 
 from tendrl.commons.utils import log_utils as logger
@@ -48,23 +50,52 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
         ret_val['detected_cluster_name'] = "gluster-%s" % cluster_id
         ret_val['peers'] = gfs_peers
 
-        cmd = subprocess.Popen(
-            "gluster --version",
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
-        out, err = cmd.communicate()
-        if err and 'command not found' in err:
-            logger.log(
-                "debug",
-                NS.publisher_id,
-                {"message": "gluster not installed on host"}
+        # Check if the file /etc/tendrl/redhat-gluster-storage.json
+        # if the file exists, read the version details from this
+        if os.path.exists('/etc/tendrl/redhat-gluster-storage.json'):
+            try:
+                with open('/etc/tendrl/redhat-gluster-storage.json') as f:
+                    ver_det = json.loads(f.read())
+                    ret_val['pkg_version'] = ver_det['sds_name']
+                    ret_val['pkg_name'] = ver_det['sds_version']
+            except IOError:
+                logger.log(
+                    "debug",
+                    NS.publisher_id,
+                    {"message": "Failed to get version details"}
+                )
+                return ret_val
+        else:
+            # A sample output from "rpm -qa | grep glusterfs-server"
+            # looks as below
+            # `glusterfs-server-3.8.4-54.4.el7rhgs.x86_64`
+            # In case of upstream build the format could be as below
+            # `glusterfs-server-4.1dev-0.203.gitc3e1a2e.el7.centos.x86_64`
+            # `glusterfs-server-3.12.8-0.0.el7.centos.x86_64.rpm`
+            cmd = subprocess.Popen(
+                "rpm -qa | grep glusterfs-server",
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
             )
-            return ret_val
-        lines = out.split('\n')
-        if cluster_id:
-            ret_val['pkg_version'] = lines[0].split()[1]
-            ret_val['pkg_name'] = "gluster"
+            out, err = cmd.communicate()
+            if out in [None, ""] or err:
+                logger.log(
+                    "debug",
+                    NS.publisher_id,
+                    {"message": "gluster not installed on host"}
+                )
+                return ret_val
+            lines = out.split('\n')
+            if cluster_id:
+                version_det = lines[0].split(
+                    'glusterfs-server-'
+                )[-1]
+                ret_val['pkg_version'] = "%s.%s.%s" % (
+                    version_det.split('.')[0],
+                    version_det.split('.')[1],
+                    version_det.split('.')[2]
+                )
+                ret_val['pkg_name'] = "gluster"
 
         return ret_val
