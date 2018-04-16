@@ -90,7 +90,7 @@ def sync(sync_ttl):
                         time.sleep(sync_ttl)
                         integration_id = str(uuid.uuid4())
                         try:
-                            NS._int.wclient.write(
+                            etcd_utils.write(
                                 integration_index_key,
                                 integration_id,
                                 prevExist=False

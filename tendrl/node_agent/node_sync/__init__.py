@@ -55,6 +55,9 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
             NS.node_context = NS.node_context.load()
             NS.node_context.sync_status = "in_progress"
 
+            current_tags = list(NS.node_context.tags)
+            current_tags += ["tendrl/node_%s" % NS.node_context.node_id]
+            NS.node_context.tags = list(set(current_tags))
             NS.node_context.status = "UP"
             NS.node_context.save(ttl=_sync_ttl)
             NS.tendrl_context = NS.tendrl_context.load()
@@ -171,19 +174,20 @@ def update_node_alert_count():
         alerts_arr = NS.tendrl.objects.NodeAlert(
             node_id=NS.node_context.node_id
         ).load_all()
-        for alert in alerts_arr:
-            if alert.severity in severity:
-                alert_count += 1
-        NS.tendrl.objects.NodeAlertCounters(
-            node_id=NS.node_context.node_id,
-            alert_count=alert_count
-        ).save()
-        if NS.tendrl_context.integration_id:
-            NS.tendrl.objects.ClusterNodeAlertCounters(
-                integration_id=NS.tendrl_context.integration_id,
+        if alerts_arr:
+            for alert in alerts_arr:
+                if alert.severity in severity:
+                    alert_count += 1
+            NS.tendrl.objects.NodeAlertCounters(
                 node_id=NS.node_context.node_id,
                 alert_count=alert_count
             ).save()
+            if NS.tendrl_context.integration_id:
+                NS.tendrl.objects.ClusterNodeAlertCounters(
+                    integration_id=NS.tendrl_context.integration_id,
+                    node_id=NS.node_context.node_id,
+                    alert_count=alert_count
+                ).save()
     except EtcdException as ex:
         logger.log(
             "debug",

@@ -1,6 +1,6 @@
-from etcd import EtcdConnectionFailed
 from etcd import EtcdException
 from etcd import EtcdKeyNotFound
+from tendrl.commons.utils import etcd_utils
 from tendrl.integrations.gluster import alerts as gluster_alert
 from tendrl.node_agent.alert import constants
 
@@ -172,16 +172,4 @@ def remove_alert(alert):
 
 
 def remove(key):
-    try:
-        NS._int.client.delete(
-            key,
-            recursive=True
-        )
-    except (EtcdConnectionFailed, EtcdException) as ex:
-        if type(ex) != EtcdKeyNotFound:
-            NS._int.wreconnect()
-            NS._int.client.delete(
-                key,
-                recursive=True
-            )
-        # For etcd_key_not_found, clearing alert may deleted by ttl
+    etcd_utils.delete(key, recursive=True)

@@ -5,6 +5,7 @@ import netifaces as ni
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
 from tendrl.commons.utils import cmd_utils
+from tendrl.commons.utils import etcd_utils
 from tendrl.commons.utils import log_utils as logger
 
 
@@ -21,7 +22,7 @@ def sync():
                     for ipv4 in interface['ipv4']:
                         index_key = "/indexes/ip/%s" % ipv4
                         try:
-                            NS._int.wclient.write(
+                            etcd_utils.write(
                                 index_key, NS.node_context.node_id,
                                 prevExist=False)
                         except etcd.EtcdAlreadyExist:
@@ -41,7 +42,7 @@ def sync():
                     NS.node_agent.objects.GlobalNetwork(
                         **interface).save(ttl=_keep_alive_for)
         try:
-            networks = NS._int.client.read("/networks")
+            networks = etcd_utils.read("/networks")
             for network in networks.leaves:
                 try:
                     # it will delete any node with empty network detail in
