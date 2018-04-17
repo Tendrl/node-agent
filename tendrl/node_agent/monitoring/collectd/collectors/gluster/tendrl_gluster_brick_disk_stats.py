@@ -1,5 +1,6 @@
 import ast
 import etcd
+import json
 import psutil
 import re
 import socket
@@ -54,23 +55,19 @@ class TendrlBrickDeviceStatsPlugin(object):
             brick_path
         )
         try:
+            brick_data = self.etcd_client.read(
+                '/clusters/%s/Bricks/all/%s/%s/data' % (
+                    self.CONFIG['integration_id'],
+                    self.CONFIG['peer_name'],
+                    brick_path.replace('/', '_').replace("_", "", 1)
+                )
+            ).value
+            brick_data = json.loads(brick_data)
             brick_devices = ast.literal_eval(
-                self.etcd_client.read(
-                    '/clusters/%s/Bricks/all/%s/%s/devices' % (
-                        self.CONFIG['integration_id'],
-                        self.CONFIG['peer_name'],
-                        brick_path.replace('/', '_').replace("_", "", 1)
-                    )
-                ).value
+                brick_data['devices']
             )
             brick_device_partitions = ast.literal_eval(
-                self.etcd_client.read(
-                    '/clusters/%s/Bricks/all/%s/%s/partitions' % (
-                        self.CONFIG['integration_id'],
-                        self.CONFIG['peer_name'],
-                        brick_path.replace('/', '_').replace("_", "", 1)
-                    )
-                ).value
+                brick_data['partitions']
             )
             return brick_devices, brick_device_partitions, mount_point
         except urllib3.exceptions.TimeoutError:
