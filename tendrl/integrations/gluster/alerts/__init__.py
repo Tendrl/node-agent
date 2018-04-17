@@ -1,7 +1,3 @@
-from etcd import EtcdKeyNotFound
-
-from tendrl.commons.utils import etcd_utils
-from tendrl.commons.utils import log_utils as logger
 from tendrl.node_agent.alert import constants
 
 
