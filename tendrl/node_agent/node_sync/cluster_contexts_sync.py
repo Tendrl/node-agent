@@ -39,7 +39,7 @@ def sync(sync_ttl):
                 _cnc.save()
             else:
                 NS.tendrl.objects.ClusterNodeContext(
-                   node_id=NS.node_context.node_id,
+                    node_id=NS.node_context.node_id,
                     fqdn=NS.node_context.fqdn,
                     status="UP",
                     tags=NS.node_context.tags

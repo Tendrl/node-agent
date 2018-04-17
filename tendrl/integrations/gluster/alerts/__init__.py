@@ -1,7 +1,3 @@
-from etcd import EtcdKeyNotFound
-
-from tendrl.commons.utils import etcd_utils
-from tendrl.commons.utils import log_utils as logger
 from tendrl.node_agent.alert import constants
 
 
@@ -28,22 +24,9 @@ def update_alert_count(alert):
 
 
 def find_volume_id(vol_name, integration_id):
-    try:
-        volumes = etcd_utils.read(
-            "clusters/%s/Volumes" % integration_id
-        )
-        for volume in volumes.leaves:
-            key = volume.key + "/name"
-            name = etcd_utils.read(key).value
-            if vol_name == name:
-                return volume.key.split("/")[-1]
-    except (EtcdKeyNotFound) as ex:
-        logger.log(
-            "error",
-            NS.publisher_id,
-            {
-                "message": "Failed to fetch volume id for volume name %s" %
-                vol_name
-            }
-        )
-        raise ex
+    volumes = NS.tendrl.objects.GlusterVolume(
+        integration_id
+    ).load_all()
+    for volume in volumes:
+        if volume.name == vol_name:
+            return volume.vol_id
