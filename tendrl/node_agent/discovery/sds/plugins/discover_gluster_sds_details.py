@@ -56,8 +56,8 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
             try:
                 with open('/etc/tendrl/redhat-gluster-storage.json') as f:
                     ver_det = json.loads(f.read())
-                    ret_val['pkg_version'] = ver_det['sds_name']
-                    ret_val['pkg_name'] = ver_det['sds_version']
+                    ret_val['pkg_name'] = ver_det['sds_name']
+                    ret_val['pkg_version'] = ver_det['sds_version']
             except IOError:
                 logger.log(
                     "debug",
