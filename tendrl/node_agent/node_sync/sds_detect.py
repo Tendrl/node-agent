@@ -16,6 +16,7 @@ from tendrl.node_agent.discovery.sds import manager as sds_manager
 
 def sync(sync_ttl):
     try:
+        NS.node_context = NS.node_context.load()
         logger.log(
             "debug",
             NS.publisher_id,
@@ -44,7 +45,7 @@ def sync(sync_ttl):
             if "peers" in sds_details and NS.tendrl_context.integration_id:
                 _cnc = NS.tendrl.objects.ClusterNodeContext().load()
                 this_peer_uuid = ""
-                if _cnc.is_managed != "yes":
+                if _cnc.is_managed != "yes" or not NS.node_context.fqdn:
                     for peer_uuid, data in sds_details.get("peers",
                                                            {}).iteritems():
                         peer = NS.tendrl.objects.GlusterPeer(
@@ -62,6 +63,13 @@ def sync(sync_ttl):
                         NS.tendrl_context.integration_id
                     _node_ids = etcd_utils.read(integration_id_index_key).value
                     _node_ids = json.loads(_node_ids)
+                    if len(_node_ids) == 1:
+                        NS.node_context.fqdn = socket.getfqdn()
+                        NS.node_context.pkey = NS.node_context.fqdn
+                        NS.node_context.ipv4_addr = socket.gethostbyname(
+                            NS.node_context.fqdn
+                        )
+                        NS.node_context.save()
                     peer_node_id = ""
                     for _node_id in _node_ids:
                         if _node_id != NS.node_context.node_id:
