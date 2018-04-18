@@ -174,20 +174,19 @@ def update_node_alert_count():
         alerts_arr = NS.tendrl.objects.NodeAlert(
             node_id=NS.node_context.node_id
         ).load_all()
-        if alerts_arr:
-            for alert in alerts_arr:
-                if alert.severity in severity:
-                    alert_count += 1
-            NS.tendrl.objects.NodeAlertCounters(
+        for alert in alerts_arr:
+            if alert.severity in severity:
+                alert_count += 1
+        NS.tendrl.objects.NodeAlertCounters(
+            node_id=NS.node_context.node_id,
+            alert_count=alert_count
+        ).save()
+        if NS.tendrl_context.integration_id:
+            NS.tendrl.objects.ClusterNodeAlertCounters(
+                integration_id=NS.tendrl_context.integration_id,
                 node_id=NS.node_context.node_id,
                 alert_count=alert_count
             ).save()
-            if NS.tendrl_context.integration_id:
-                NS.tendrl.objects.ClusterNodeAlertCounters(
-                    integration_id=NS.tendrl_context.integration_id,
-                    node_id=NS.node_context.node_id,
-                    alert_count=alert_count
-                ).save()
     except EtcdException as ex:
         logger.log(
             "debug",
