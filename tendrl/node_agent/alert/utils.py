@@ -131,7 +131,7 @@ def update_alert_count(alert, existing_alert=None):
             sds_name = find_sds_name(
                 alert.tags['integration_id']
             )
-        if sds_name == constants.GLUSTER:
+        if sds_name in [constants.GLUSTER, constants.RHGS]:
             # volume alert count
             gluster_alert.update_alert_count(
                 alert
