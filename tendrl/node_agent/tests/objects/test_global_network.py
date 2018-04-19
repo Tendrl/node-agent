@@ -99,6 +99,16 @@ def test_global_network(load_definition):
             'name': 'netmask',
             'key': '/networks/127.0.0.1_22/1/1/netmask',
             'value': ['255.255.255.0']
+            },
+           {'key': '/networks/127.0.0.1_22/1/1/hash',
+            'name': 'hash',
+            'dir': False,
+            'value': 'd6813b49e3ef0c95a9a46e1121ee42f3'
+            },
+           {'key': '/networks/127.0.0.1_22/1/1/updated_at',
+            'name': 'updated_at',
+            'dir': False,
+            'value': ''
             }]
     for atrr in obj.render():
         if atrr not in out:

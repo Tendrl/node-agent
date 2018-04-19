@@ -70,22 +70,20 @@ def sync(sync_ttl):
                             NS.node_context.fqdn
                         )
                         NS.node_context.save()
-                    peer_node_id = ""
                     for _node_id in _node_ids:
                         if _node_id != NS.node_context.node_id:
-                            peer_node_id = _node_id
-                            break
-
-                    if peer_node_id:
-                        peer = NS.tendrl.objects.GlusterPeer(
-                            peer_uuid=this_peer_uuid, node_id=peer_node_id
-                        ).load()
-                        NS.node_context.pkey = peer.hostname
-                        NS.node_context.fqdn = peer.hostname
-                        NS.node_context.ipv4_addr = socket.gethostbyname(
-                            peer.hostname
-                        )
-                        NS.node_context.save()
+                            peer = NS.tendrl.objects.GlusterPeer(
+                                peer_uuid=this_peer_uuid, node_id=_node_id
+                            ).load()
+                            if peer.hostname:
+                                NS.node_context.pkey = peer.hostname
+                                NS.node_context.fqdn = peer.hostname
+                                NS.node_context.ipv4_addr = \
+                                    socket.gethostbyname(
+                                        peer.hostname
+                                    )
+                                NS.node_context.save()
+                                break
 
             if ('detected_cluster_id' in sds_details and sds_details[
                     'detected_cluster_id'] != ""):
