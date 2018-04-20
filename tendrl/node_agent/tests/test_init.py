@@ -1,6 +1,7 @@
 import __builtin__
 import etcd
 from etcd import Client
+import json
 import maps
 import mock
 from mock import patch
@@ -30,5 +31,7 @@ def init(patch_get_node_id, patch_read, patch_client):
     NS.state_sync_thread = mock.MagicMock()
     NS.sds_sync_thread = mock.MagicMock()
     NS.message_handler_thread = mock.MagicMock()
-    tendrlNS = TendrlNS()
-    return tendrlNS
+    with patch.object(json, "loads") as loads:
+        loads.return_value = {"tags": ""}
+        tendrlNS = TendrlNS()
+        return tendrlNS
