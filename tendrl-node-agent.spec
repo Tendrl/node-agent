@@ -1,6 +1,6 @@
 Name: tendrl-node-agent
 Version: 1.6.3
-Release: 1%{?dist}
+Release: 2%{?dist}
 BuildArch: noarch
 Summary: Module for Tendrl Node Agent
 Source0: %{name}-%{version}.tar.gz
@@ -92,6 +92,9 @@ py.test -v tendrl/node-agent/tests || :
 %config(noreplace) %{_sysconfdir}/rsyslog.d/tendrl-node-agent.conf
 
 %changelog
+* Fri Apr 20 2018 Rohan Kanade <rkanade@redhat.com> - 1.6.3-2
+- Bugfixes (https://github.com/Tendrl/node-agent/milestone/5)
+
 * Wed Apr 18 2018 Rohan Kanade <rkanade@redhat.com> - 1.6.3-1
 - Support gluster nodes/bricks with fqdn, IP, short name
 - Serialisation of Tendrl objects
