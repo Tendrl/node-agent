@@ -1,5 +1,4 @@
 import hashlib
-import json
 import os
 import subprocess
 
@@ -108,8 +107,8 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
                 elif int(maj_ver) == 3 and int(min_ver) == 8 and \
                     int(rel) == 4 and build_no is not None and \
                     int(build_no) >= 52:
-                    ret_val ['pkg_name'] = 'RHGS'
-                    ret_val[pkg_version] = '3.3.1'
+                    ret_val['pkg_name'] = 'RHGS'
+                    ret_val['pkg_version'] = '3.3.1'
                 else:
                     ret_val['pkg_version'] = "%s.%s.%s" % (
                         version_det.split('.')[0],
