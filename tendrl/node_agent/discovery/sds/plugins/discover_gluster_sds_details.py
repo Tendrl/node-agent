@@ -106,7 +106,7 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
                     ret_val['pkg_name'] = 'RHGS'
                     ret_val['pkg_version'] = 'un-supported'
                 elif int(maj_ver) == 3 and int(min_ver) == 8 and \
-                    int(rel) == 4 and build_no in not None and \
+                    int(rel) == 4 and build_no is not None and \
                     int(build_no) >= 52:
                     ret_val ['pkg_name'] = 'RHGS'
                     ret_val[pkg_version] = '3.3.1'
