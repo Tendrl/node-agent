@@ -1,5 +1,4 @@
 import hashlib
-import json
 import os
 import subprocess
 
@@ -50,14 +49,14 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
         ret_val['detected_cluster_name'] = "gluster-%s" % cluster_id
         ret_val['peers'] = gfs_peers
 
-        # Check if the file /etc/tendrl/redhat-gluster-storage.json
+        # Check if the file /usr/share/glusterfs/release exists.
         # if the file exists, read the version details from this
-        if os.path.exists('/etc/tendrl/redhat-gluster-storage.json'):
+        if os.path.exists('/usr/share/glusterfs/release'):
             try:
-                with open('/etc/tendrl/redhat-gluster-storage.json') as f:
-                    ver_det = json.loads(f.read())
-                    ret_val['pkg_name'] = ver_det['sds_name']
-                    ret_val['pkg_version'] = ver_det['sds_version']
+                with open('/usr/share/glusterfs/release') as f:
+                    ver_det = f.read().split('\n')[0]
+                    ret_val['pkg_name'] = ver_det.split(" ")[0]
+                    ret_val['pkg_version'] = ver_det.split(" ")[1]
             except IOError:
                 logger.log(
                     "debug",
@@ -73,7 +72,7 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
             # `glusterfs-server-4.1dev-0.203.gitc3e1a2e.el7.centos.x86_64`
             # `glusterfs-server-3.12.8-0.0.el7.centos.x86_64.rpm`
             cmd = subprocess.Popen(
-                "rpm -qa | grep glusterfs-server",
+                "rpm -q glusterfs-server",
                 shell=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
@@ -91,11 +90,31 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
                 version_det = lines[0].split(
                     'glusterfs-server-'
                 )[-1]
-                ret_val['pkg_version'] = "%s.%s.%s" % (
-                    version_det.split('.')[0],
-                    version_det.split('.')[1],
-                    version_det.split('.')[2]
-                )
-                ret_val['pkg_name'] = "gluster"
+                maj_ver = version_det.split('.')[0]
+                min_ver = version_det.split('.')[1]
+                rel = version_det.split('.')[2]
+                build_no = None
+                if '-' in rel:
+                    build_no = rel.split('-')[1]
+                    rel = rel.split('-')[0]
+                # Check for rpm version. if its something less than 3.8.4-52
+                # its not supported version
+                if int(maj_ver) == 3 and int(min_ver) == 8 and \
+                    int(rel) == 4 and build_no is not None and \
+                    int(build_no) < 52:
+                    ret_val['pkg_name'] = 'RHGS'
+                    ret_val['pkg_version'] = 'un-supported'
+                elif int(maj_ver) == 3 and int(min_ver) == 8 and \
+                    int(rel) == 4 and build_no is not None and \
+                    int(build_no) >= 52:
+                    ret_val['pkg_name'] = 'RHGS'
+                    ret_val['pkg_version'] = '3.3.1'
+                else:
+                    ret_val['pkg_version'] = "%s.%s.%s" % (
+                        version_det.split('.')[0],
+                        version_det.split('.')[1],
+                        version_det.split('.')[2]
+                    )
+                    ret_val['pkg_name'] = "gluster"
 
         return ret_val
