@@ -63,13 +63,6 @@ def sync(sync_ttl):
                         NS.tendrl_context.integration_id
                     _node_ids = etcd_utils.read(integration_id_index_key).value
                     _node_ids = json.loads(_node_ids)
-                    if len(_node_ids) == 1:
-                        NS.node_context.fqdn = socket.getfqdn()
-                        NS.node_context.pkey = NS.node_context.fqdn
-                        NS.node_context.ipv4_addr = socket.gethostbyname(
-                            NS.node_context.fqdn
-                        )
-                        NS.node_context.save()
                     for _node_id in _node_ids:
                         if _node_id != NS.node_context.node_id:
                             peer = NS.tendrl.objects.GlusterPeer(
