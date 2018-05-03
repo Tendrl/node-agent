@@ -109,10 +109,6 @@ def update_alert_count(alert, existing_alert=None):
             # no need to increment alert_count
             return
     if constants.NODE_ALERT in alert.classification:
-        counter_obj = NS.tendrl.objects.NodeAlertCounters(
-            node_id=alert.node_id
-        ).load()
-        update_count(alert, counter_obj)
         # Update cluster node alert count
         integration_id = alert.tags.get("integration_id", None)
         if integration_id:
@@ -122,21 +118,23 @@ def update_alert_count(alert, existing_alert=None):
             ).load()
             update_count(alert, counter_obj)
     if constants.CLUSTER_ALERT in alert.classification:
-        counter_obj = NS.tendrl.objects.ClusterAlertCounters(
-            integration_id=alert.tags['integration_id']
-        ).load()
-        if "sds_name" in alert.tags:
-            sds_name = alert.tags["sds_name"]
-        else:
-            sds_name = find_sds_name(
-                alert.tags['integration_id']
-            )
-        if sds_name in [constants.GLUSTER, constants.RHGS]:
-            # volume alert count
-            gluster_alert.update_alert_count(
-                alert
-            )
-        update_count(alert, counter_obj)
+        integration_id = alert.tags.get('integration_id', None)
+        if integration_id:
+            counter_obj = NS.tendrl.objects.ClusterAlertCounters(
+                integration_id=integration_id
+            ).load()
+            if "sds_name" in alert.tags:
+                sds_name = alert.tags["sds_name"]
+            else:
+                sds_name = find_sds_name(
+                    alert.tags['integration_id']
+                )
+            if sds_name in [constants.GLUSTER, constants.RHGS]:
+                # volume alert count
+                gluster_alert.update_alert_count(
+                    alert
+                )
+            update_count(alert, counter_obj)
 
 
 def update_count(alert, counter_obj):
