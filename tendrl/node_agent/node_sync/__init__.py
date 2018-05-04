@@ -157,8 +157,8 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
                 sync_cluster_contexts_thread.start()
                 sync_cluster_contexts_thread.join()
             # Update node alert count
-            if not NS.tendrl.objects.NodeAlertCounters().exists():
-                update_node_alert_count()
+            if not NS.tendrl.objects.ClusterNodeAlertCounters().exists():
+                update_cluster_node_alert_count()
             time.sleep(_sleep)
         logger.log(
             "info",
@@ -167,21 +167,17 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
         )
 
 
-def update_node_alert_count():
+def update_cluster_node_alert_count():
     alert_count = 0
     severity = ["WARNING", "CRITICAL"]
     try:
-        alerts_arr = NS.tendrl.objects.NodeAlert(
-            node_id=NS.node_context.node_id
-        ).load_all()
-        for alert in alerts_arr:
-            if alert.severity in severity:
-                alert_count += 1
-        NS.tendrl.objects.NodeAlertCounters(
-            node_id=NS.node_context.node_id,
-            alert_count=alert_count
-        ).save()
         if NS.tendrl_context.integration_id:
+            alerts_arr = NS.tendrl.objects.NodeAlert(
+                node_id=NS.node_context.node_id
+            ).load_all()
+            for alert in alerts_arr:
+                if alert.severity in severity:
+                    alert_count += 1
             NS.tendrl.objects.ClusterNodeAlertCounters(
                 integration_id=NS.tendrl_context.integration_id,
                 node_id=NS.node_context.node_id,

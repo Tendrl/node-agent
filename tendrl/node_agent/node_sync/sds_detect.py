@@ -63,13 +63,6 @@ def sync(sync_ttl):
                         NS.tendrl_context.integration_id
                     _node_ids = etcd_utils.read(integration_id_index_key).value
                     _node_ids = json.loads(_node_ids)
-                    if len(_node_ids) == 1:
-                        NS.node_context.fqdn = socket.getfqdn()
-                        NS.node_context.pkey = NS.node_context.fqdn
-                        NS.node_context.ipv4_addr = socket.gethostbyname(
-                            NS.node_context.fqdn
-                        )
-                        NS.node_context.save()
                     for _node_id in _node_ids:
                         if _node_id != NS.node_context.node_id:
                             peer = NS.tendrl.objects.GlusterPeer(
@@ -121,12 +114,18 @@ def sync(sync_ttl):
                                     integration_index_key,
                                     integration_id
                                 )
+                                # Set the cluster status as new peer detected
+                                _cluster = NS.tendrl.objects.Cluster(
+                                    integration_id=integration_id
+                                ).load()
+                                _cluster.status = "new_peers_detected"
+                                _cluster.save()
                                 # Raise an alert regarding the same
                                 msg = "New peers identified in cluster: %s. " \
                                     "Make sure tendrl-ansible is executed " \
                                     "for the new nodes so that expand " \
                                     "cluster option can be triggered" % \
-                                    integration_id
+                                    _cluster.short_name
                                 event_utils.emit_event(
                                     "cluster_status",
                                     "new_peers_detected",
@@ -135,12 +134,6 @@ def sync(sync_ttl):
                                     "WARNING",
                                     integration_id=integration_id
                                 )
-                                # Set the cluster status as new peer detected
-                                _cluster = NS.tendrl.objects.Cluster(
-                                    integration_id=integration_id
-                                ).load()
-                                _cluster.status = "new_peers_detected"
-                                _cluster.save()
                             _cluster = NS.tendrl.objects.Cluster(
                                 integration_id=NS.tendrl_context.integration_id
                             ).load()
@@ -171,7 +164,7 @@ def sync(sync_ttl):
                                     msg = "New nodes in cluster: %s have " \
                                         "node agents running now. Cluster " \
                                         "is ready to expand." % \
-                                        NS.tendrl_context.integration_id
+                                        _cluster.short_name
                                     event_utils.emit_event(
                                         "cluster_status",
                                         "expand_pending",
