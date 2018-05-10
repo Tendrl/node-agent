@@ -23,7 +23,7 @@ class DiscoverGlusterStorageSystem(DiscoverSDSPlugin):
                 NS.publisher_id,
                 {"message": _msg}
             )
-            return ""
+            return "", {}
         lines = out.split('\n')[1:]
         gfs_peers_uuid = []
         gfs_peer_data = {}

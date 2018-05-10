@@ -15,6 +15,7 @@ TENDRL_SERVICES = [
     "etcd",
     "tendrl-api",
     "tendrl-gluster-integration",
+    "tendrl-monitoring-integration",
     "glusterd",
 ]
 
