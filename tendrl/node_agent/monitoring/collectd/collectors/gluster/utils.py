@@ -274,7 +274,6 @@ def write_graphite(path, value, graphite_host, graphite_port):
             int(time.time())
         )
         graphite_sock.sendall(message)
-        graphite_sock.close()
     except (
         socket.error,
         socket.gaierror
@@ -285,6 +284,15 @@ def write_graphite(path, value, graphite_host, graphite_port):
                 traceback.format_exc()
             )
         )
+    finally:
+        try:
+            graphite_sock.close()
+        except(socket.error, AttributeError):
+            collectd.error(
+                'Failed to close graphite socket connection. Error %s' % (
+                    traceback.format_exc()
+                )
+            )
 
 
 def send_metric(
