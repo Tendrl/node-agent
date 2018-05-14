@@ -289,7 +289,7 @@ def write_graphite(path, value, graphite_host, graphite_port):
             graphite_sock.close()
         except(socket.error, AttributeError):
             collectd.error(
-                'Failed to close socket connection .Error %s' % (
+                'Failed to close graphite socket connection .Error %s' % (
                     traceback.format_exc()
                 )
             )
