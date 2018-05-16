@@ -1,5 +1,6 @@
 import collectd
 import etcd
+import json
 import time
 import traceback
 # import threading
@@ -238,6 +239,26 @@ class TendrlHealInfoAndProfileInfoPlugin(
 
     def process_volume_profile_info(self, volume):
         volName = volume['name']
+        volId = volume['id']
+        try:
+            volData = self.etcd_client.read(
+                '/clusters/%s/Volumes/%s/data' % (
+                    self.CONFIG['integration_id'],
+                    volId
+                )
+            ).value
+            if not volData:
+                return
+            else:
+                profiling_enabled = json.loads(volData).get(
+                    'profiling_enabled'
+                )
+                if profiling_enabled and profiling_enabled != 'yes':
+                    return
+        except etcd.EtcdKeyNotFound:
+            # Volume key not found return
+            return
+
         vol_iops = self.get_volume_profile_info(
             volName,
             self.CONFIG['integration_id']
