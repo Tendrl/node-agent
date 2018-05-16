@@ -1,4 +1,5 @@
 import collectd
+import etcd
 import os
 import shlex
 import socket
@@ -7,16 +8,46 @@ from subprocess import Popen
 import threading
 import traceback
 
-
 from tendrl_gluster import TendrlGlusterfsMonitoringBase
+
+import utils as tendrl_glusterfs_utils
 
 
 class TendrlBrickUtilizationPlugin(
     TendrlGlusterfsMonitoringBase
 ):
+    etcd_client = {}
+
     def __init__(self):
         self.provisioner_only_plugin = False
         TendrlGlusterfsMonitoringBase.__init__(self)
+        if not self.etcd_client:
+            _etcd_args = dict(
+                host=self.CONFIG['etcd_host'],
+                port=int(self.CONFIG['etcd_port'])
+            )
+            etcd_ca_cert_file = self.CONFIG.get("etcd_ca_cert_file")
+            etcd_cert_file = self.CONFIG.get("etcd_cert_file")
+            etcd_key_file = self.CONFIG.get("etcd_key_file")
+            if (
+                etcd_ca_cert_file and
+                str(etcd_ca_cert_file) != "" and
+                etcd_cert_file and
+                str(etcd_cert_file) != "" and
+                etcd_key_file and
+                str(etcd_key_file) != ""
+            ):
+                _etcd_args.update(
+                    {
+                        "ca_cert": str(self.CONFIG['etcd_ca_cert_file']),
+                        "cert": (
+                            str(self.CONFIG['etcd_cert_file']),
+                            str(self.CONFIG['etcd_key_file'])
+                        ),
+                        "protocol": "https"
+                    }
+                )
+            self.etcd_client = etcd.Client(**_etcd_args)
 
     def _get_mount_point(self, path):
         mount = os.path.realpath(path)
@@ -220,23 +251,29 @@ class TendrlBrickUtilizationPlugin(
                 {}
             ).iteritems():
                 for brick in sub_volume_bricks:
-                    brick_hostname = brick['hostname']
                     # Check if current brick is from localhost else utilization
                     # of brick from some other host can't be computed here..
-                    if (
-                        socket.gethostbyname(brick_hostname) ==
-                        socket.gethostbyname(
-                            self.CONFIG['peer_name']
-                        )
-                    ):
-                        thread = threading.Thread(
-                            target=self.calc_brick_utilization,
-                            args=(volume['name'], brick,)
-                        )
-                        thread.start()
-                        threads.append(
-                            thread
-                        )
+                    brick_hostname = tendrl_glusterfs_utils.find_brick_host(
+                        self.etcd_client,
+                        self.CONFIG['integration_id'],
+                        brick['hostname']
+                    )
+                    if brick_hostname:
+                        brick_ip = socket.gethostbyname(brick_hostname)
+                        if (
+                            brick_ip == socket.gethostbyname(
+                                self.CONFIG['peer_name']
+                            ) or
+                            brick_hostname == self.CONFIG['peer_name']
+                        ):
+                            thread = threading.Thread(
+                                target=self.calc_brick_utilization,
+                                args=(volume['name'], brick,)
+                            )
+                            thread.start()
+                            threads.append(
+                                thread
+                            )
         for thread in threads:
             thread.join(1)
         for thread in threads:

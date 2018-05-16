@@ -23,7 +23,8 @@ def _parse_heal_info_stats(tree, integration_id, etcd_client):
         brick_host = tendrl_glusterfs_utils.find_brick_host(
             etcd_client, integration_id, brick_host
         )
-
+        if not brick_host:
+            continue
         try:
             no_of_entries = int(brick.find("numberOfEntries").text)
         except ValueError:

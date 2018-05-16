@@ -333,22 +333,28 @@ def find_brick_host(etcd_client, integration_id, brick_host):
     if etcd_client:
         try:
             int_id = integration_id
+            ip = socket.gethostbyname(brick_host)
+            node_id = etcd_client.read("indexes/ip/%s" % ip).value
             _key = "indexes/tags/tendrl/integration/%s" % int_id
             all_nodes = etcd_client.read(_key).value
             all_nodes = json.loads(all_nodes)
-            for node_id in all_nodes:
-                fqdn = "/nodes/%s/NodeContext/fqdn" % node_id
-                fqdn = etcd_client.read(fqdn).value
-
-                if brick_host in fqdn:
-                    return fqdn
-
-                ip = "/nodes/%s/NodeContext/ipv4_addr" % node_id
-                ip = etcd_client.read(ip).value
-                if brick_host in ip:
-                    return fqdn
-
-        except (urllib3.exceptions.TimeoutError, etcd.EtcdKeyNotFound):
+            if node_id in all_nodes:
+                _key = "/clusters/%s/nodes/%s/NodeContext/data" % (
+                    int_id, node_id
+                )
+                data = etcd_client.read(_key).value
+                data = json.loads(data)
+                if data.get("is_managed", None) == "yes":
+                    if data.get("fqdn", None):
+                        return data["fqdn"]
+                    elif data.get("ipv4_addr", None):
+                        return data["ipv4_addr"]
+        except (
+            urllib3.exceptions.TimeoutError,
+            etcd.EtcdKeyNotFound,
+            TypeError
+        ):
             _msg = "Error finding fqdn/ip for brick %s" % brick_host
             collectd.warning(_msg)
             collectd.warning(traceback.format_exc())
+    return None
