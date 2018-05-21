@@ -275,6 +275,8 @@ class TendrlHealInfoAndProfileInfoPlugin(
             brick_host = tendrl_glusterfs_utils.find_brick_host(
                 self.etcd_client, self.CONFIG['integration_id'], brick_host
             )
+            if not brick_host:
+                continue
             t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s.iops." \
                 "gauge-read"
             self.profile_info[
