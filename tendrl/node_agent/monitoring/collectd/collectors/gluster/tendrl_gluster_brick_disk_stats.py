@@ -542,23 +542,29 @@ class TendrlBrickDeviceStatsPlugin(object):
                 []
             ).iteritems():
                 for brick in sub_volume_bricks:
-                    brick_ip = socket.gethostbyname(brick['hostname'])
-                    if (
-                        brick_ip == curr_host_ip or
-                        brick['hostname'] == self.CONFIG['peer_name']
-                    ):
-                        thread = threading.Thread(
-                            target=self.populate_disk_details,
-                            args=(
-                                volume['name'],
-                                self.CONFIG['peer_name'],
-                                brick['path'],
+                    brick_hostname = gluster_utils.find_brick_host(
+                        self.etcd_client,
+                        self.CONFIG['integration_id'],
+                        brick['hostname']
+                    )
+                    if brick_hostname:
+                        brick_ip = socket.gethostbyname(brick_hostname)
+                        if (
+                            brick_ip == curr_host_ip or
+                            brick_hostname == self.CONFIG['peer_name']
+                        ):
+                            thread = threading.Thread(
+                                target=self.populate_disk_details,
+                                args=(
+                                    volume['name'],
+                                    self.CONFIG['peer_name'],
+                                    brick['path'],
+                                )
                             )
-                        )
-                        thread.start()
-                        threads.append(
-                            thread
-                        )
+                            thread.start()
+                            threads.append(
+                                thread
+                            )
         for thread in threads:
             thread.join(1)
         for thread in threads:
