@@ -6,7 +6,6 @@ from etcd import EtcdException
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
 from tendrl.commons import sds_sync
-from tendrl.commons.utils import event_utils
 from tendrl.commons.utils import log_utils as logger
 from tendrl.commons.utils import time_utils
 
@@ -36,15 +35,6 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
         NS.node_context.status = "UP"
         NS.node_context.save()
         _sleep = 0
-        msg = "{0} is UP".format(NS.node_context.fqdn)
-        event_utils.emit_event(
-            "node_status",
-            "UP",
-            msg,
-            "node_{0}".format(NS.node_context.fqdn),
-            "INFO",
-            node_id=NS.node_context.node_id
-        )
         while not self._complete.is_set():
             _sync_ttl = int(NS.config.data.get("sync_interval", 10)) + 100
             if _sleep > 5:
