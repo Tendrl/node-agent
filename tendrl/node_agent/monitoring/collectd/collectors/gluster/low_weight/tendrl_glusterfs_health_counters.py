@@ -1,4 +1,5 @@
 import collectd
+import etcd
 import socket
 import traceback
 
@@ -14,9 +15,39 @@ PEER_IN_CLUSTER = ['Peer', 'in', 'Cluster']
 class TendrlGlusterfsHealthCounters(
     TendrlGlusterfsMonitoringBase
 ):
+    etcd_client = {}
+
     def __init__(self):
         self.provisioner_only_plugin = False
         TendrlGlusterfsMonitoringBase.__init__(self)
+
+        if not self.etcd_client:
+            _etcd_args = dict(
+                host=self.CONFIG['etcd_host'],
+                port=int(self.CONFIG['etcd_port'])
+            )
+            etcd_ca_cert_file = self.CONFIG.get("etcd_ca_cert_file")
+            etcd_cert_file = self.CONFIG.get("etcd_cert_file")
+            etcd_key_file = self.CONFIG.get("etcd_key_file")
+            if (
+                etcd_ca_cert_file and
+                str(etcd_ca_cert_file) != "" and
+                etcd_cert_file and
+                str(etcd_cert_file) != "" and
+                etcd_key_file and
+                str(etcd_key_file) != ""
+            ):
+                _etcd_args.update(
+                    {
+                        "ca_cert": str(self.CONFIG['etcd_ca_cert_file']),
+                        "cert": (
+                            str(self.CONFIG['etcd_cert_file']),
+                            str(self.CONFIG['etcd_key_file'])
+                        ),
+                        "protocol": "https"
+                    }
+                )
+            self.etcd_client = etcd.Client(**_etcd_args)
 
     def _get_rebalance_info(self):
         ret_val = {}
@@ -54,24 +85,33 @@ class TendrlGlusterfsHealthCounters(
                     {}
                 ).iteritems():
                     for brick in sub_volume_bricks:
-                        brick_ip = socket.gethostbyname(brick.get('hostname'))
-                        if (
-                            brick_ip == socket.gethostbyname(
-                                self.CONFIG['peer_name']
-                            ) or
-                            brick.get('hostname') == self.CONFIG['peer_name']
-                        ):
-                            brick_found_for_curr_node = True
-                            # Push brick client connections
-                            ret_val[
-                                'clusters.%s.volumes.%s.nodes.%s.bricks.%s.'
-                                'connections_count' % (
-                                    self.CONFIG['integration_id'],
-                                    volume.get('name', ''),
-                                    self.CONFIG['peer_name'].replace('.', '_'),
-                                    brick['path'].replace('/', '|')
-                                )
-                            ] = brick['connections_count']
+                        brick_hostname = \
+                            tendrl_glusterfs_utils.find_brick_host(
+                                self.etcd_client,
+                                self.CONFIG['integration_id'],
+                                brick.get('hostname')
+                            )
+                        if brick_hostname:
+                            brick_ip = socket.gethostbyname(brick_hostname)
+                            if (
+                                brick_ip == socket.gethostbyname(
+                                    self.CONFIG['peer_name']
+                                ) or
+                                brick_hostname == self.CONFIG['peer_name']
+                            ):
+                                brick_found_for_curr_node = True
+                                # Push brick client connections
+                                ret_val[
+                                    'clusters.%s.volumes.%s.nodes.%s.'
+                                    'bricks.%s.'
+                                    'connections_count' % (
+                                        self.CONFIG['integration_id'],
+                                        volume.get('name', ''),
+                                        self.CONFIG['peer_name'].replace(
+                                            '.', '_'),
+                                        brick['path'].replace('/', '|')
+                                    )
+                                ] = brick['connections_count']
                 if brick_found_for_curr_node:
                     # Update rebalance info only for this volumes
                     volumes_list.append(volume.get('name', ''))

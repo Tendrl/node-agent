@@ -111,6 +111,12 @@ def update_alert(message):
                         utils.remove_alert(new_alert_obj)
                         utils.classify_alert(new_alert_obj)
                         new_alert_obj.save()
+                        # message_id and alert_id is same
+                        # When same alert raised multiple times
+                        # then assign old alert_id to new message
+                        # to avoid duplicates events
+                        # here new alert object already have old_message_id
+                        message.message_id = new_alert_obj.alert_id
                     return
                 # else add this new alert to etcd
             severity = message.payload["alert_condition_state"]

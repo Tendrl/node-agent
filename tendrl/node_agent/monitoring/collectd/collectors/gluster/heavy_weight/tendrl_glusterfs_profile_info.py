@@ -275,44 +275,113 @@ class TendrlHealInfoAndProfileInfoPlugin(
             brick_host = tendrl_glusterfs_utils.find_brick_host(
                 self.etcd_client, self.CONFIG['integration_id'], brick_host
             )
-            t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s.iops." \
-                "gauge-read"
-            self.profile_info[
-                t_name % (
-                    self.CONFIG['integration_id'],
-                    volName,
-                    brick_host.replace('.', '_'),
-                    brickName.split(':')[1].replace('/', '|')
+            if not brick_host:
+                continue
+
+            if int(brick_det.get('intervalStats').get('duration')) > 0:
+                # A sample output from command
+                # `gluster v profile {vol} info --xml` is as below
+                #
+                # <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                # <cliOutput>
+                #   <opRet>0</opRet>
+                #   <opErrno>0</opErrno>
+                #   <opErrstr/>
+                #   <volProfile>
+                #     <volname>vol1</volname>
+                #     <profileOp>3</profileOp>
+                #     <brickCount>3</brickCount>
+                #     <brick>
+                #       <brickName>
+                #         dhcp42-80.lab.eng.blr.redhat.com:/root/gluster_bricks/vol1_b3
+                #       </brickName>
+                #       ...........
+                #       <intervalStats>
+                #         <blockStats>
+                #           <block>
+                #             <size>1</size>
+                #             <reads>0</reads>
+                #             <writes>512</writes>
+                #           </block>
+                #           <block>
+                #             <size>2</size>
+                #             <reads>0</reads>
+                #             <writes>124</writes>
+                #           </block>
+                #           <block>
+                #             <size>4</size>
+                #             <reads>0</reads>
+                #             <writes>100</writes>
+                #           </block>
+                #           .............
+                #         </blockStats>
+                #       </intervalStats>
+                #     </brick>
+                #   </volProfile>
+                # </cliOutput>
+                #
+                # For calculating iops values we aggregate the reads
+                # and writes across all blocks and then divide them with
+                # `duration` value. These values are finally saved as
+                # under `gauge_read` and `gauge_write` fields of graphite
+
+                total_reads = 0
+                for entry in brick_det.get('intervalStats').get('blockStats'):
+                    total_reads += int(entry['read'])
+                total_writes = 0
+                for entry in brick_det.get('intervalStats').get('blockStats'):
+                    total_reads += int(entry['write'])
+
+                t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s.iops." \
+                    "gauge-read"
+                self.profile_info[
+                    t_name % (
+                        self.CONFIG['integration_id'],
+                        volName,
+                        brick_host.replace('.', '_'),
+                        brickName.split(':')[1].replace('/', '|')
+                    )
+                ] = (total_reads / int(brick_det.get('intervalStats').get(
+                        'duration'
+                    ))
                 )
-            ] = brick_det.get('intervalStats').get('totalRead')
-            t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s.iops." \
-                "gauge-write"
-            self.profile_info[
-                t_name % (
-                    self.CONFIG['integration_id'],
-                    volName,
-                    brick_host.replace('.', '_'),
-                    brickName.split(':')[1].replace('/', '|')
+                t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s.iops." \
+                    "gauge-write"
+                self.profile_info[
+                    t_name % (
+                        self.CONFIG['integration_id'],
+                        volName,
+                        brick_host.replace('.', '_'),
+                        brickName.split(':')[1].replace('/', '|')
+                    )
+                ] = (total_writes / int(brick_det.get('intervalStats').get(
+                        'duration'
+                    ))
                 )
-            ] = brick_det.get('intervalStats').get('totalWrite')
-            t_name = "clusters.%s.nodes.%s.bricks.%s.iops." \
-                "gauge-read"
-            self.profile_info[
-                t_name % (
-                    self.CONFIG['integration_id'],
-                    brick_host.replace('.', '_'),
-                    brickName.split(':')[1].replace('/', '|')
+                t_name = "clusters.%s.nodes.%s.bricks.%s.iops." \
+                    "gauge-read"
+                self.profile_info[
+                    t_name % (
+                        self.CONFIG['integration_id'],
+                        brick_host.replace('.', '_'),
+                        brickName.split(':')[1].replace('/', '|')
+                    )
+                ] = (total_reads / int(brick_det.get('intervalStats').get(
+                        'duration'
+                    ))
                 )
-            ] = brick_det.get('intervalStats').get('totalRead')
-            t_name = "clusters.%s.nodes.%s.bricks.%s.iops." \
-                "gauge-write"
-            self.profile_info[
-                t_name % (
-                    self.CONFIG['integration_id'],
-                    brick_host.replace('.', '_'),
-                    brickName.split(':')[1].replace('/', '|')
+                t_name = "clusters.%s.nodes.%s.bricks.%s.iops." \
+                    "gauge-write"
+                self.profile_info[
+                    t_name % (
+                        self.CONFIG['integration_id'],
+                        brick_host.replace('.', '_'),
+                        brickName.split(':')[1].replace('/', '|')
+                    )
+                ] = (total_writes / int(brick_det.get('intervalStats').get(
+                        'duration'
+                    ))
                 )
-            ] = brick_det.get('intervalStats').get('totalWrite')
             fopIntervalStats = brick_det.get(
                 'intervalStats'
             ).get('fopStats')
