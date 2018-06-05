@@ -91,7 +91,7 @@ class NodeAgentSyncThread(sds_sync.StateSyncThread):
             if "tendrl/monitor" not in NS.node_context.tags:
                 sds_detect_thread = threading.Thread(
                     target=sds_detect.sync,
-                    args=(_sleep,)
+                    args=(_sleep,_sync_ttl,)
                 )
 
                 sds_detect_thread.daemon = True
