@@ -14,7 +14,7 @@ from tendrl.commons.utils import log_utils as logger
 from tendrl.node_agent.discovery.sds import manager as sds_manager
 
 
-def sync(sync_ttl):
+def sync(sync_ttl, node_status_ttl):
     try:
         NS.node_context = NS.node_context.load()
         logger.log(
@@ -75,7 +75,7 @@ def sync(sync_ttl):
                                     socket.gethostbyname(
                                         peer.hostname
                                     )
-                                NS.node_context.save()
+                                NS.node_context.save(ttl=node_status_ttl)
                                 break
 
             if ('detected_cluster_id' in sds_details and sds_details[
@@ -215,7 +215,7 @@ def sync(sync_ttl):
                     NS.node_context.tags += [detected_cluster_tag,
                                              integration_tag]
                     NS.node_context.tags = list(set(NS.node_context.tags))
-                    NS.node_context.save()
+                    NS.node_context.save(ttl=node_status_ttl)
 
                     NS.tendrl.objects.DetectedCluster(
                         detected_cluster_id=sds_details.get(
