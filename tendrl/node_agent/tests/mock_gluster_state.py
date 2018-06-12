@@ -10,7 +10,9 @@ class TendrlGlusterfsMonitoringBase(object):
                 "integration_id": "7bccda8c-8c85-45a8-8be0-3f71f4db7db7",
                 "graphite_host": "localhost",
                 "graphite_port": 8080,
-                "peer_name": "10.70.41.169"
+                "peer_name": "10.70.41.169",
+                "etcd_host": "127.0.0.1",
+                "etcd_port": "1234"
             }
         )
 

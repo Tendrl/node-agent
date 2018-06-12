@@ -342,9 +342,7 @@ class TendrlHealInfoAndProfileInfoPlugin(
                         brickName.split(':')[1].replace('/', '|')
                     )
                 ] = (total_reads / int(brick_det.get('intervalStats').get(
-                        'duration'
-                    ))
-                )
+                    'duration')))
                 t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s.iops." \
                     "gauge-write"
                 self.profile_info[
@@ -355,9 +353,7 @@ class TendrlHealInfoAndProfileInfoPlugin(
                         brickName.split(':')[1].replace('/', '|')
                     )
                 ] = (total_writes / int(brick_det.get('intervalStats').get(
-                        'duration'
-                    ))
-                )
+                    'duration')))
                 t_name = "clusters.%s.nodes.%s.bricks.%s.iops." \
                     "gauge-read"
                 self.profile_info[
@@ -367,9 +363,7 @@ class TendrlHealInfoAndProfileInfoPlugin(
                         brickName.split(':')[1].replace('/', '|')
                     )
                 ] = (total_reads / int(brick_det.get('intervalStats').get(
-                        'duration'
-                    ))
-                )
+                    'duration')))
                 t_name = "clusters.%s.nodes.%s.bricks.%s.iops." \
                     "gauge-write"
                 self.profile_info[
@@ -379,9 +373,7 @@ class TendrlHealInfoAndProfileInfoPlugin(
                         brickName.split(':')[1].replace('/', '|')
                     )
                 ] = (total_writes / int(brick_det.get('intervalStats').get(
-                        'duration'
-                    ))
-                )
+                    'duration')))
             fopIntervalStats = brick_det.get(
                 'intervalStats'
             ).get('fopStats')
