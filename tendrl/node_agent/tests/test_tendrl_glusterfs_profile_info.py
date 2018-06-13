@@ -1,7 +1,9 @@
 import importlib
 import json
+import maps
 import sys
 
+from etcd import Client
 from mock import MagicMock
 from mock import patch
 from tendrl.node_agent.tests import mock_gluster_state
@@ -29,10 +31,12 @@ class TestTendrlGlusterfsProfileInfo(object):
            "gluster.utils.exec_command")
     @patch("tendrl.node_agent.monitoring.collectd.collectors."
            "gluster.utils.ini2json")
-    def test_gluster_profile_info(self, ini2json, execu):
+    @patch.object(Client, "read")
+    def test_gluster_profile_info(self, read, ini2json, execu):
+        read.return_value = maps.NamedDict(
+            value='{"profiling_enabled" : "yes"}'
+        )
         profile_info.tendrl_gluster_heal_info = MagicMock()
-        profile_info.TendrlHealInfoAndProfileInfoPlugin.etcd_client = \
-            MagicMock()
         gluster_state = mock_gluster_state.gluster_state()
         execu.return_value = self.volume_profile()
         ini2json.ini_to_dict.return_value = gluster_state

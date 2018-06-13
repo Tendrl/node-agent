@@ -110,6 +110,6 @@ def test_global_network(load_definition):
             'dir': False,
             'value': ''
             }]
-    for atrr in obj.render():
-        if atrr not in out:
+    for attr in obj.render():
+        if attr["name"] != "hash" and attr not in out:
             raise AssertionError()

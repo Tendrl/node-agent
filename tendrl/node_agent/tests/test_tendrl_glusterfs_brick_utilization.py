@@ -1,5 +1,7 @@
+import etcd
 import importlib
 import json
+import socket
 import sys
 
 from mock import MagicMock
@@ -34,13 +36,23 @@ class TestTendrlGlusterfsBrickUtilization(object):
     @patch("tendrl.node_agent.monitoring.collectd.collectors."
            "gluster.low_weight.tendrl_glusterfs_brick_utilization."
            "os.path.realpath")
+    @patch("tendrl.node_agent.monitoring.collectd.collectors."
+           "gluster.utils.find_brick_host")
+    @patch.object(etcd, "Client")
+    @patch.object(socket, "gethostbyname")
     def test_gluster_brick_utilization(self,
+                                       gethostbyname,
+                                       client,
+                                       brick_host,
                                        dirname,
                                        ismount,
                                        statvfs,
                                        communicate,
                                        ini2json,
                                        execu):
+        gethostbyname.return_value = "10.70.41.169"
+        client.return_value = etcd.Client()
+        brick_host.return_value = "10.70.41.169"
         gluster_state = mock_gluster_state.gluster_state()
         execu.return_value = ("pytest", "")
         ini2json.ini_to_dict.return_value = gluster_state
