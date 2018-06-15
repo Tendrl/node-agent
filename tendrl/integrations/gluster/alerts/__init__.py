@@ -4,13 +4,12 @@ from tendrl.node_agent.alert import constants
 def update_alert_count(alert):
     if alert.resource in NS.integrations.gluster.objects.VolumeAlertCounters(
             )._defs['relationship'][alert.alert_type.lower()]:
-        volume = find_volume_id(
+        volume = find_volume_with_name(
             alert.tags['volume_name'],
             alert.tags['integration_id']
         )
-        if volume and (
-            volume.vol_id not in [None, ''] or volume.name is not None
-        ):
+        if volume and volume.vol_id not in [None, ''] and \
+                volume.name not in [None, '']:
             alert.tags['volume_id'] = volume.vol_id
             counter_obj = \
                 NS.integrations.gluster.objects.VolumeAlertCounters(
@@ -28,7 +27,7 @@ def update_alert_count(alert):
             counter_obj.save()
 
 
-def find_volume_id(vol_name, integration_id):
+def find_volume_with_name(vol_name, integration_id):
     volumes = NS.tendrl.objects.GlusterVolume(
         integration_id
     ).load_all()
