@@ -1,6 +1,7 @@
 import collectd
 import etcd
 import json
+import math
 import time
 import traceback
 # import threading
@@ -330,7 +331,7 @@ class TendrlHealInfoAndProfileInfoPlugin(
                     total_reads += int(entry['read'])
                 total_writes = 0
                 for entry in brick_det.get('intervalStats').get('blockStats'):
-                    total_reads += int(entry['write'])
+                    total_writes += int(entry['write'])
 
                 t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s.iops." \
                     "gauge-read"
@@ -341,8 +342,11 @@ class TendrlHealInfoAndProfileInfoPlugin(
                         brick_host.replace('.', '_'),
                         brickName.split(':')[1].replace('/', '|')
                     )
-                ] = (total_reads / int(brick_det.get('intervalStats').get(
-                    'duration')))
+                ] = math.ceil(total_reads / float(
+                    brick_det.get('intervalStats').get(
+                        'duration'
+                    )
+                ))
                 t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s.iops." \
                     "gauge-write"
                 self.profile_info[
@@ -352,8 +356,11 @@ class TendrlHealInfoAndProfileInfoPlugin(
                         brick_host.replace('.', '_'),
                         brickName.split(':')[1].replace('/', '|')
                     )
-                ] = (total_writes / int(brick_det.get('intervalStats').get(
-                    'duration')))
+                ] = math.ceil(total_writes / float(
+                    brick_det.get('intervalStats').get(
+                        'duration'
+                    )
+                ))
                 t_name = "clusters.%s.nodes.%s.bricks.%s.iops." \
                     "gauge-read"
                 self.profile_info[
@@ -362,8 +369,11 @@ class TendrlHealInfoAndProfileInfoPlugin(
                         brick_host.replace('.', '_'),
                         brickName.split(':')[1].replace('/', '|')
                     )
-                ] = (total_reads / int(brick_det.get('intervalStats').get(
-                    'duration')))
+                ] = math.ceil(total_reads / float(
+                    brick_det.get('intervalStats').get(
+                        'duration'
+                    )
+                ))
                 t_name = "clusters.%s.nodes.%s.bricks.%s.iops." \
                     "gauge-write"
                 self.profile_info[
@@ -372,8 +382,11 @@ class TendrlHealInfoAndProfileInfoPlugin(
                         brick_host.replace('.', '_'),
                         brickName.split(':')[1].replace('/', '|')
                     )
-                ] = (total_writes / int(brick_det.get('intervalStats').get(
-                    'duration')))
+                ] = math.ceil(total_writes / float(
+                    brick_det.get('intervalStats').get(
+                        'duration'
+                    )
+                ))
             fopIntervalStats = brick_det.get(
                 'intervalStats'
             ).get('fopStats')
