@@ -35,6 +35,7 @@ def sync(sync_ttl):
                     node_id=NS.node_context.node_id
                 ).load()
                 _cnc.tags = NS.node_context.tags
+                _cnc.fqdn = NS.node_context.fqdn
                 _cnc.status = 'UP'
                 _cnc.save()
             else:

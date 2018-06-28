@@ -576,6 +576,7 @@ def r_callback():
     TendrlBrickDeviceStatsPlugin.CLUSTER_TOPOLOGY = \
         gluster_utils.get_gluster_cluster_topology()
     metrics = TendrlBrickDeviceStatsPlugin().get_metrics()
+    metric_list = []
     for metric_name, value in metrics.iteritems():
         if value is not None:
             if (
@@ -583,12 +584,17 @@ def r_callback():
                 value.isdigit()
             ):
                 value = int(value)
-            gluster_utils.write_graphite(
+            metric_list.append("tendrl.%s %s %d" % (
                 metric_name,
                 value,
-                TendrlBrickDeviceStatsPlugin.CONFIG['graphite_host'],
-                TendrlBrickDeviceStatsPlugin.CONFIG['graphite_port']
-            )
+                int(time.time())
+            ))
+
+    gluster_utils.write_graphite(
+        metric_list,
+        TendrlBrickDeviceStatsPlugin.CONFIG['graphite_host'],
+        TendrlBrickDeviceStatsPlugin.CONFIG['graphite_port']
+    )
 
 
 def configure_callback(configobj):
