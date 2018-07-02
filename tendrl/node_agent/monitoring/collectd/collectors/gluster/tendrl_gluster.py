@@ -95,6 +95,7 @@ class TendrlGlusterfsMonitoringBase(object):
             time.sleep(13)
         # Get stats from current plugin's get_metrics function
         metrics = self.get_metrics()
+        metric_list = []
         for metric_name, value in metrics.iteritems():
             # Don't push null values to graphite
             if value is not None:
@@ -103,13 +104,17 @@ class TendrlGlusterfsMonitoringBase(object):
                     value.isdigit()
                 ):
                     value = int(value)
-                # Push value to graphite
-                tendrl_glusterfs_utils.write_graphite(
+                metric_list.append("tendrl.%s %s %d" % (
                     metric_name,
                     value,
-                    self.CONFIG['graphite_host'],
-                    self.CONFIG['graphite_port']
-                )
+                    int(time.time())
+                ))
+        # Push value to graphite
+        tendrl_glusterfs_utils.write_graphite(
+            metric_list,
+            self.CONFIG['graphite_host'],
+            self.CONFIG['graphite_port']
+        )
 
 
 def list_modules_in_package_path(package_path, prefix):
