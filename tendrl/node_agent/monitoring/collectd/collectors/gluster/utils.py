@@ -5,7 +5,6 @@ import shlex
 import socket
 import subprocess
 from subprocess import Popen
-import time
 import traceback
 import uuid
 
@@ -257,42 +256,37 @@ prefix = 'tendrl'
 delimeter = '.'
 
 
-def write_graphite(path, value, graphite_host, graphite_port):
-    try:
-        graphite_sock = socket.socket()
-        graphite_sock.connect(
-            (
-                graphite_host,
-                int(graphite_port)
-            )
-        )
-        message = '%s%s%s %s %d\n' % (
-            prefix,
-            delimeter,
-            path,
-            str(value),
-            int(time.time())
-        )
-        graphite_sock.sendall(message)
-    except (
-        socket.error,
-        socket.gaierror
-    ):
-        collectd.error(
-            'Failed to push brick stat for %s.Error %s' % (
-                path,
-                traceback.format_exc()
-            )
-        )
-    finally:
+def write_graphite(metric_list, graphite_host, graphite_port):
+    if len(metric_list) > 0:
         try:
-            graphite_sock.close()
-        except(socket.error, AttributeError):
+            graphite_sock = socket.socket()
+            graphite_sock.connect(
+                (
+                    graphite_host,
+                    int(graphite_port)
+                )
+            )
+            message = '\n'.join(metric_list) + '\n'
+            graphite_sock.sendall(message)
+        except (
+            socket.error,
+            socket.gaierror
+        ):
             collectd.error(
-                'Failed to close graphite socket connection. Error %s' % (
+                'Failed to push metrics.Error %s' % (
                     traceback.format_exc()
                 )
             )
+        finally:
+            try:
+                graphite_sock.close()
+            except(socket.error, AttributeError):
+                collectd.error(
+                    'Failed to close graphite socket connection. '
+                    'Error %s' % (
+                        traceback.format_exc()
+                    )
+                )
 
 
 def send_metric(
