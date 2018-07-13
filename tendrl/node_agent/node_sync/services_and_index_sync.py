@@ -50,7 +50,7 @@ def sync(sync_ttl=None):
             _tag = "provisioner/%s" % _cluster.integration_id
             _is_new_provisioner = False
             NS.node_context = NS.tendrl.objects.NodeContext().load()
-            _cnc = None,
+            _cnc = None
             _cnc_is_managed = False
             if NS.tendrl.objects.ClusterNodeContext(
                 node_id=NS.node_context.node_id
