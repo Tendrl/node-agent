@@ -50,19 +50,44 @@ def sync(sync_ttl=None):
             _tag = "provisioner/%s" % _cluster.integration_id
             _is_new_provisioner = False
             NS.node_context = NS.tendrl.objects.NodeContext().load()
-            if _tag not in NS.node_context.tags:
-                try:
-                    _index_key = "/indexes/tags/%s" % _tag
-                    _node_id = json.dumps([NS.node_context.node_id])
-                    etcd_utils.write(
-                        _index_key, _node_id,
-                        prevExist=False
-                    )
-                    etcd_utils.refresh(_index_key, sync_ttl + 50)
-                    tags.append(_tag)
-                    _is_new_provisioner = True
-                except etcd.EtcdAlreadyExist:
-                    pass
+            _cnc = None
+            _cnc_is_managed = False
+            if NS.tendrl.objects.ClusterNodeContext(
+                node_id=NS.node_context.node_id
+            ).exists():
+                _cnc = NS.tendrl.objects.ClusterNodeContext(
+                    node_id=NS.node_context.node_id
+                ).load()
+                if _cnc.is_managed == "yes":
+                    _cnc_is_managed = True
+            if _cluster.is_managed in [None, '', 'no']:
+                if _tag not in NS.node_context.tags:
+                    try:
+                        _index_key = "/indexes/tags/%s" % _tag
+                        _node_id = json.dumps([NS.node_context.node_id])
+                        etcd_utils.write(
+                            _index_key, _node_id,
+                            prevExist=False
+                        )
+                        etcd_utils.refresh(_index_key, sync_ttl + 50)
+                        tags.append(_tag)
+                        _is_new_provisioner = True
+                    except etcd.EtcdAlreadyExist:
+                        pass
+            else:
+                if _tag not in NS.node_context.tags and _cnc_is_managed:
+                    try:
+                        _index_key = "/indexes/tags/%s" % _tag
+                        _node_id = json.dumps([NS.node_context.node_id])
+                        etcd_utils.write(
+                            _index_key, _node_id,
+                            prevExist=False
+                        )
+                        etcd_utils.refresh(_index_key, sync_ttl + 50)
+                        tags.append(_tag)
+                        _is_new_provisioner = True
+                    except etcd.EtcdAlreadyExist:
+                        pass
 
         # updating node context with latest tags
         logger.log(
