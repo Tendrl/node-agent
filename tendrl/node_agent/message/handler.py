@@ -45,7 +45,7 @@ class MessageHandler(threading.Thread):
                         message
                     )
             Logger(message)
-        except (socket.error, socket.timeout):
+        except(socket.error, socket.timeout, RuntimeError):
             exc_type, exc_value, exc_tb = sys.exc_info()
             traceback.print_exception(
                 exc_type, exc_value, exc_tb, file=sys.stderr)
