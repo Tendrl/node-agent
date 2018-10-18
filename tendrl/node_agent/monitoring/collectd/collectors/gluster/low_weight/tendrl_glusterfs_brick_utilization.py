@@ -139,7 +139,8 @@ class TendrlBrickUtilizationPlugin(
 
     def get_mount_stats(
         self,
-        mount_path
+        mount_path,
+        lvs
     ):
         def _get_mounts(mount_path=[]):
             mount_list = self._get_mount_point(mount_path)
@@ -185,7 +186,6 @@ class TendrlBrickUtilizationPlugin(
                     out['metadata_size'] - out['metadata_free']
             return out
         mount_points = _get_mounts(mount_path)
-        lvs = self.get_lvs()
         mount_detail = {}
         if not mount_points:
             return mount_detail
@@ -197,7 +197,7 @@ class TendrlBrickUtilizationPlugin(
             mount_detail[mount].update({'mount_point': mount})
         return mount_detail
 
-    def brick_utilization(self, path):
+    def brick_utilization(self, path, lvs):
         """{
 
              'used_percent': 0.6338674168297445,
@@ -237,12 +237,13 @@ class TendrlBrickUtilizationPlugin(
         }
         """
         # Below logic will find mount_path from path
-        mount_stats = self.get_mount_stats(path)
+        mount_stats = self.get_mount_stats(path, lvs)
         if not mount_stats:
             return None
         return mount_stats.values()[0]
 
     def get_brick_utilization(self):
+        lvs = self.get_lvs()
         self.brick_utilizations = {}
         volumes = self.CLUSTER_TOPOLOGY.get('volumes', [])
         threads = []
@@ -269,7 +270,7 @@ class TendrlBrickUtilizationPlugin(
                         ):
                             thread = threading.Thread(
                                 target=self.calc_brick_utilization,
-                                args=(volume['name'], brick,)
+                                args=(volume['name'], brick, lvs,)
                             )
                             thread.start()
                             threads.append(
@@ -281,12 +282,13 @@ class TendrlBrickUtilizationPlugin(
             del thread
         return self.brick_utilizations
 
-    def calc_brick_utilization(self, vol_name, brick):
+    def calc_brick_utilization(self, vol_name, brick, lvs):
         try:
             brick_path = brick['path']
             brick_hostname = self.CONFIG['peer_name']
             utilization = self.brick_utilization(
-                brick['path']
+                brick['path'],
+                lvs
             )
             utilization['hostname'] = brick_hostname
             utilization['brick_path'] = brick_path
