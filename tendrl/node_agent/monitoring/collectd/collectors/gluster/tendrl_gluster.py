@@ -311,7 +311,10 @@ def r_callback():
     """
     init()
     read_callback("/low_weight", "low_weight")
+    # clear low_weight plugin import
+    destroy()
     read_callback("/heavy_weight", "heavy_weight")
+    # clear heavy_weight plugin import
     destroy()
 
 
