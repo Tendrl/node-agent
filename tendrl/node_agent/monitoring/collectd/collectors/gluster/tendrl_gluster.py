@@ -1,3 +1,4 @@
+import etcd
 import importlib
 import os
 import pkgutil
@@ -216,12 +217,44 @@ def read_callback(pkg_path, pkg):
         # Execute such a plugin only on the current node if and only if the
         # the current node is marked as provisioner in collectd's conf file.
         if gfsmon_plugin.provisioner_only_plugin:
-            if (
-                not TendrlGlusterfsMonitoringBase.CONFIG['provisioner'] or
-                TendrlGlusterfsMonitoringBase.CONFIG[
-                    'provisioner'
-                ] == "False"
-            ):
+            try:
+                etcd_client = {}
+                CONFIG = TendrlGlusterfsMonitoringBase.CONFIG
+                _etcd_args = dict(
+                    host=CONFIG["etcd_host"],
+                    port=int(CONFIG["etcd_port"])
+                )
+                etcd_ca_cert_file = CONFIG.get("etcd_ca_cert_file")
+                etcd_cert_file = CONFIG.get("etcd_cert_file")
+                etcd_key_file = CONFIG.get("etcd_key_file")
+                if (
+                    etcd_ca_cert_file and
+                    str(etcd_ca_cert_file) != "" and
+                    etcd_cert_file and
+                    str(etcd_cert_file) != "" and
+                    etcd_key_file and
+                    str(etcd_key_file) != ""
+                ):
+                    _etcd_args.update(
+                        {
+                            "ca_cert": str(CONFIG['etcd_ca_cert_file']),
+                            "cert": (
+                                str(CONFIG['etcd_cert_file']),
+                                str(CONFIG['etcd_key_file'])
+                            ),
+                            "protocol": "https"
+                        }
+                    )
+                etcd_client = etcd.Client(**_etcd_args)
+                provisioner = etcd_client.read(
+                    "indexes/tags/provisioner/%s" % CONFIG["integration_id"]
+                ).value
+                if (
+                    CONFIG["node_id"] not in eval(provisioner)
+                ):
+                    continue
+            except (etcd.KeyNotFound, etcd.EtcdConnectionFailed, SyntaxError) as ex:
+                collectd.error('Failed to find provisioner node. Error %s' % str(ex))
                 continue
         # Check if a thread by name same as the name of plugin exists.
         thread = get_exisiting_thread(
@@ -245,7 +278,6 @@ def read_callback(pkg_path, pkg):
     # Cleanup the threads
     for index in range(len(threads)):
         del threads[0]
-
 
 def init():
     TendrlGlusterfsMonitoringBase.CLUSTER_TOPOLOGY = \

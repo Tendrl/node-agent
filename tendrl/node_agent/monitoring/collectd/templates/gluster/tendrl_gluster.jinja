@@ -8,7 +8,7 @@
         graphite_host "{{ graphite_host }}"
         graphite_port "{{ graphite_port }}"
         peer_name "{{ fqdn }}"
-        provisioner {{ is_provisioner_node }}
+        node_id "{{ node_id }}"
         etcd_host "{{ etcd_host }}"
         etcd_port {{ etcd_port }}
         {% if etcd_ca_cert_file != None %}
