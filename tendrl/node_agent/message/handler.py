@@ -90,15 +90,19 @@ class MessageHandler(threading.Thread):
         # http://0pointer.de/blog/projects/systemd.html (search "file
         # descriptor 3")
         try:
-            socket_fd = 3
-            self.sock = socket.fromfd(socket_fd, socket.AF_UNIX,
-                                      socket.SOCK_STREAM)
-            self.sock.listen(50)
-            return self.sock
+            # systemd socket should exist before listen
+            if os.path.exists(MESSAGE_SOCK_PATH):
+                socket_fd = 3
+                self.sock = socket.fromfd(socket_fd, socket.AF_UNIX,
+                                          socket.SOCK_STREAM)
+                self.sock.listen(50)
+                return self.sock
         except (TypeError, BlockingIOError, socket.error, ValueError):
             pass
         try:
             self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            # systemd socket is not present or any issue while listening
+            # then node-agent will create its own unix socket
             if os.path.exists(MESSAGE_SOCK_PATH):
                 os.remove(MESSAGE_SOCK_PATH)
             self.sock.bind(MESSAGE_SOCK_PATH)
