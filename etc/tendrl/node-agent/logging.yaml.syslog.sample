@@ -4,14 +4,14 @@ disable_existing_loggers: False
 handlers:
     console:
         class: logging.StreamHandler
-        level: DEBUG
+        level: ERROR
         stream: ext://sys.stdout
 
     info_file_handler:
         class: logging.handlers.SysLogHandler
         facility: local5
         address: /dev/log
-        level: INFO
+        level: ERROR
 
 loggers:
     my_module:
@@ -20,5 +20,5 @@ loggers:
         propagate: no
 
 root:
-    level: INFO
+    level: ERROR
     handlers: [console, info_file_handler]
