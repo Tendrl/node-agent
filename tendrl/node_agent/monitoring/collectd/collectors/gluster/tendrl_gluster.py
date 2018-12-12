@@ -253,8 +253,14 @@ def read_callback(pkg_path, pkg):
                     CONFIG["node_id"] not in eval(provisioner)
                 ):
                     continue
-            except (etcd.KeyNotFound, etcd.EtcdConnectionFailed, SyntaxError) as ex:
-                collectd.error('Failed to find provisioner node. Error %s' % str(ex))
+            except (
+                etcd.KeyNotFound,
+                etcd.EtcdConnectionFailed,
+                SyntaxError
+            ) as ex:
+                collectd.error(
+                    'Failed to find provisioner node. Error %s' % str(ex)
+                )
                 continue
         # Check if a thread by name same as the name of plugin exists.
         thread = get_exisiting_thread(
@@ -278,6 +284,7 @@ def read_callback(pkg_path, pkg):
     # Cleanup the threads
     for index in range(len(threads)):
         del threads[0]
+
 
 def init():
     TendrlGlusterfsMonitoringBase.CLUSTER_TOPOLOGY = \
