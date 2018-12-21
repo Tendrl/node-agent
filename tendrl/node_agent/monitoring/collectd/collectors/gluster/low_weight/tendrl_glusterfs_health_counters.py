@@ -19,6 +19,7 @@ class TendrlGlusterfsHealthCounters(
 
     def __init__(self):
         self.provisioner_only_plugin = False
+        self.brick_path_repl = ":"
         TendrlGlusterfsMonitoringBase.__init__(self)
 
         if not self.etcd_client:
@@ -109,7 +110,7 @@ class TendrlGlusterfsHealthCounters(
                                         volume.get('name', ''),
                                         self.CONFIG['peer_name'].replace(
                                             '.', '_'),
-                                        brick['path'].replace('/', '|')
+                                        brick['path'].replace('/', self.brick_path_repl)
                                     )
                                 ] = brick['connections_count']
                 if brick_found_for_curr_node:
