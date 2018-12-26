@@ -143,7 +143,9 @@ def get_heal_info(volume, integration_id, etcd_client, brick_path_repl):
         ] = value
 
 
-def get_heal_info_disperse(volume, integration_id, etcd_client, brick_path_repl):
+def get_heal_info_disperse(
+    volume, integration_id, etcd_client, brick_path_repl
+):
     vol_heal_info_stats = get_volume_heal_info_stats(
         volume, integration_id, etcd_client
     )

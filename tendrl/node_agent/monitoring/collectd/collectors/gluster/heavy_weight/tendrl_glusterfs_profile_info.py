@@ -341,7 +341,9 @@ class TendrlHealInfoAndProfileInfoPlugin(
                         self.CONFIG['integration_id'],
                         volName,
                         brick_host.replace('.', '_'),
-                        brickName.split(':')[1].replace('/', self.brick_path_repl)
+                        brickName.split(':')[1].replace(
+                            '/', self.brick_path_repl
+                        )
                     )
                 ] = math.ceil(total_reads / float(
                     brick_det.get('intervalStats').get(
@@ -355,7 +357,9 @@ class TendrlHealInfoAndProfileInfoPlugin(
                         self.CONFIG['integration_id'],
                         volName,
                         brick_host.replace('.', '_'),
-                        brickName.split(':')[1].replace('/', self.brick_path_repl)
+                        brickName.split(':')[1].replace(
+                            '/', self.brick_path_repl
+                        )
                     )
                 ] = math.ceil(total_writes / float(
                     brick_det.get('intervalStats').get(
@@ -368,7 +372,9 @@ class TendrlHealInfoAndProfileInfoPlugin(
                     t_name % (
                         self.CONFIG['integration_id'],
                         brick_host.replace('.', '_'),
-                        brickName.split(':')[1].replace('/', self.brick_path_repl)
+                        brickName.split(':')[1].replace(
+                            '/', self.brick_path_repl
+                        )
                     )
                 ] = math.ceil(total_reads / float(
                     brick_det.get('intervalStats').get(
@@ -381,7 +387,9 @@ class TendrlHealInfoAndProfileInfoPlugin(
                     t_name % (
                         self.CONFIG['integration_id'],
                         brick_host.replace('.', '_'),
-                        brickName.split(':')[1].replace('/', self.brick_path_repl)
+                        brickName.split(':')[1].replace(
+                            '/', self.brick_path_repl
+                        )
                     )
                 ] = math.ceil(total_writes / float(
                     brick_det.get('intervalStats').get(
@@ -399,7 +407,9 @@ class TendrlHealInfoAndProfileInfoPlugin(
                         self.CONFIG['integration_id'],
                         volName,
                         brick_host.replace('.', '_'),
-                        brickName.split(':')[1].replace('/', self.brick_path_repl),
+                        brickName.split(':')[1].replace(
+                            '/', self.brick_path_repl
+                        ),
                         fopStat.get('name')
                     )
                 ] = float(fopStat.get('hits'))
@@ -410,7 +420,9 @@ class TendrlHealInfoAndProfileInfoPlugin(
                         self.CONFIG['integration_id'],
                         volName,
                         brick_host.replace('.', '_'),
-                        brickName.split(':')[1].replace('/', self.brick_path_repl),
+                        brickName.split(':')[1].replace(
+                            '/', self.brick_path_repl
+                        ),
                         fopStat.get('name')
                     )
                 ] = float(fopStat.get('latencyAvg'))
@@ -421,7 +433,9 @@ class TendrlHealInfoAndProfileInfoPlugin(
                         self.CONFIG['integration_id'],
                         volName,
                         brick_host.replace('.', '_'),
-                        brickName.split(':')[1].replace('/', self.brick_path_repl),
+                        brickName.split(':')[1].replace(
+                            '/', self.brick_path_repl
+                        ),
                         fopStat.get('name')
                     )
                 ] = float(fopStat.get('latencyMin'))
@@ -432,7 +446,9 @@ class TendrlHealInfoAndProfileInfoPlugin(
                         self.CONFIG['integration_id'],
                         volName,
                         brick_host.replace('.', '_'),
-                        brickName.split(':')[1].replace('/', self.brick_path_repl),
+                        brickName.split(':')[1].replace(
+                            '/', self.brick_path_repl
+                        ),
                         fopStat.get('name')
                     )
                 ] = float(fopStat.get('latencyMax'))
@@ -442,7 +458,9 @@ class TendrlHealInfoAndProfileInfoPlugin(
                     t_name % (
                         self.CONFIG['integration_id'],
                         brick_host.replace('.', '_'),
-                        brickName.split(':')[1].replace('/', self.brick_path_repl),
+                        brickName.split(':')[1].replace(
+                            '/', self.brick_path_repl
+                        ),
                         fopStat.get('name')
                     )
                 ] = float(fopStat.get('hits'))
@@ -452,7 +470,9 @@ class TendrlHealInfoAndProfileInfoPlugin(
                     t_name % (
                         self.CONFIG['integration_id'],
                         brick_host.replace('.', '_'),
-                        brickName.split(':')[1].replace('/', self.brick_path_repl),
+                        brickName.split(':')[1].replace(
+                            '/', self.brick_path_repl
+                        ),
                         fopStat.get('name')
                     )
                 ] = float(fopStat.get('latencyAvg'))
@@ -462,7 +482,9 @@ class TendrlHealInfoAndProfileInfoPlugin(
                     t_name % (
                         self.CONFIG['integration_id'],
                         brick_host.replace('.', '_'),
-                        brickName.split(':')[1].replace('/', self.brick_path_repl),
+                        brickName.split(':')[1].replace(
+                            '/', self.brick_path_repl
+                        ),
                         fopStat.get('name')
                     )
                 ] = float(fopStat.get('latencyMin'))
@@ -472,7 +494,9 @@ class TendrlHealInfoAndProfileInfoPlugin(
                     t_name % (
                         self.CONFIG['integration_id'],
                         brick_host.replace('.', '_'),
-                        brickName.split(':')[1].replace('/', self.brick_path_repl),
+                        brickName.split(':')[1].replace(
+                            '/', self.brick_path_repl
+                        ),
                         fopStat.get('name')
                     )
                 ] = float(fopStat.get('latencyMax'))

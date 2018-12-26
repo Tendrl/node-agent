@@ -110,7 +110,9 @@ class TendrlGlusterfsHealthCounters(
                                         volume.get('name', ''),
                                         self.CONFIG['peer_name'].replace(
                                             '.', '_'),
-                                        brick['path'].replace('/', self.brick_path_repl)
+                                        brick['path'].replace(
+                                            '/', self.brick_path_repl
+                                        )
                                     )
                                 ] = brick['connections_count']
                 if brick_found_for_curr_node:
