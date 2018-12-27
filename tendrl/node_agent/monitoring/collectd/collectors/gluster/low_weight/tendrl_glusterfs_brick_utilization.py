@@ -20,7 +20,7 @@ class TendrlBrickUtilizationPlugin(
 
     def __init__(self):
         self.provisioner_only_plugin = False
-        self.brick_path_repl = ":"
+        self.brick_path_repl = self.CONFIG['brick_path_replace']
         TendrlGlusterfsMonitoringBase.__init__(self)
         if not self.etcd_client:
             _etcd_args = dict(
