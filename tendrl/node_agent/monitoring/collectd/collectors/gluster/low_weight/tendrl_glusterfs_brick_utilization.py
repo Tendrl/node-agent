@@ -20,8 +20,8 @@ class TendrlBrickUtilizationPlugin(
 
     def __init__(self):
         self.provisioner_only_plugin = False
-        self.brick_path_repl = self.CONFIG['brick_path_replace']
         TendrlGlusterfsMonitoringBase.__init__(self)
+        self.brick_path_separator = self.CONFIG['brick_path_separator']
         if not self.etcd_client:
             _etcd_args = dict(
                 host=self.CONFIG['etcd_host'],
@@ -320,7 +320,7 @@ class TendrlBrickUtilizationPlugin(
                         vol,
                         self.CONFIG['peer_name'].replace(".", "_"),
                         brick_usage.get('brick_path').replace(
-                            "/", self.brick_path_repl
+                            "/", self.brick_path_separator
                         )
                     )
                 ] = brick_usage.get('used')
@@ -332,7 +332,7 @@ class TendrlBrickUtilizationPlugin(
                         vol,
                         self.CONFIG['peer_name'].replace(".", "_"),
                         brick_usage.get('brick_path').replace(
-                            "/", self.brick_path_repl
+                            "/", self.brick_path_separator
                         )
                     )
                 ] = brick_usage.get('total')
@@ -344,7 +344,7 @@ class TendrlBrickUtilizationPlugin(
                         vol,
                         self.CONFIG['peer_name'].replace(".", "_"),
                         brick_usage.get('brick_path').replace(
-                            "/", self.brick_path_repl
+                            "/", self.brick_path_separator
                         )
                     )
                 ] = brick_usage.get('used_percent')
@@ -356,7 +356,7 @@ class TendrlBrickUtilizationPlugin(
                         vol,
                         self.CONFIG['peer_name'].replace(".", "_"),
                         brick_usage.get('brick_path').replace(
-                            "/", self.brick_path_repl
+                            "/", self.brick_path_separator
                         )
                     )
                 ] = brick_usage.get('thinpool_used_percent')
@@ -368,7 +368,7 @@ class TendrlBrickUtilizationPlugin(
                         vol,
                         self.CONFIG['peer_name'].replace(".", "_"),
                         brick_usage.get('brick_path').replace(
-                            "/", self.brick_path_repl
+                            "/", self.brick_path_separator
                         )
                     )
                 ] = brick_usage.get('metadata_used_percent')
@@ -380,7 +380,7 @@ class TendrlBrickUtilizationPlugin(
                         vol,
                         self.CONFIG['peer_name'].replace(".", "_"),
                         brick_usage.get('brick_path').replace(
-                            "/", self.brick_path_repl
+                            "/", self.brick_path_separator
                         )
                     )
                 ] = brick_usage.get('metadata_used')
@@ -392,7 +392,7 @@ class TendrlBrickUtilizationPlugin(
                         vol,
                         self.CONFIG['peer_name'].replace(".", "_"),
                         brick_usage.get('brick_path').replace(
-                            "/", self.brick_path_repl
+                            "/", self.brick_path_separator
                         )
                     )
                 ] = brick_usage.get('used_inode')
@@ -404,7 +404,7 @@ class TendrlBrickUtilizationPlugin(
                         vol,
                         self.CONFIG['peer_name'].replace(".", "_"),
                         brick_usage.get('brick_path').replace(
-                            "/", self.brick_path_repl
+                            "/", self.brick_path_separator
                         )
                     )
                 ] = brick_usage.get('total_inode')
@@ -416,7 +416,7 @@ class TendrlBrickUtilizationPlugin(
                         vol,
                         self.CONFIG['peer_name'].replace(".", "_"),
                         brick_usage.get('brick_path').replace(
-                            "/", self.brick_path_repl
+                            "/", self.brick_path_separator
                         )
                     )
                 ] = brick_usage.get('used_percent_inode')
@@ -428,7 +428,7 @@ class TendrlBrickUtilizationPlugin(
                         vol,
                         self.CONFIG['peer_name'].replace(".", "_"),
                         brick_usage.get('brick_path').replace(
-                            "/", self.brick_path_repl
+                            "/", self.brick_path_separator
                         )
                     )
                 ] = brick_usage.get('thinpool_used')
@@ -440,7 +440,7 @@ class TendrlBrickUtilizationPlugin(
                         vol,
                         self.CONFIG['peer_name'].replace(".", "_"),
                         brick_usage.get('brick_path').replace(
-                            "/", self.brick_path_repl
+                            "/", self.brick_path_separator
                         )
                     )
                 ] = brick_usage.get('thinpool_size')
@@ -451,7 +451,7 @@ class TendrlBrickUtilizationPlugin(
                         self.CONFIG['integration_id'],
                         self.CONFIG['peer_name'].replace(".", "_"),
                         brick_usage.get('brick_path').replace(
-                            "/", self.brick_path_repl
+                            "/", self.brick_path_separator
                         )
                     )
                 ] = brick_usage.get('used')
@@ -462,7 +462,7 @@ class TendrlBrickUtilizationPlugin(
                         self.CONFIG['integration_id'],
                         self.CONFIG['peer_name'].replace(".", "_"),
                         brick_usage.get('brick_path').replace(
-                            "/", self.brick_path_repl
+                            "/", self.brick_path_separator
                         )
                     )
                 ] = brick_usage.get('total')
@@ -473,7 +473,7 @@ class TendrlBrickUtilizationPlugin(
                         self.CONFIG['integration_id'],
                         self.CONFIG['peer_name'].replace(".", "_"),
                         brick_usage.get('brick_path').replace(
-                            "/", self.brick_path_repl
+                            "/", self.brick_path_separator
                         )
                     )
                 ] = brick_usage.get('used_percent')
@@ -484,7 +484,7 @@ class TendrlBrickUtilizationPlugin(
                         self.CONFIG['integration_id'],
                         self.CONFIG['peer_name'].replace(".", "_"),
                         brick_usage.get('brick_path').replace(
-                            "/", self.brick_path_repl
+                            "/", self.brick_path_separator
                         )
                     )
                 ] = brick_usage.get('thinpool_used_percent')
@@ -495,7 +495,7 @@ class TendrlBrickUtilizationPlugin(
                         self.CONFIG['integration_id'],
                         self.CONFIG['peer_name'].replace(".", "_"),
                         brick_usage.get('brick_path').replace(
-                            "/", self.brick_path_repl
+                            "/", self.brick_path_separator
                         )
                     )
                 ] = brick_usage.get('metadata_used_percent')
@@ -506,7 +506,7 @@ class TendrlBrickUtilizationPlugin(
                         self.CONFIG['integration_id'],
                         self.CONFIG['peer_name'].replace(".", "_"),
                         brick_usage.get('brick_path').replace(
-                            "/", self.brick_path_repl
+                            "/", self.brick_path_separator
                         )
                     )
                 ] = brick_usage.get('metadata_used')
@@ -517,7 +517,7 @@ class TendrlBrickUtilizationPlugin(
                         self.CONFIG['integration_id'],
                         self.CONFIG['peer_name'].replace(".", "_"),
                         brick_usage.get('brick_path').replace(
-                            "/", self.brick_path_repl
+                            "/", self.brick_path_separator
                         )
                     )
                 ] = brick_usage.get('used_inode')
@@ -528,7 +528,7 @@ class TendrlBrickUtilizationPlugin(
                         self.CONFIG['integration_id'],
                         self.CONFIG['peer_name'].replace(".", "_"),
                         brick_usage.get('brick_path').replace(
-                            "/", self.brick_path_repl
+                            "/", self.brick_path_separator
                         )
                     )
                 ] = brick_usage.get('total_inode')
@@ -539,7 +539,7 @@ class TendrlBrickUtilizationPlugin(
                         self.CONFIG['integration_id'],
                         self.CONFIG['peer_name'].replace(".", "_"),
                         brick_usage.get('brick_path').replace(
-                            "/", self.brick_path_repl
+                            "/", self.brick_path_separator
                         )
                     )
                 ] = brick_usage.get('used_percent_inode')
@@ -550,7 +550,7 @@ class TendrlBrickUtilizationPlugin(
                         self.CONFIG['integration_id'],
                         self.CONFIG['peer_name'].replace(".", "_"),
                         brick_usage.get('brick_path').replace(
-                            "/", self.brick_path_repl
+                            "/", self.brick_path_separator
                         )
                     )
                 ] = brick_usage.get('thinpool_used')
@@ -561,7 +561,7 @@ class TendrlBrickUtilizationPlugin(
                         self.CONFIG['integration_id'],
                         self.CONFIG['peer_name'].replace(".", "_"),
                         brick_usage.get('brick_path').replace(
-                            "/", self.brick_path_repl
+                            "/", self.brick_path_separator
                         )
                     )
                 ] = brick_usage.get('thinpool_size')

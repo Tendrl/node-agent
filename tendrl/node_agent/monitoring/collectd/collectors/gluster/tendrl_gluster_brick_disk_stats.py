@@ -22,7 +22,7 @@ class TendrlBrickDeviceStatsPlugin(object):
         self.provisioner_only_plugin = False
         self.STAT_INTERVAL_FOR_PER_SEC_COUNTER = 10
         self.brick_details = {}
-        self.brick_path_repl = self.CONFIG['brick_path_replace']
+        self.brick_path_separator = self.CONFIG['brick_path_separator']
         if not self.etcd_client:
             _etcd_args = dict(
                 host=self.CONFIG['etcd_host'],
@@ -233,7 +233,9 @@ class TendrlBrickDeviceStatsPlugin(object):
                         self.CONFIG['integration_id'],
                         vol_name,
                         brick_host.replace('.', '_'),
-                        brick_path.replace('/', self.brick_path_repl),
+                        brick_path.replace(
+                            '/', self.brick_path_separator
+                        ),
                         brick_device.replace('/dev/', '')
                     )
                 ] = self.get_interval_disk_io_stat(
@@ -247,7 +249,9 @@ class TendrlBrickDeviceStatsPlugin(object):
                         self.CONFIG['integration_id'],
                         vol_name,
                         brick_host.replace('.', '_'),
-                        brick_path.replace('/', self.brick_path_repl),
+                        brick_path.replace(
+                            '/', self.brick_path_separator
+                        ),
                         brick_device.replace('/dev/', '')
                     )
                 ] = self.get_interval_disk_io_stat(
@@ -261,7 +265,9 @@ class TendrlBrickDeviceStatsPlugin(object):
                     'disk_octets.read' % (
                         self.CONFIG['integration_id'],
                         brick_host.replace('.', '_'),
-                        brick_path.replace('/', self.brick_path_repl),
+                        brick_path.replace(
+                            '/', self.brick_path_separator
+                        ),
                         brick_device.replace('/dev/', '')
                     )
                 ] = self.get_interval_disk_io_stat(
@@ -274,7 +280,9 @@ class TendrlBrickDeviceStatsPlugin(object):
                     'disk_octets.write' % (
                         self.CONFIG['integration_id'],
                         brick_host.replace('.', '_'),
-                        brick_path.replace('/', self.brick_path_repl),
+                        brick_path.replace(
+                            '/', self.brick_path_separator
+                        ),
                         brick_device.replace('/dev/', '')
                     )
                 ] = self.get_interval_disk_io_stat(
@@ -290,7 +298,9 @@ class TendrlBrickDeviceStatsPlugin(object):
                         self.CONFIG['integration_id'],
                         vol_name,
                         brick_host.replace('.', '_'),
-                        brick_path.replace('/', self.brick_path_repl),
+                        brick_path.replace(
+                            '/', self.brick_path_separator
+                        ),
                         brick_device.replace('/dev/', '')
                     )
                 ] = self.get_interval_disk_io_stat(
@@ -304,7 +314,9 @@ class TendrlBrickDeviceStatsPlugin(object):
                         self.CONFIG['integration_id'],
                         vol_name,
                         brick_host.replace('.', '_'),
-                        brick_path.replace('/', self.brick_path_repl),
+                        brick_path.replace(
+                            '/', self.brick_path_separator
+                        ),
                         brick_device.replace('/dev/', '')
                     )
                 ] = self.get_interval_disk_io_stat(
@@ -318,7 +330,9 @@ class TendrlBrickDeviceStatsPlugin(object):
                     'disk_ops.read' % (
                         self.CONFIG['integration_id'],
                         brick_host.replace('.', '_'),
-                        brick_path.replace('/', self.brick_path_repl),
+                        brick_path.replace(
+                            '/', self.brick_path_separator
+                        ),
                         brick_device.replace('/dev/', '')
                     )
                 ] = self.get_interval_disk_io_stat(
@@ -331,7 +345,9 @@ class TendrlBrickDeviceStatsPlugin(object):
                     'disk_ops.write' % (
                         self.CONFIG['integration_id'],
                         brick_host.replace('.', '_'),
-                        brick_path.replace('/', self.brick_path_repl),
+                        brick_path.replace(
+                            '/', self.brick_path_separator
+                        ),
                         brick_device.replace('/dev/', '')
                     )
                 ] = self.get_interval_disk_io_stat(
@@ -347,7 +363,9 @@ class TendrlBrickDeviceStatsPlugin(object):
                         self.CONFIG['integration_id'],
                         vol_name,
                         brick_host.replace('.', '_'),
-                        brick_path.replace('/', self.brick_path_repl),
+                        brick_path.replace(
+                            '/', self.brick_path_separator
+                        ),
                         brick_device.replace('/dev/', '')
                     )
                 ] = self.get_interval_disk_io_stat(
@@ -361,7 +379,9 @@ class TendrlBrickDeviceStatsPlugin(object):
                         self.CONFIG['integration_id'],
                         vol_name,
                         brick_host.replace('.', '_'),
-                        brick_path.replace('/', self.brick_path_repl),
+                        brick_path.replace(
+                            '/', self.brick_path_separator
+                        ),
                         brick_device.replace('/dev/', '')
                     )
                 ] = self.get_interval_disk_io_stat(
@@ -375,7 +395,9 @@ class TendrlBrickDeviceStatsPlugin(object):
                     'disk_time.read' % (
                         self.CONFIG['integration_id'],
                         brick_host.replace('.', '_'),
-                        brick_path.replace('/', self.brick_path_repl),
+                        brick_path.replace(
+                            '/', self.brick_path_separator
+                        ),
                         brick_device.replace('/dev/', '')
                     )
                 ] = self.get_interval_disk_io_stat(
@@ -388,7 +410,9 @@ class TendrlBrickDeviceStatsPlugin(object):
                     'disk_time.write' % (
                         self.CONFIG['integration_id'],
                         brick_host.replace('.', '_'),
-                        brick_path.replace('/', self.brick_path_repl),
+                        brick_path.replace(
+                            '/', self.brick_path_separator
+                        ),
                         brick_device.replace('/dev/', '')
                     )
                 ] = self.get_interval_disk_io_stat(
@@ -405,7 +429,9 @@ class TendrlBrickDeviceStatsPlugin(object):
                         self.CONFIG['integration_id'],
                         vol_name,
                         brick_host.replace('.', '_'),
-                        brick_path.replace('/', self.brick_path_repl),
+                        brick_path.replace(
+                            '/', self.brick_path_separator
+                        ),
                         brick_device.replace('/dev/', '')
                     )
                 ] = disk_usage.used
@@ -415,7 +441,9 @@ class TendrlBrickDeviceStatsPlugin(object):
                         self.CONFIG['integration_id'],
                         vol_name,
                         brick_host.replace('.', '_'),
-                        brick_path.replace('/', self.brick_path_repl),
+                        brick_path.replace(
+                            '/', self.brick_path_separator
+                        ),
                         brick_device.replace('/dev/', '')
                     )
                 ] = disk_usage.total
@@ -425,7 +453,9 @@ class TendrlBrickDeviceStatsPlugin(object):
                         self.CONFIG['integration_id'],
                         vol_name,
                         brick_host.replace('.', '_'),
-                        brick_path.replace('/', self.brick_path_repl),
+                        brick_path.replace(
+                            '/', self.brick_path_separator
+                        ),
                         brick_device.replace('/dev/', '')
                     )
                 ] = disk_usage.percent
@@ -435,7 +465,9 @@ class TendrlBrickDeviceStatsPlugin(object):
                     'utilization.used' % (
                         self.CONFIG['integration_id'],
                         brick_host.replace('.', '_'),
-                        brick_path.replace('/', self.brick_path_repl),
+                        brick_path.replace(
+                            '/', self.brick_path_separator
+                        ),
                         brick_device.replace('/dev/', '')
                     )
                 ] = disk_usage.used
@@ -444,7 +476,9 @@ class TendrlBrickDeviceStatsPlugin(object):
                     'utilization.total' % (
                         self.CONFIG['integration_id'],
                         brick_host.replace('.', '_'),
-                        brick_path.replace('/', self.brick_path_repl),
+                        brick_path.replace(
+                            '/', self.brick_path_separator
+                        ),
                         brick_device.replace('/dev/', '')
                     )
                 ] = disk_usage.total
@@ -453,7 +487,9 @@ class TendrlBrickDeviceStatsPlugin(object):
                     'utilization.percent_used' % (
                         self.CONFIG['integration_id'],
                         brick_host.replace('.', '_'),
-                        brick_path.replace('/', self.brick_path_repl),
+                        brick_path.replace(
+                            '/', self.brick_path_separator
+                        ),
                         brick_device.replace('/dev/', '')
                     )
                 ] = disk_usage.percent
@@ -467,7 +503,9 @@ class TendrlBrickDeviceStatsPlugin(object):
                         self.CONFIG['integration_id'],
                         vol_name,
                         brick_host.replace('.', '_'),
-                        brick_path.replace('/', self.brick_path_repl),
+                        brick_path.replace(
+                            '/', self.brick_path_separator
+                        ),
                         brick_device.replace('/dev/', '')
                     )
                 ] = disk_usage.used
@@ -477,7 +515,9 @@ class TendrlBrickDeviceStatsPlugin(object):
                         self.CONFIG['integration_id'],
                         vol_name,
                         brick_host.replace('.', '_'),
-                        brick_path.replace('/', self.brick_path_repl),
+                        brick_path.replace(
+                            '/', self.brick_path_separator
+                        ),
                         brick_device.replace('/dev/', '')
                     )
                 ] = disk_usage.total
@@ -487,7 +527,9 @@ class TendrlBrickDeviceStatsPlugin(object):
                         self.CONFIG['integration_id'],
                         vol_name,
                         brick_host.replace('.', '_'),
-                        brick_path.replace('/', self.brick_path_repl),
+                        brick_path.replace(
+                            '/', self.brick_path_separator
+                        ),
                         brick_device.replace('/dev/', '')
                     )
                 ] = disk_usage.percent
@@ -497,7 +539,9 @@ class TendrlBrickDeviceStatsPlugin(object):
                     'mount_utilization.used' % (
                         self.CONFIG['integration_id'],
                         brick_host.replace('.', '_'),
-                        brick_path.replace('/', self.brick_path_repl),
+                        brick_path.replace(
+                            '/', self.brick_path_separator
+                        ),
                         brick_device.replace('/dev/', '')
                     )
                 ] = disk_usage.used
@@ -506,7 +550,9 @@ class TendrlBrickDeviceStatsPlugin(object):
                     'mount_utilization.total' % (
                         self.CONFIG['integration_id'],
                         brick_host.replace('.', '_'),
-                        brick_path.replace('/', self.brick_path_repl),
+                        brick_path.replace(
+                            '/', self.brick_path_separator
+                        ),
                         brick_device.replace('/dev/', '')
                     )
                 ] = disk_usage.total
@@ -515,7 +561,9 @@ class TendrlBrickDeviceStatsPlugin(object):
                     'mount_utilization.percent_used' % (
                         self.CONFIG['integration_id'],
                         brick_host.replace('.', '_'),
-                        brick_path.replace('/', self.brick_path_repl),
+                        brick_path.replace(
+                            '/', self.brick_path_separator
+                        ),
                         brick_device.replace('/dev/', '')
                     )
                 ] = disk_usage.percent

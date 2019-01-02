@@ -109,7 +109,7 @@ def get_volume_heal_info_stats(vol, integration_id, etcd_client):
         return {}
 
 
-def get_heal_info(volume, integration_id, etcd_client, brick_path_repl):
+def get_heal_info(volume, integration_id, etcd_client, brick_path_separator):
     vol_heal_info_stats = get_volume_heal_info_stats(volume, integration_id,
                                                      etcd_client)
     vol_heal_info_split_brain_stats = get_volume_heal_info_split_brain_stats(
@@ -125,7 +125,7 @@ def get_heal_info(volume, integration_id, etcd_client, brick_path_repl):
                 integration_id,
                 volume['name'],
                 key.split(":")[0].replace('.', '_'),
-                key.split(":")[1].replace('/', brick_path_repl)
+                key.split(":")[1].replace('/', brick_path_separator)
             )
         ] = value
     for key, value in vol_heal_info_split_brain_stats.iteritems():
@@ -138,13 +138,13 @@ def get_heal_info(volume, integration_id, etcd_client, brick_path_repl):
                 integration_id,
                 volume['name'],
                 key.split(":")[0].replace('.', '_'),
-                key.split(":")[1].replace('/', brick_path_repl)
+                key.split(":")[1].replace('/', brick_path_separator)
             )
         ] = value
 
 
 def get_heal_info_disperse(
-    volume, integration_id, etcd_client, brick_path_repl
+    volume, integration_id, etcd_client, brick_path_separator
 ):
     vol_heal_info_stats = get_volume_heal_info_stats(
         volume, integration_id, etcd_client
@@ -159,18 +159,18 @@ def get_heal_info_disperse(
                 integration_id,
                 volume['name'],
                 key.split(":")[0].replace('.', '_'),
-                key.split(":")[1].replace('/', brick_path_repl)
+                key.split(":")[1].replace('/', brick_path_separator)
             )
         ] = value
 
 
-def get_metrics(CLUSTER_TOPOLOGY, CONFIG, etcd_client, brick_path_repl):
+def get_metrics(CLUSTER_TOPOLOGY, CONFIG, etcd_client, brick_path_separator):
     global ret_val
     # threads = []
     for volume in CLUSTER_TOPOLOGY.get('volumes', []):
         if 'Replicate' in volume.get('type', ''):
             get_heal_info(
-                volume, CONFIG['integration_id'], etcd_client, brick_path_repl
+                volume, CONFIG['integration_id'], etcd_client, brick_path_separator
             )
             # thread = threading.Thread(
             #    target=get_heal_info,
@@ -182,7 +182,7 @@ def get_metrics(CLUSTER_TOPOLOGY, CONFIG, etcd_client, brick_path_repl):
             # )
         if 'Disperse' in volume.get('type', ''):
             get_heal_info_disperse(volume, CONFIG['integration_id'],
-                                   etcd_client, brick_path_repl)
+                                   etcd_client, brick_path_separator)
     # for thread in threads:
     #    thread.join(1)
     # for thread in threads:
