@@ -12,7 +12,8 @@ class TendrlGlusterfsMonitoringBase(object):
                 "graphite_port": 8080,
                 "peer_name": "10.70.41.169",
                 "etcd_host": "127.0.0.1",
-                "etcd_port": "1234"
+                "etcd_port": "1234",
+                "brick_path_separator": ":"
             }
         )
 
