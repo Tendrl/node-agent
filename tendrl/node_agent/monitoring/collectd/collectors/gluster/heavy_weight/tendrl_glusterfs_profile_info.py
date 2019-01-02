@@ -81,7 +81,7 @@ class TendrlHealInfoAndProfileInfoPlugin(
     def __init__(self):
         self.provisioner_only_plugin = True
         TendrlGlusterfsMonitoringBase.__init__(self)
-        self.brick_path_separator = self.CONFIG['brick_path_separator']
+        self.brick_path_separator = ":"
         if not self.etcd_client:
             _etcd_args = dict(
                 host=self.CONFIG['etcd_host'],

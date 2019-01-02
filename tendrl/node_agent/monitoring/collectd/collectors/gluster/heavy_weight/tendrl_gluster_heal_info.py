@@ -170,7 +170,10 @@ def get_metrics(CLUSTER_TOPOLOGY, CONFIG, etcd_client, brick_path_separator):
     for volume in CLUSTER_TOPOLOGY.get('volumes', []):
         if 'Replicate' in volume.get('type', ''):
             get_heal_info(
-                volume, CONFIG['integration_id'], etcd_client, brick_path_separator
+                volume,
+                CONFIG['integration_id'],
+                etcd_client,
+                brick_path_separator
             )
             # thread = threading.Thread(
             #    target=get_heal_info,

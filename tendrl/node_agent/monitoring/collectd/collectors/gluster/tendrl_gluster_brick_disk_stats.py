@@ -22,7 +22,7 @@ class TendrlBrickDeviceStatsPlugin(object):
         self.provisioner_only_plugin = False
         self.STAT_INTERVAL_FOR_PER_SEC_COUNTER = 10
         self.brick_details = {}
-        self.brick_path_separator = self.CONFIG['brick_path_separator']
+        self.brick_path_separator = ":"
         if not self.etcd_client:
             _etcd_args = dict(
                 host=self.CONFIG['etcd_host'],
