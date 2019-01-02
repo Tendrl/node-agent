@@ -21,6 +21,7 @@ class TendrlBrickUtilizationPlugin(
     def __init__(self):
         self.provisioner_only_plugin = False
         TendrlGlusterfsMonitoringBase.__init__(self)
+        self.brick_path_separator = self.CONFIG['brick_path_separator']
         if not self.etcd_client:
             _etcd_args = dict(
                 host=self.CONFIG['etcd_host'],
@@ -318,7 +319,9 @@ class TendrlBrickUtilizationPlugin(
                         self.CONFIG['integration_id'],
                         vol,
                         self.CONFIG['peer_name'].replace(".", "_"),
-                        brick_usage.get('brick_path').replace("/", "|")
+                        brick_usage.get('brick_path').replace(
+                            "/", self.brick_path_separator
+                        )
                     )
                 ] = brick_usage.get('used')
                 t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s." \
@@ -328,7 +331,9 @@ class TendrlBrickUtilizationPlugin(
                         self.CONFIG['integration_id'],
                         vol,
                         self.CONFIG['peer_name'].replace(".", "_"),
-                        brick_usage.get('brick_path').replace("/", "|")
+                        brick_usage.get('brick_path').replace(
+                            "/", self.brick_path_separator
+                        )
                     )
                 ] = brick_usage.get('total')
                 t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s." \
@@ -338,7 +343,9 @@ class TendrlBrickUtilizationPlugin(
                         self.CONFIG['integration_id'],
                         vol,
                         self.CONFIG['peer_name'].replace(".", "_"),
-                        brick_usage.get('brick_path').replace("/", "|")
+                        brick_usage.get('brick_path').replace(
+                            "/", self.brick_path_separator
+                        )
                     )
                 ] = brick_usage.get('used_percent')
                 t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s." \
@@ -348,7 +355,9 @@ class TendrlBrickUtilizationPlugin(
                         self.CONFIG['integration_id'],
                         vol,
                         self.CONFIG['peer_name'].replace(".", "_"),
-                        brick_usage.get('brick_path').replace("/", "|")
+                        brick_usage.get('brick_path').replace(
+                            "/", self.brick_path_separator
+                        )
                     )
                 ] = brick_usage.get('thinpool_used_percent')
                 t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s" \
@@ -358,7 +367,9 @@ class TendrlBrickUtilizationPlugin(
                         self.CONFIG['integration_id'],
                         vol,
                         self.CONFIG['peer_name'].replace(".", "_"),
-                        brick_usage.get('brick_path').replace("/", "|")
+                        brick_usage.get('brick_path').replace(
+                            "/", self.brick_path_separator
+                        )
                     )
                 ] = brick_usage.get('metadata_used_percent')
                 t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s." \
@@ -368,7 +379,9 @@ class TendrlBrickUtilizationPlugin(
                         self.CONFIG['integration_id'],
                         vol,
                         self.CONFIG['peer_name'].replace(".", "_"),
-                        brick_usage.get('brick_path').replace("/", "|")
+                        brick_usage.get('brick_path').replace(
+                            "/", self.brick_path_separator
+                        )
                     )
                 ] = brick_usage.get('metadata_used')
                 t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s." \
@@ -378,7 +391,9 @@ class TendrlBrickUtilizationPlugin(
                         self.CONFIG['integration_id'],
                         vol,
                         self.CONFIG['peer_name'].replace(".", "_"),
-                        brick_usage.get('brick_path').replace("/", "|")
+                        brick_usage.get('brick_path').replace(
+                            "/", self.brick_path_separator
+                        )
                     )
                 ] = brick_usage.get('used_inode')
                 t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s." \
@@ -388,7 +403,9 @@ class TendrlBrickUtilizationPlugin(
                         self.CONFIG['integration_id'],
                         vol,
                         self.CONFIG['peer_name'].replace(".", "_"),
-                        brick_usage.get('brick_path').replace("/", "|")
+                        brick_usage.get('brick_path').replace(
+                            "/", self.brick_path_separator
+                        )
                     )
                 ] = brick_usage.get('total_inode')
                 t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s." \
@@ -398,7 +415,9 @@ class TendrlBrickUtilizationPlugin(
                         self.CONFIG['integration_id'],
                         vol,
                         self.CONFIG['peer_name'].replace(".", "_"),
-                        brick_usage.get('brick_path').replace("/", "|")
+                        brick_usage.get('brick_path').replace(
+                            "/", self.brick_path_separator
+                        )
                     )
                 ] = brick_usage.get('used_percent_inode')
                 t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s." \
@@ -408,7 +427,9 @@ class TendrlBrickUtilizationPlugin(
                         self.CONFIG['integration_id'],
                         vol,
                         self.CONFIG['peer_name'].replace(".", "_"),
-                        brick_usage.get('brick_path').replace("/", "|")
+                        brick_usage.get('brick_path').replace(
+                            "/", self.brick_path_separator
+                        )
                     )
                 ] = brick_usage.get('thinpool_used')
                 t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s." \
@@ -418,7 +439,9 @@ class TendrlBrickUtilizationPlugin(
                         self.CONFIG['integration_id'],
                         vol,
                         self.CONFIG['peer_name'].replace(".", "_"),
-                        brick_usage.get('brick_path').replace("/", "|")
+                        brick_usage.get('brick_path').replace(
+                            "/", self.brick_path_separator
+                        )
                     )
                 ] = brick_usage.get('thinpool_size')
                 t_name = "clusters.%s.nodes.%s.bricks.%s.utilization." \
@@ -427,7 +450,9 @@ class TendrlBrickUtilizationPlugin(
                     t_name % (
                         self.CONFIG['integration_id'],
                         self.CONFIG['peer_name'].replace(".", "_"),
-                        brick_usage.get('brick_path').replace("/", "|")
+                        brick_usage.get('brick_path').replace(
+                            "/", self.brick_path_separator
+                        )
                     )
                 ] = brick_usage.get('used')
                 t_name = "clusters.%s.nodes.%s.bricks.%s.utilization." \
@@ -436,7 +461,9 @@ class TendrlBrickUtilizationPlugin(
                     t_name % (
                         self.CONFIG['integration_id'],
                         self.CONFIG['peer_name'].replace(".", "_"),
-                        brick_usage.get('brick_path').replace("/", "|")
+                        brick_usage.get('brick_path').replace(
+                            "/", self.brick_path_separator
+                        )
                     )
                 ] = brick_usage.get('total')
                 t_name = "clusters.%s.nodes.%s.bricks.%s.utilization." \
@@ -445,7 +472,9 @@ class TendrlBrickUtilizationPlugin(
                     t_name % (
                         self.CONFIG['integration_id'],
                         self.CONFIG['peer_name'].replace(".", "_"),
-                        brick_usage.get('brick_path').replace("/", "|")
+                        brick_usage.get('brick_path').replace(
+                            "/", self.brick_path_separator
+                        )
                     )
                 ] = brick_usage.get('used_percent')
                 t_name = "clusters.%s.nodes.%s.bricks.%s." \
@@ -454,7 +483,9 @@ class TendrlBrickUtilizationPlugin(
                     t_name % (
                         self.CONFIG['integration_id'],
                         self.CONFIG['peer_name'].replace(".", "_"),
-                        brick_usage.get('brick_path').replace("/", "|")
+                        brick_usage.get('brick_path').replace(
+                            "/", self.brick_path_separator
+                        )
                     )
                 ] = brick_usage.get('thinpool_used_percent')
                 t_name = "clusters.%s.nodes.%s.bricks.%s." \
@@ -463,7 +494,9 @@ class TendrlBrickUtilizationPlugin(
                     t_name % (
                         self.CONFIG['integration_id'],
                         self.CONFIG['peer_name'].replace(".", "_"),
-                        brick_usage.get('brick_path').replace("/", "|")
+                        brick_usage.get('brick_path').replace(
+                            "/", self.brick_path_separator
+                        )
                     )
                 ] = brick_usage.get('metadata_used_percent')
                 t_name = "clusters.%s.nodes.%s.bricks.%s." \
@@ -472,7 +505,9 @@ class TendrlBrickUtilizationPlugin(
                     t_name % (
                         self.CONFIG['integration_id'],
                         self.CONFIG['peer_name'].replace(".", "_"),
-                        brick_usage.get('brick_path').replace("/", "|")
+                        brick_usage.get('brick_path').replace(
+                            "/", self.brick_path_separator
+                        )
                     )
                 ] = brick_usage.get('metadata_used')
                 t_name = "clusters.%s.nodes.%s.bricks.%s.inode_utilization." \
@@ -481,7 +516,9 @@ class TendrlBrickUtilizationPlugin(
                     t_name % (
                         self.CONFIG['integration_id'],
                         self.CONFIG['peer_name'].replace(".", "_"),
-                        brick_usage.get('brick_path').replace("/", "|")
+                        brick_usage.get('brick_path').replace(
+                            "/", self.brick_path_separator
+                        )
                     )
                 ] = brick_usage.get('used_inode')
                 t_name = "clusters.%s.nodes.%s.bricks.%s.inode_utilization." \
@@ -490,7 +527,9 @@ class TendrlBrickUtilizationPlugin(
                     t_name % (
                         self.CONFIG['integration_id'],
                         self.CONFIG['peer_name'].replace(".", "_"),
-                        brick_usage.get('brick_path').replace("/", "|")
+                        brick_usage.get('brick_path').replace(
+                            "/", self.brick_path_separator
+                        )
                     )
                 ] = brick_usage.get('total_inode')
                 t_name = "clusters.%s.nodes.%s.bricks.%s.inode_utilization." \
@@ -499,7 +538,9 @@ class TendrlBrickUtilizationPlugin(
                     t_name % (
                         self.CONFIG['integration_id'],
                         self.CONFIG['peer_name'].replace(".", "_"),
-                        brick_usage.get('brick_path').replace("/", "|")
+                        brick_usage.get('brick_path').replace(
+                            "/", self.brick_path_separator
+                        )
                     )
                 ] = brick_usage.get('used_percent_inode')
                 t_name = "clusters.%s.nodes.%s.bricks.%s." \
@@ -508,7 +549,9 @@ class TendrlBrickUtilizationPlugin(
                     t_name % (
                         self.CONFIG['integration_id'],
                         self.CONFIG['peer_name'].replace(".", "_"),
-                        brick_usage.get('brick_path').replace("/", "|")
+                        brick_usage.get('brick_path').replace(
+                            "/", self.brick_path_separator
+                        )
                     )
                 ] = brick_usage.get('thinpool_used')
                 t_name = "clusters.%s.nodes.%s.bricks.%s." \
@@ -517,7 +560,9 @@ class TendrlBrickUtilizationPlugin(
                     t_name % (
                         self.CONFIG['integration_id'],
                         self.CONFIG['peer_name'].replace(".", "_"),
-                        brick_usage.get('brick_path').replace("/", "|")
+                        brick_usage.get('brick_path').replace(
+                            "/", self.brick_path_separator
+                        )
                     )
                 ] = brick_usage.get('thinpool_size')
         return ret_val
