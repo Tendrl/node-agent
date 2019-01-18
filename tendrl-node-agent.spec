@@ -54,6 +54,7 @@ install -Dm 0644 etc/tendrl/node-agent/logging.yaml.syslog.sample $RPM_BUILD_ROO
 install -Dm 644 etc/tendrl/node-agent/*.sample $RPM_BUILD_ROOT%{_datadir}/tendrl/node-agent/
 mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/rsyslog.d
 install -Dm 644 etc/rsyslog.d/tendrl-node-agent.conf $RPM_BUILD_ROOT/%{_sysconfdir}/rsyslog.d/tendrl-node-agent.conf
+install -Dm 0644 etc/logrotate.d/tendrl-node-agent_logrotate.conf $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d/tendrl-node-agent_logrotate.conf
 cp -a tendrl/node_agent/monitoring/collectd/collectors/* $RPM_BUILD_ROOT%{_libdir}/collectd/
 cp -a tendrl/node_agent/monitoring/collectd/templates/gluster/* $RPM_BUILD_ROOT%{_sysconfdir}/collectd_template/
 cp -a tendrl/node_agent/monitoring/collectd/templates/node/* $RPM_BUILD_ROOT%{_sysconfdir}/collectd_template/
@@ -90,8 +91,12 @@ py.test -v tendrl/node-agent/tests || :
 %{_unitdir}/tendrl-node-agent.service
 %{_unitdir}/tendrl-node-agent.socket
 %config(noreplace) %{_sysconfdir}/rsyslog.d/tendrl-node-agent.conf
+%config(noreplace) %{_sysconfdir}/logrotate.d/tendrl-node-agent_logrotate.conf
 
 %changelog
+* Fri Jan 18 2019 Gowtham Shanmugasundaram <gshanmug@redhat.com> - 1.6.3-10
+- Log rotation for tendrl log files
+
 * Sat Jul 14 2018 Rohan Kanade <rkanade@redhat.com> - 1.6.3-9
 - Bugfixes (https://github.com/Tendrl/node-agent/milestone/9)
 
