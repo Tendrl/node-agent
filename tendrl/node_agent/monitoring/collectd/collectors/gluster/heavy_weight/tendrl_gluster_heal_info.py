@@ -37,7 +37,7 @@ def get_volume_heal_info_split_brain_stats(vol, integration_id, etcd_client):
     for trial_cnt in xrange(0, 3):
         vol_heal_op, vol_heal_err = \
             tendrl_glusterfs_utils.exec_command(
-                "gluster volume heal %s info split-brain --xml" % vol['name']
+                "gluster volume heal %s info split-brain --nolog --xml" % vol['name']
             )
         if vol_heal_err:
             time.sleep(5)
@@ -75,7 +75,7 @@ def get_volume_heal_info_stats(vol, integration_id, etcd_client):
     for trial_cnt in xrange(0, 3):
         vol_heal_op, vol_heal_err = \
             tendrl_glusterfs_utils.exec_command(
-                "gluster volume heal %s info --xml" % vol['name']
+                "gluster volume heal %s info --nolog --xml" % vol['name']
             )
         if vol_heal_err:
             time.sleep(5)
