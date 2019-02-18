@@ -61,8 +61,11 @@ def get_volume_heal_info_split_brain_stats(vol, integration_id, etcd_client):
     except (
         AttributeError,
         KeyError,
-        ValueError
+        ValueError,
+        ElementTree.ParseError
     ):
+        # For heal info command timeout and older version of glusterd
+        # ElementTree will raise parser error
         collectd.error(
             'Failed to collect volume heal info split-brain. Error %s' % (
                 traceback.format_exc()
@@ -99,7 +102,8 @@ def get_volume_heal_info_stats(vol, integration_id, etcd_client):
     except (
         AttributeError,
         KeyError,
-        ValueError
+        ValueError,
+        ElementTree.ParseError
     ):
         collectd.error(
             'Failed to collect volume heal info. Error %s' % (
