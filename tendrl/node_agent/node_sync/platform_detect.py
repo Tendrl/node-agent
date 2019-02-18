@@ -22,7 +22,8 @@ def sync():
                     priority="debug",
                     publisher=NS.publisher_id,
                     payload={
-                        "message": 'Failed to init PlatformManager. \Error %s',
+                        "message": 'Failed to init PlatformManager. '
+                        '\\Error %s',
                         "exception": ex
                         }
                 )
@@ -47,7 +48,8 @@ def sync():
                             priority="debug",
                             publisher=NS.publisher_id,
                             payload={
-                                "message": "Failed to update etcd . \Error %s",
+                                "message": "Failed to update etcd . "
+                                "\\Error %s",
                                 "exception": ex
                             }
                         )

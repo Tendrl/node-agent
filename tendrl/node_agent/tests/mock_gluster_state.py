@@ -19,4 +19,4 @@ class TendrlGlusterfsMonitoringBase(object):
 
 
 def gluster_state():
-        return ini2json.ini_to_dict(PATH)
+    return ini2json.ini_to_dict(PATH)
