@@ -8,5 +8,5 @@ from tendrl.node_agent.objects import config
 def test_config(load_config):
     load_config.return_value = "test"
     obj = config.Config()
-    if obj.data is not "test":
+    if obj.data != "test":
         raise AssertionError()

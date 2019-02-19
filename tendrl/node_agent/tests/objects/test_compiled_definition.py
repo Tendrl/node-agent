@@ -13,7 +13,7 @@ def test_compiled_definition(resource_str, safe_dump, safe_load):
     safe_load.return_value = {}
     safe_dump.return_value = {}
     obj = compiled_definition.CompiledDefinitions()
-    if obj.data is not "":
+    if obj.data != "":
         raise AssertionError()
     if not obj.get_parsed_defs() == {}:
         raise AssertionError()

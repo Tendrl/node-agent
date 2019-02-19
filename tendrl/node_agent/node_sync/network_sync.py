@@ -38,7 +38,7 @@ def sync():
         # global network
         if len(interfaces) > 0:
             for interface in interfaces:
-                if interface["subnet"] is not "":
+                if interface["subnet"] != "":
                     NS.node_agent.objects.GlobalNetwork(
                         **interface).save(ttl=_keep_alive_for)
         try:

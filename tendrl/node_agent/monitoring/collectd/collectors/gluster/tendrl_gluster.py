@@ -3,6 +3,7 @@ import importlib
 import os
 import pkgutil
 import six
+import socket
 import sys
 import threading
 import time
@@ -246,17 +247,28 @@ def read_callback(pkg_path, pkg):
                         }
                     )
                 etcd_client = etcd.Client(**_etcd_args)
+                # Find ip address from peer name
+                node_ip = socket.gethostbyname(
+                    CONFIG['peer_name']
+                )
+                # Find node_id using ip address from indexes
+                node_id = etcd_client.read(
+                    "indexes/ip/%s" % node_ip
+                ).value
                 provisioner = etcd_client.read(
                     "indexes/tags/provisioner/%s" % CONFIG["integration_id"]
                 ).value
+                # Compare provisioner node_id with current node_id to make sure
+                # current node is provisioner or not
                 if (
-                    CONFIG["node_id"] not in eval(provisioner)
+                    node_id not in provisioner
                 ):
                     continue
             except (
-                etcd.KeyNotFound,
+                etcd.EtcdKeyNotFound,
                 etcd.EtcdConnectionFailed,
-                SyntaxError
+                SyntaxError,
+                KeyError
             ) as ex:
                 collectd.error(
                     'Failed to find provisioner node. Error %s' % str(ex)
