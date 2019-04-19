@@ -106,7 +106,6 @@ def sync(sync_ttl, node_status_ttl):
                             if dc.detected_cluster_id and \
                                 dc.detected_cluster_id != sds_details.get(
                                     'detected_cluster_id'):
-
                                 # Gluster peer list has changed
                                 integration_id = \
                                     NS.tendrl_context.integration_id
@@ -114,26 +113,29 @@ def sync(sync_ttl, node_status_ttl):
                                     integration_index_key,
                                     integration_id
                                 )
-                                # Set the cluster status as new peer detected
                                 _cluster = NS.tendrl.objects.Cluster(
                                     integration_id=integration_id
                                 ).load()
-                                _cluster.status = "new_peers_detected"
-                                _cluster.save()
-                                # Raise an alert regarding the same
-                                msg = "New peers identified in cluster: %s. " \
-                                    "Make sure tendrl-ansible is executed " \
-                                    "for the new nodes so that expand " \
-                                    "cluster option can be triggered" % \
-                                    _cluster.short_name
-                                event_utils.emit_event(
-                                    "cluster_status",
-                                    "new_peers_detected",
-                                    msg,
-                                    "cluster_{0}".format(integration_id),
-                                    "WARNING",
-                                    integration_id=integration_id
-                                )
+                                # If peer detached for down node before import
+                                # then it should not block the import by
+                                # changing cluster status
+                                if _cluster.is_managed == "yes":
+                                    _cluster.status = "new_peers_detected"
+                                    _cluster.save()
+                                    # Raise an alert regarding the same
+                                    msg = "New peers identified in cluster: " \
+                                        "%s. Make sure tendrl-ansible is " \
+                                        "executed for the new nodes so that " \
+                                        "expand cluster option can be " \
+                                        "triggered" % _cluster.short_name
+                                    event_utils.emit_event(
+                                        "cluster_status",
+                                        "new_peers_detected",
+                                        msg,
+                                        "cluster_{0}".format(integration_id),
+                                        "WARNING",
+                                        integration_id=integration_id
+                                    )
                             _cluster = NS.tendrl.objects.Cluster(
                                 integration_id=NS.tendrl_context.integration_id
                             ).load()
@@ -212,6 +214,32 @@ def sync(sync_ttl, node_status_ttl):
                     detected_cluster_tag = "detected_cluster/%s" % \
                                            sds_details[
                                                'detected_cluster_id']
+                    # Detected cluster id will change when new node
+                    # added into peer list and when peer detach happens,
+                    # Node_context should not maintain multiple DC ids
+                    old_dc_id = "detected_cluster/%s" % dc.detected_cluster_id
+                    if old_dc_id in NS.node_context.tags and \
+                            old_dc_id != detected_cluster_tag:
+                        NS.node_context.tags.remove(old_dc_id)
+                        # remove old detected cluster_id from indexes
+                        indexes_keys = []
+                        indexes_keys.append(
+                            "indexes/detected_cluster_id_to_integration_id"
+                            "/%s" % dc.detected_cluster_id
+                        )
+                        indexes_keys.append(
+                            "indexes/tags/detected_cluster/%s" %
+                            dc.detected_cluster_id
+                        )
+                        for indexes_key in indexes_keys:
+                            try:
+                                etcd_utils.delete(
+                                    indexes_key
+                                )
+                            except etcd.EtcdKeyNotFound:
+                                # It may be removed by other nodes
+                                # in a same cluster
+                                pass
                     NS.node_context.tags += [detected_cluster_tag,
                                              integration_tag]
                     NS.node_context.tags = list(set(NS.node_context.tags))
