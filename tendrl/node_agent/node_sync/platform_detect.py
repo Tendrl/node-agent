@@ -32,7 +32,7 @@ def sync():
         # execute the platform plugins
         for plugin in p_mgr.get_available_plugins():
             platform_details = plugin.discover_platform()
-            if len(platform_details.keys()) > 0:
+            if len(list(platform_details.keys())) > 0:
                 # update etcd
                 try:
                     NS.platform = NS.tendrl.objects.Platform(

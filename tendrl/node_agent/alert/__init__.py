@@ -58,7 +58,7 @@ def update_alert(message):
                 if AlertUtils().is_same(new_alert_obj, curr_alert):
                     if new_alert_obj.severity == \
                             constants.ALERT_SEVERITY["info"]:
-                        if "clear_alert" in new_alert_obj.tags.keys():
+                        if "clear_alert" in list(new_alert_obj.tags.keys()):
                             if new_alert_obj.tags['clear_alert'] != \
                                     curr_alert.severity:
                                 # only warning clearing alert can clear

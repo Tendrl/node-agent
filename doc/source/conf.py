@@ -37,8 +37,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'node-agent'
-copyright = u'2016, Tendrl Project'
+project = 'node-agent'
+copyright = '2016, Tendrl Project'
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
 add_function_parentheses = True
@@ -67,8 +67,8 @@ htmlhelp_basename = '%sdoc' % project
 latex_documents = [
     ('index',
      '%s.tex' % project,
-     u'%s Documentation' % project,
-     u'Tendrl Project', 'manual'),
+     '%s Documentation' % project,
+     'Tendrl Project', 'manual'),
 ]
 
 # Example configuration for intersphinx: refer to the Python standard library.

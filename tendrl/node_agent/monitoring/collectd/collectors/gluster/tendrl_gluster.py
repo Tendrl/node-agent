@@ -12,7 +12,7 @@ import time
 import collectd
 
 
-import utils as tendrl_glusterfs_utils
+from . import utils as tendrl_glusterfs_utils
 
 
 class PluginMount(type):
@@ -98,7 +98,7 @@ class TendrlGlusterfsMonitoringBase(object):
         # Get stats from current plugin's get_metrics function
         metrics = self.get_metrics()
         metric_list = []
-        for metric_name, value in metrics.iteritems():
+        for metric_name, value in metrics.items():
             # Don't push null values to graphite
             if value is not None:
                 if (
@@ -183,7 +183,7 @@ def load_plugins(pkg_path, pkg):
     for name, sds_fqdn in sds_plugins:
         if sds_fqdn in sys.modules:
             # Reload module if hot fixes need to be auto-picked in next cycle
-            reload(sys.modules[sds_fqdn])
+            importlib.reload(sys.modules[sds_fqdn])
             # continue
         else:
             importlib.import_module(sds_fqdn)

@@ -34,7 +34,7 @@ def _parse_heal_info_stats(tree, integration_id, etcd_client):
 
 
 def get_volume_heal_info_split_brain_stats(vol, integration_id, etcd_client):
-    for trial_cnt in xrange(0, 3):
+    for trial_cnt in range(0, 3):
         vol_heal_op, vol_heal_err = \
             tendrl_glusterfs_utils.exec_command(
                 "gluster volume heal %s info split-brain "
@@ -76,7 +76,7 @@ def get_volume_heal_info_split_brain_stats(vol, integration_id, etcd_client):
 
 
 def get_volume_heal_info_stats(vol, integration_id, etcd_client):
-    for trial_cnt in xrange(0, 3):
+    for trial_cnt in range(0, 3):
         vol_heal_op, vol_heal_err = \
             tendrl_glusterfs_utils.exec_command(
                 "gluster volume heal %s info --nolog --xml" % vol['name']
@@ -120,7 +120,7 @@ def get_heal_info(volume, integration_id, etcd_client, brick_path_separator):
     vol_heal_info_split_brain_stats = get_volume_heal_info_split_brain_stats(
         volume, integration_id, etcd_client
     )
-    for key, value in vol_heal_info_stats.iteritems():
+    for key, value in vol_heal_info_stats.items():
         if key == "" or value is None:
             continue
         t_name = \
@@ -133,7 +133,7 @@ def get_heal_info(volume, integration_id, etcd_client, brick_path_separator):
                 key.split(":")[1].replace('/', brick_path_separator)
             )
         ] = value
-    for key, value in vol_heal_info_split_brain_stats.iteritems():
+    for key, value in vol_heal_info_split_brain_stats.items():
         if key == "" or value is None:
             continue
         t_name = \
@@ -154,7 +154,7 @@ def get_heal_info_disperse(
     vol_heal_info_stats = get_volume_heal_info_stats(
         volume, integration_id, etcd_client
     )
-    for key, value in vol_heal_info_stats.iteritems():
+    for key, value in vol_heal_info_stats.items():
         if key == "" or value is None:
             continue
         t_name = \
