@@ -11,7 +11,7 @@ import traceback
 import urllib3
 
 import collectd
-from . import utils as gluster_utils
+import utils as gluster_utils
 
 
 class TendrlBrickDeviceStatsPlugin(object):

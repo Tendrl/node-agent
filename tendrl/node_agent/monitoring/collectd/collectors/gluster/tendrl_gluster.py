@@ -12,8 +12,7 @@ import time
 import collectd
 
 
-from . import utils as tendrl_glusterfs_utils
-
+import utils as tendrl_glusterfs_utils
 
 class PluginMount(type):
 
