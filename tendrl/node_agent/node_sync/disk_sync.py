@@ -273,8 +273,8 @@ def get_node_block_devices(disks_map):
     out, err, rc = cmd.run()
     if not err:
         out = out.encode('utf8')
-        # iterate over the output of lsblk with specfic set of columns
-        # and create a list dictornaries mapped with the specfic columns.
+        # iterate over the output of lsblk with specific set of columns
+        # and create a list of dictionary mapped with the specific columns.
         devlist = [dict(zip(keys, line.split(' '))) \
                    for line in out.splitlines()]
         all_parents = []
