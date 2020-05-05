@@ -1,4 +1,4 @@
-import ConfigParser
+import configparser
 import json
 import os
 import shlex
@@ -88,8 +88,8 @@ def get_gluster_state_dump():
     except (
         IOError,
         AttributeError,
-        ConfigParser.MissingSectionHeaderError,
-        ConfigParser.ParsingError,
+        configparser.MissingSectionHeaderError,
+        configparser.ParsingError,
         ValueError
     ):
         return ret_val, traceback.format_exc()
@@ -101,7 +101,7 @@ def parse_get_state(get_state_json):
         cluster_peers = []
         processed_peer_indexes = []
         peers = get_state_json['Peers']
-        for key, value in peers.iteritems():
+        for key, value in peers.items():
             peer_index = key.split('.')[0].split('peer')[1]
             if peer_index not in processed_peer_indexes:
                 cluster_peers.append({
@@ -124,7 +124,7 @@ def parse_get_state(get_state_json):
         processed_vol_indexes = []
         vols = []
         volumes = get_state_json['Volumes']
-        for key, value in volumes.iteritems():
+        for key, value in volumes.items():
             vol_index = key.split('.')[0].split('volume')[1]
             if vol_index not in processed_vol_indexes:
                 volume = {

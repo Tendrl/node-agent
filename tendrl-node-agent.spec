@@ -1,27 +1,33 @@
 Name: tendrl-node-agent
 Version: 1.6.3
-Release: 9%{?dist}
+Release: 11%{?dist}
 BuildArch: noarch
 Summary: Module for Tendrl Node Agent
 Source0: %{name}-%{version}.tar.gz
 License: LGPLv2+
 URL: https://github.com/Tendrl/node-agent
 
-BuildRequires: python-urllib3
-BuildRequires: python2-devel
-BuildRequires: pytest
+BuildRequires: python3-urllib3
+BuildRequires: python3-devel
+BuildRequires: python3-pytest
 BuildRequires: systemd
-BuildRequires: python-mock
-BuildRequires: python-setuptools
+BuildRequires: python3-mock
+BuildRequires: python3-setuptools
 
 Requires: collectd
 Requires: collectd-ping
-Requires: python-jinja2
+Requires: python3-jinja2
 Requires: tendrl-commons
 Requires: hwinfo 
-Requires: python-netifaces
-Requires: python-netaddr
-Requires: python-setuptools
+Requires: python3-netifaces
+Requires: python3-netaddr
+Requires: python3-setuptools
+Requires: python3-scandir
+Requires: python3-IPy
+Requires: python3-pathlib2
+Requires: python3-psutil
+Requires: python3-ruamel-ordereddict
+Requires: python3-ruamel-yaml
 Requires: rsyslog
 
 %description
@@ -34,13 +40,13 @@ Python module for Tendrl node bridge to manage storage node in the sds cluster
 rm -rf %{name}.egg-info
 
 %build
-%{__python} setup.py build
+%{__python3} setup.py build
 
 # remove the sphinx-build leftovers
 rm -rf html/.{doctrees,buildinfo}
 
 %install
-%{__python} setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=INSTALLED_FILES
+%{__python3} setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=INSTALLED_FILES
 install -m  0755  --directory $RPM_BUILD_ROOT%{_sysconfdir}/tendrl/node-agent
 install -m  0755  --directory $RPM_BUILD_ROOT%{_datadir}/tendrl/node-agent
 install -m  0755  --directory $RPM_BUILD_ROOT%{_sharedstatedir}/tendrl
@@ -94,6 +100,9 @@ py.test -v tendrl/node-agent/tests || :
 %config(noreplace) %{_sysconfdir}/logrotate.d/tendrl-node-agent_logrotate.conf
 
 %changelog
+* Mon Mar 23 2020 Timothy Asir Jeyasingh <tjeyasin@redhat.com> - 1.6.3-11
+- Log rotation for tendrl log files
+
 * Fri Jan 18 2019 Gowtham Shanmugasundaram <gshanmug@redhat.com> - 1.6.3-10
 - Log rotation for tendrl log files
 

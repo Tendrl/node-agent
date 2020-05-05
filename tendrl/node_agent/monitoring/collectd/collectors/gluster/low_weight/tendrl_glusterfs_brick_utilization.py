@@ -112,14 +112,9 @@ class TendrlBrickUtilizationPlugin(
                 )
             else:
                 out = stdout.split('\n')[:-1]
-                lv_det = map(
-                    lambda x: dict(x), map(
-                        lambda x: [
+                lv_det = [dict(x) for x in [[
                             e.split('=') for e in x
-                        ],
-                        map(lambda x: x.strip().split('$'), out)
-                    )
-                )
+                        ] for x in [x.strip().split('$') for x in out]]]
                 d = {}
                 for i in lv_det:
                     if i['LVM2_LV_ATTR'][0] == 't':
@@ -145,7 +140,7 @@ class TendrlBrickUtilizationPlugin(
         def _get_mounts(mount_path=[]):
             mount_list = self._get_mount_point(mount_path)
             mount_points = self._parse_proc_mounts()
-            if isinstance(mount_list, basestring):
+            if isinstance(mount_list, str):
                 mount_list = [mount_list]
             outList = set(mount_points).intersection(set(mount_list))
             # list comprehension to build dictionary does not work in
@@ -189,7 +184,7 @@ class TendrlBrickUtilizationPlugin(
         mount_detail = {}
         if not mount_points:
             return mount_detail
-        for mount, info in mount_points.iteritems():
+        for mount, info in mount_points.items():
             mount_detail[mount] = self._get_stats(mount)
             mount_detail[mount].update(
                 _get_thin_pool_stat(os.path.realpath(info['device']))
@@ -240,7 +235,7 @@ class TendrlBrickUtilizationPlugin(
         mount_stats = self.get_mount_stats(path, lvs)
         if not mount_stats:
             return None
-        return mount_stats.values()[0]
+        return list(mount_stats.values())[0]
 
     def get_brick_utilization(self):
         lvs = self.get_lvs()
@@ -251,7 +246,7 @@ class TendrlBrickUtilizationPlugin(
             for sub_volume_index, sub_volume_bricks in volume.get(
                 'bricks',
                 {}
-            ).iteritems():
+            ).items():
                 for brick in sub_volume_bricks:
                     # Check if current brick is from localhost else utilization
                     # of brick from some other host can't be computed here..
@@ -312,7 +307,7 @@ class TendrlBrickUtilizationPlugin(
     def get_metrics(self):
         ret_val = {}
         stats = self.get_brick_utilization()
-        for vol, brick_usages in stats.iteritems():
+        for vol, brick_usages in stats.items():
             for brick_usage in brick_usages:
                 t_name = "clusters.%s.volumes.%s.nodes.%s.bricks.%s." \
                     "utilization.gauge-used"

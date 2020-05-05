@@ -47,7 +47,7 @@ def sync(sync_ttl, node_status_ttl):
                 this_peer_uuid = ""
                 if _cnc.is_managed != "yes" or not NS.node_context.fqdn:
                     for peer_uuid, data in sds_details.get("peers",
-                                                           {}).iteritems():
+                                                           {}).items():
                         peer = NS.tendrl.objects.GlusterPeer(
                             peer_uuid=peer_uuid,
                             hostname=data['hostname'],

@@ -224,7 +224,7 @@ class TendrlBrickDeviceStatsPlugin(object):
                         )
                         device_partitions.append(partition)
                 device_to_partitions[device] = device_partitions
-            for brick_device, partitions in device_to_partitions.iteritems():
+            for brick_device, partitions in device_to_partitions.items():
                 # Collect disk read and write octets
                 # Push to cluster->volume->node->brick tree
                 self.brick_details[
@@ -589,7 +589,7 @@ class TendrlBrickDeviceStatsPlugin(object):
             for sub_volume_index, sub_volume_bricks in volume.get(
                 'bricks',
                 []
-            ).iteritems():
+            ).items():
                 for brick in sub_volume_bricks:
                     brick_hostname = gluster_utils.find_brick_host(
                         self.etcd_client,
@@ -626,7 +626,7 @@ def r_callback():
         gluster_utils.get_gluster_cluster_topology()
     metrics = TendrlBrickDeviceStatsPlugin().get_metrics()
     metric_list = []
-    for metric_name, value in metrics.iteritems():
+    for metric_name, value in metrics.items():
         if value is not None:
             if (
                 isinstance(value, str) and

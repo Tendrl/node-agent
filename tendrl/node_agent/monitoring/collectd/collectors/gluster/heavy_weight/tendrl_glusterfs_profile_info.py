@@ -199,7 +199,7 @@ class TendrlHealInfoAndProfileInfoPlugin(
         ret_val = {}
         brickName = ''
         profile_info = {}
-        for trial_cnt in xrange(0, 3):
+        for trial_cnt in range(0, 3):
             profile_cmd_op, profile_err = tendrl_glusterfs_utils.exec_command(
                 "gluster volume profile %s info --xml" % volName
             )

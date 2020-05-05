@@ -83,7 +83,7 @@ class TendrlGlusterfsHealthCounters(
                 for sub_volume_index, sub_volume_bricks in volume.get(
                     'bricks',
                     {}
-                ).iteritems():
+                ).items():
                     for brick in sub_volume_bricks:
                         brick_hostname = \
                             tendrl_glusterfs_utils.find_brick_host(

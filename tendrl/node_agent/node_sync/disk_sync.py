@@ -273,9 +273,10 @@ def get_node_block_devices(disks_map):
     out, err, rc = cmd.run()
     if not err:
         out = out.encode('utf8')
-        devlist = map(
-            lambda line: dict(zip(keys, line.split(' '))),
-            out.splitlines())
+        # iterate over the output of lsblk with specific set of columns
+        # and create a list of dictionary mapped with the specific columns.
+        devlist = [dict(zip(keys, line.split(' '))) \
+                   for line in out.splitlines()]
         all_parents = []
         parent_ids = []
         multipath = {}
@@ -325,7 +326,7 @@ def get_node_block_devices(disks_map):
                 device['used'] = True
                 # if partition is under multipath then parent of multipath
                 # is assigned
-                if dev_info['PKNAME'] in multipath.keys():
+                if dev_info['PKNAME'] in list(multipath.keys()):
                     dev_info['PKNAME'] = multipath[dev_info['PKNAME']]
                 if dev_info['PKNAME'] in disks_map.keys():
                     device['disk_id'] = disks_map[
