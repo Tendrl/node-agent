@@ -1,4 +1,5 @@
 import os
+import unicodedata
 
 from tendrl.commons.event import Event
 from tendrl.commons.message import ExceptionMessage
@@ -126,10 +127,13 @@ def get_disk_details():
     cmd = cmd_utils.Command('hwinfo --disk')
     out, err, rc = cmd.run()
     if not err:
-        out = out.encode('utf8')
+        out = unicodedata.normalize('NFKD', out).encode('utf8', 'ignore') \
+            if isinstance(out, unicode) \
+               else unicode(out, errors="ignore").encode('utf8')
         for all_disks in out.split('\n\n'):
             devlist = {"disk_id": "",
                        "hardware_id": "",
+                       "parent_id": "",
                        "disk_name": "",
                        "sysfs_id": "",
                        "sysfs_busid": "",
@@ -157,6 +161,9 @@ def get_disk_details():
                 key = disk.split(':')[0]
                 if key.strip() == "Unique ID":
                     devlist["hardware_id"] = \
+                        disk.split(':')[1].lstrip()
+                elif key.strip() == "Parent ID":
+                    devlist["parent_id"] = \
                         disk.split(':')[1].lstrip()
                 elif key.strip() == "SysFS ID":
                     devlist["sysfs_id"] = \
@@ -231,6 +238,9 @@ def get_disk_details():
                     if "by-id/virtio" in entry:
                         devlist['disk_id'] = entry.split('/')[-1]
                         break
+            elif "VMware" in devlist["vendor"]:
+                 devlist["disk_id"] = \
+                    "{vendor}_{device}_{parent_id}_{hardware_id}".format(**devlist)
             elif (devlist["vendor"] != "" and
                     devlist["device"] != "" and
                     devlist["serial_no"] != ""):
@@ -272,7 +282,9 @@ def get_node_block_devices(disks_map):
     cmd = cmd_utils.Command(lsblk)
     out, err, rc = cmd.run()
     if not err:
-        out = out.encode('utf8')
+        out = unicodedata.normalize('NFKD', out).encode('utf8', 'ignore') \
+            if isinstance(out, unicode) \
+               else unicode(out, errors="ignore").encode('utf8')
         devlist = map(
             lambda line: dict(zip(keys, line.split(' '))),
             out.splitlines())
@@ -371,7 +383,9 @@ def get_raw_reference():
         cmd = cmd_utils.Command("ls -l %s" % full_path)
         out, err, rc = cmd.run()
         if not err:
-            out = out.encode('utf8')
+            out = unicodedata.normalize('NFKD', out).encode('utf8', 'ignore') \
+                if isinstance(out, unicode) \
+                   else unicode(out, errors="ignore").encode('utf8')
             count = 0
             for line in out.split('\n'):
                 if count == 0:
